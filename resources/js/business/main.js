@@ -1,0 +1,1 @@
+import '../alpinejs/confirm.modal.js';

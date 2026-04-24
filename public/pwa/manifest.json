@@ -1,0 +1,28 @@
+{
+	"id": "colibri-app",
+	"name": "Colibri",
+	"short_name": "Colibri",
+	"description": "Colibri is a social network for sharing your thoughts, news and ideas.",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#ffffff",
+	"theme_color": "#ffffff",
+	"scope": "/",
+	"dir": "auto",
+	"orientation": "portrait",
+	"prefer_related_applications": false,
+	"related_applications": [],
+	"categories": ["social", "news", "social-network"],
+	"icons": [
+		{
+			"src": "/pwa/icons/192x192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "/pwa/icons/512x512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		}
+	]
+}

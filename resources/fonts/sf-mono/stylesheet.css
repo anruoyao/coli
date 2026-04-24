@@ -1,0 +1,11 @@
+:root {
+    --font-mono: 'SF Mono', 'monospace';
+}
+
+@font-face {
+    font-family: 'SF Mono';
+    src: local('SF Mono'), url('SFMono-Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+

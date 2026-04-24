@@ -1,0 +1,46 @@
+<?php
+
+return [
+    'general_settings' => 'General Settings',
+	'general_settings_desc' => 'General settings for the application.',
+	'email_settings' => 'E-Mail (SMTP) Settings',
+	'email_settings_desc' => 'Here you can configure the SMTP settings for the application.',
+	'notifications_settings' => 'Notifications Settings',
+	'notifications_settings_desc' => 'Here you can configure the notifications settings for the application.',
+	'api_settings' => 'API Settings',
+	'api_settings_desc' => 'API settings for the application.',
+	'verification_settings' => 'Verification Settings',
+	'verification_settings_desc' => 'Here you can configure the verification settings for the application.',
+	'tabs' => [
+		'email_testing' => 'E-Mail Testing',
+	],
+	'captions' => [
+		'app_name' => 'Application name. It\'s displayed in the browser tab and everywhere else to identify the application.',
+		'app_url' => 'Main URL. Avoid end slash. Make sure to rebuild (npm run build) app after changing this value.',
+		'app_description' => 'You project description. It\'s shown on link preview and search engine results.',
+		'app_keywords' => 'You project keywords. It\'s used to help search engines understand your project.',
+		'app_timezone' => 'Application timezone. It\'s used to display dates and times.',
+		'app_locale' => 'Default locale. You can change it to meet your needs.',
+		'email_driver' => 'E-Mail driver.',
+		'email_host' => 'Mail server host address. If you use a local mail server, use localhost.',
+		'email_port' => 'Mail server port. Depends on your mail server and configuration.',
+		'email_username' => 'Server username if authentication is required.',
+		'email_password' => 'Server password if authentication is required.',
+		'email_encryption' => 'SMTP encryption method. SSL or TLS.',
+		'email_from_address' => 'E-Mail address that will be used as the sender of the email.',
+		'email_from_name' => 'E-Mail name that will be used as the sender of the email.',
+		'notifications_email_enabled' => 'Enables email notifications. Requires SMTP settings to be configured.',
+		'notifications_broadcast_enabled' => 'Enables broadcast notifications. Requires Reverb server to be configured.',
+		'api_key' => 'Master API key. It\'s used to authenticate requests to the API. You can generate a new key and add it to the .env file.',
+		'verification_service_url' => 'Verification service URL. It\'s used to verify the user\'s identity. Learn more about the verification service works in ColibriPlus documentation.',
+	],
+	'email_testing' => [
+		'form' => [
+			'email_testing' => 'Email testing',
+			'email' => 'E-Mail',
+			'email_placeholder' => 'Enter e-mail',
+			'email_helper' => 'Enter here your test email address where you want to receive the test email.',
+			'send_button' => 'Send email',
+		],
+	],
+];
