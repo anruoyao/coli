@@ -57,7 +57,7 @@ class StepFour extends Component
 
         $this->makeFollowList();
 
-        $this->redirect(route('user.desktop.index'));
+        $this->redirect(route('user.onboarding.index', 'five'));
     }
 
     private function makeFollowList()
