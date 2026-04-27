@@ -5,6 +5,7 @@ namespace App\Livewire\User\Onboarding;
 use App\Rules\X\XRule;
 use Livewire\Component;
 use Illuminate\Support\Facades\Hash;
+use App\Enums\User\UserStatus;
 use Illuminate\Validation\Rules\Password;
 
 class StepFive extends Component
@@ -33,7 +34,8 @@ class StepFive extends Component
         ]);
 
         me()->update([
-            'password' => Hash::make($this->password)
+            'password' => Hash::make($this->password),
+            'status' => UserStatus::ACTIVE
         ]);
 
         $this->redirect(route('user.desktop.index'));

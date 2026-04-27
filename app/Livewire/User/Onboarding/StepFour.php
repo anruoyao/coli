@@ -51,8 +51,7 @@ class StepFour extends Component
         $user = me();
 
         $user->updateQuietly([
-            'username' => $this->username,
-            'status' => UserStatus::ACTIVE
+            'username' => $this->username
         ]);
 
         $this->makeFollowList();

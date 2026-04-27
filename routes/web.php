@@ -37,7 +37,7 @@ Route::name('user.')->prefix('auth')->middleware(['auth'])->group(function() {
 });
 
 Route::name('user.')->prefix('onboarding')->middleware(['auth'])->group(function() {
-    Route::get('/step-{step}', [App\Http\Controllers\User\Onboarding\OnboardingController::class, 'index'])->whereIn('step', ['one', 'two', 'three', 'four'])->name('onboarding.index');
+    Route::get('/step-{step}', [App\Http\Controllers\User\Onboarding\OnboardingController::class, 'index'])->whereIn('step', ['one', 'two', 'three', 'four', 'five'])->name('onboarding.index');
 });
 
 Route::prefix('switcher')->get('/device/{type}', function ($type) {
