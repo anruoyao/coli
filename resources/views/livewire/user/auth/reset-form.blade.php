@@ -28,7 +28,7 @@
                     placeholder="{{ __('auth.enter_new_password') }}"></x-auth.form.input>
                 </div>
                 <p class="text-par-s text-lab-sc mt-2">
-                    {{ __('auth.password_strength_helper', ['min_length' => config('user.password_min')]) }}
+                    {{ __('auth.password_strength_helper', ['min' => config('user.validation.password.min')]) }}
                 </p>
             </div>
             <div class="mb-4">

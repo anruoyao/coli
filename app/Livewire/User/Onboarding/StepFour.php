@@ -4,14 +4,18 @@ namespace App\Livewire\User\Onboarding;
 
 use Throwable;
 use App\Models\User;
+use App\Rules\X\XRule;
 use Livewire\Component;
 use Illuminate\Support\Str;
 use App\Enums\User\UserStatus;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class StepFour extends Component
 {
     public string $username;
+    public string $password = '';
+    public string $passwordConfirmation = '';
     public $isAvailable = null;
 
     public function mount()
@@ -40,10 +44,24 @@ class StepFour extends Component
 
     public function submitForm()
     {
+        $passwordRules = ['required', 'string', XRule::join('min', config('user.validation.password.min')), XRule::join('max', config('user.validation.password.max'))];
+
+        if (config('user.password_strength_control')) {
+            $passwordRules[] = Password::min(config('user.validation.password.min'))
+                ->letters()
+                ->mixedCase()
+                ->numbers()
+                ->symbols();
+        }
+
         $this->validate(rules: [
-            'username' => ['required', 'string', 'max:32', 'regex:/^[a-zA-Z0-9._]+$/', Rule::unique('users', 'username')->ignore(me()->id)]
+            'username' => ['required', 'string', 'max:32', 'regex:/^[a-zA-Z0-9._]+$/', Rule::unique('users', 'username')->ignore(me()->id)],
+            'password' => $passwordRules,
+            'passwordConfirmation' => ['required', 'string', 'same:password']
         ], attributes: [
             'username' => __('labels.username'),
+            'password' => __('auth.password_label'),
+            'passwordConfirmation' => __('auth.password_confirmation_label'),
         ], messages: [
             'username.regex' => 'The username can only contain letters, numbers, underscores, and dots.',
         ]);
@@ -52,6 +70,7 @@ class StepFour extends Component
 
         $user->updateQuietly([
             'username' => $this->username,
+            'password' => $this->password,
             'status' => UserStatus::ACTIVE
         ]);
 

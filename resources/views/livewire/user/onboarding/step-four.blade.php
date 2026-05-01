@@ -21,6 +21,26 @@
         </p>
     </div>
 
+    <div class="mb-3">
+        <x-auth.form.input
+            name="password"
+            :isPassword="true"
+            wire:model.trim="password"
+        placeholder="{{ __('auth.enter_new_password') }}"></x-auth.form.input>
+
+        <p class="text-par-s text-lab-sc mt-2">
+            {{ __('auth.password_strength_helper', ['min' => config('user.validation.password.min')]) }}
+        </p>
+    </div>
+
+    <div class="mb-6">
+        <x-auth.form.input
+            name="passwordConfirmation"
+            :isPassword="true"
+            wire:model.trim="passwordConfirmation"
+        placeholder="{{ __('auth.confirm_password') }}"></x-auth.form.input>
+    </div>
+
     <div class="mb-4">
         <div class="block w-full" wire:loading.remove>
             <x-auth.buttons.primary type="button" wire:click="submitForm">
