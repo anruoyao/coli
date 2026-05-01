@@ -24,7 +24,9 @@ class LocaleSeeder extends Seeder
                 'flag_path' => $locale['flag_path'],
                 'direction' => $locale['direction'],
                 'order' => $locale['order'],
+                'status' => $locale['status'],
                 'is_default' => $locale['is_default'],
+                'usage_count' => $locale['usage_count'],
             ]);
         }
 
