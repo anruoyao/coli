@@ -15,7 +15,7 @@ return [
     [
         'code' => 'zh',
         'status' => true,
-        'name' => 'Chinese',
+        'name' => '中文',
         'native_name' => '中文',
         'direction' => 'ltr',
         'flag_path' => '',
@@ -26,7 +26,7 @@ return [
     [
         'code' => 'jp',
         'status' => true,
-        'name' => 'Japanese',
+        'name' => '日本語',
         'native_name' => '日本語',
         'direction' => 'ltr',
         'flag_path' => '',
