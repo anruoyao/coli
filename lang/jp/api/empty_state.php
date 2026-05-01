@@ -18,12 +18,12 @@ return [
 		]
 	],
 	'market' => [
-		'filter' => 'We couldn't find any matches for your search.',
+		'filter' => '検索に一致する結果が見つかりませんでした。',
 		'bookmarks' => 'ブックマークされた商品はありません。'
 	],
 	'explore' => [
 		'people' => [
-			'filter' => 'No people found matching your search.'
+			'filter' => '検索に一致する人が見つかりませんでした。'
 		]
 	],
 	'jobs' => [

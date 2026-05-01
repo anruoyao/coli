@@ -2,8 +2,8 @@
 
 return [
     'index_title' => '禁止コンテンツ',
-    'index_desc' => 'Here you can manage the banned and blacklisted content.',
-    'show_title' => 'Ban Details',
-    'show_desc' => 'View the details of the banned content, manage it or remove it.',
-    'about_ban' => 'About banned content',
+    'index_desc' => 'ここで禁止およびブラックリストに登録されたコンテンツを管理できます。',
+    'show_title' => '禁止の詳細',
+    'show_desc' => '禁止されたコンテンツの詳細を表示し、管理または削除します。',
+    'about_ban' => '禁止コンテンツについて',
 ];

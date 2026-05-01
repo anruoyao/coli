@@ -2,8 +2,8 @@
 
 return [
     'index_title' => 'マーケットプレイス',
-    'index_desc' => 'Manage user shops and market products.',
-	'show_title' => 'Product Details',
-	'show_desc' => 'Here you can view and manage product details.',
+    'index_desc' => 'ユーザーショップとマーケットプロダクトを管理します。',
+	'show_title' => '商品の詳細',
+	'show_desc' => 'ここで商品の詳細を表示および管理できます。',
 	'about_product' => '商品について',
 ];

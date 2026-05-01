@@ -1,9 +1,9 @@
 <?php
 
 return [
-	'index_title' => 'Ads Manager',
-	'index_desc' => 'Here you can manage contextual ads, approve, reject, and view the details.',
-	'show_title' => 'Ad Details',
-	'show_desc' => 'Manage approval, reject, and view the details.',
-	'about_ad' => 'About Ad',
+	'index_title' => '広告マネージャー',
+	'index_desc' => 'ここでコンテキスト広告を管理し、承認、拒否、詳細を表示できます。',
+	'show_title' => '広告の詳細',
+	'show_desc' => '承認、拒否、詳細の表示を管理します。',
+	'about_ad' => '広告について',
 ];

@@ -38,7 +38,7 @@ return [
 	'other' => 'その他',
 	'transaction_date' => '日付',
 	'transaction_status' => '操作ステータス',
-	'transaction_tnxid' => 'TXNID',
+	'transaction_tnxid' => '取引ID',
 	'transaction_currency' => '通貨',
 	'transaction_total' => '合計',
 	'transaction_helper_text' => '取引についてご質問がある場合は、サポートチームにお問い合わせください。',

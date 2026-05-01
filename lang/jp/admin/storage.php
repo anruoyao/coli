@@ -2,10 +2,10 @@
 
 return [
     'index_title' => 'ファイルストレージ',
-    'index_desc' => 'You can view and manage your file storage system here.',
+    'index_desc' => 'ここでファイルストレージシステムを表示・管理できます。',
     'no_disk_description' => '説明がありません。ディスク設定ファイルで説明を追加できます。',
     'show_title' => 'ディスク使用量',
-    'show_desc' => 'Here you ca see disk usage statistics for all type of uploaded content.',
+    'show_desc' => 'ここですべてのタイプの上伝コンテンツのディスク使用量統計を確認できます。',
     'metrics' => [
         'image' => [
             'title' => '画像',

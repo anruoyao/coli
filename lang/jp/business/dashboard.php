@@ -1,11 +1,11 @@
 <?php
 
 return [
-	'welcome_title' => 'Welcome to your business account! 🔥',
-	'about_business_account' => 'A business account is where you can manage the business features of your account. Use the panel tools to create products, launch advertisements, post vacancies and more.',
+	'welcome_title' => 'ビジネスアカウントへようこそ！🔥',
+	'about_business_account' => 'ビジネスアカウントは、アカウントのビジネス機能を管理できる場所です。パネルのツールを使用して、商品を作成したり、広告を開始したり、求人を投稿したりできます。',
 	'offer_help' => [
-		'title' => 'Need help?',
-		'desc' => 'Please send your questions to our support team, and we\'ll do our best to assist you promptly.',
+		'title' => 'お困りですか？',
+		'desc' => 'サポートチームに質問を送信してください。できる限りお手伝いします。',
 	],
-	'features_restriction_info' => 'Some functions may be limited by the administrator partially or completely.',
+	'features_restriction_info' => '一部の機能は管理者によって部分的または完全に制限されている場合があります。',
 ];

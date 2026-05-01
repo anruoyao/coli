@@ -3,16 +3,16 @@
 return [
 	'onboarding_bio' => [
 		'title' => 'あなたについて知ってください！',
-		'caption' => 'Want to make your profile even more interesting and add a description?',
-		'input_helper_text' => 'Brief information about you and your activities',
+		'caption' => 'プロフィールをさらに興味深くして説明を追加しませんか？',
+		'input_helper_text' => 'あなたとあなたの活動に関する簡単な情報',
 	],
 	'onboarding_avatar' => [
 		'title' => 'アバターはどうですか？',
-		'caption' => 'You can change your avatar at any time later, so feel free to skip this step for now.',
+		'caption' => '後でいつでもアバターを変更できるので、今はこのステップをスキップしても構いません。',
 	],
 	'onboarding_follow' => [
 		'title' => '最後の仕上げ',
-		'caption' => 'How about following our recommended users? You can change your subscriptions at any time',
+		'caption' => 'おすすめのユーザーをフォローしませんか？購読はいつでも変更できます',
 		'yes_follow' => 'すべてフォローする',
 	],
 ];

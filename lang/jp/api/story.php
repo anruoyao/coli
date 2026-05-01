@@ -12,11 +12,11 @@ return [
 	'no_view_yet' => 'まだ閲覧者はいません',
 	'story_privacy_alert' => [
 		'title' => 'ストーリーを見せてもいい人は？',
-		'desc' => 'Your story will be visible on {app_name} to all your subscribers within 24 hours.',
+		'desc' => 'ストーリーは24時間以内にすべての購読者に{app_name}上で表示されます。',
 	],
-		'story_drop_zone' => [
+	'story_drop_zone' => [
 		'title' => '写真または動画をアップロード',
-		'desc' => 'Drag and drop photos or videos here',
+		'desc' => 'ここに写真または動画をドラッグ＆ドロップ',
 	],
 	'editor' => [
 		'add_caption' => 'キャプションを追加...',

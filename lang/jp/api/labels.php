@@ -190,7 +190,7 @@ return [
 	'join_date' => '参加日',
 	'phone' => '電話番号',
 	'load_more' => 'もっと読み込む',
-	'profile_private_info_hiding' => 'Some information may be hidden by the profile owner for privacy purposes. For more information, please read our Police Privacy.',
+	'profile_private_info_hiding' => 'プライバシー保護のため、プロフィール所有者によって一部の情報が非表示にされている場合があります。詳細については、プライバシーポリシーをご覧ください。',
 	'sensitive_content' => [
 		'title' => 'センシティブコンテンツ！',
 		'description' => 'この出版物にはセンシティブ内容が含まれる可能性があります。',
@@ -198,7 +198,7 @@ return [
 	],
 	'account_switcher' => [
 		'title' => 'あなたのアカウント',
-		'description' => 'Switch account to another account or link your another existing {app_name} account.',
+		'description' => '別のアカウントに切り替えるか、既存の{app_name}アカウントをリンクします。',
 		'button' => '新しいアカウントをリンク',
 	],
 	'send_message' => 'メッセージを送信',
@@ -207,16 +207,16 @@ return [
 	'nav_menu' => [
 		'switch_account' => [
 			'title' => 'アカウントを切り替え',
-			'description' => 'Switch account to another account or link existing one.',
+			'description' => '別のアカウントに切り替えるか、既存のアカウントをリンクします。',
 			'button' => '新しいアカウントをリンク',
 		],
 		'theme' => [
 			'title' => 'テーマ',
-			'description' => 'Switch to preferred theme.',
+			'description' => '好みのテーマに切り替えます。',
 		],
 		'language' => [
 			'title' => '言語',
-			'description' => 'Choose preferred interface language.',
+			'description' => '好みのインターフェース言語を選択します。',
 		],
 		'bookmarks' => [
 			'title' => 'ブックマーク',

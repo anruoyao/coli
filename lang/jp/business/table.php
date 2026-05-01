@@ -2,12 +2,12 @@
 
 return [
 	'th' => [
-		'category' => 'Category',
-		'status' => 'Status',
-		'product_type' => 'Product type',
-		'price' => 'Price',
-		'quantity' => 'Quantity',
-		'name' => 'Name'
+		'category' => 'カテゴリ',
+		'status' => 'ステータス',
+		'product_type' => '商品タイプ',
+		'price' => '価格',
+		'quantity' => '数量',
+		'name' => '名前'
 	],
-	'empty' => 'There are no data yet',
+	'empty' => 'まだデータがありません',
 ];

@@ -2,8 +2,8 @@
 
 return [
 	'index_title' => '支払い',
-	'index_desc' => 'All payments made by users. Payment object is an administrative object created when user makes a payment like deposit, withdraw, etc.',
-	'show_title' => 'Payment Details',
-	'show_desc' => 'Payment object full details.',
+	'index_desc' => 'ユーザーによって行われたすべての支払い。支払いオブジェクトは、ユーザーが入金、出金などの支払いを行ったときに作成される管理オブジェクトです。',
+	'show_title' => '支払いの詳細',
+	'show_desc' => '支払いオブジェクトの完全な詳細。',
 	'about_payment' => '支払いについて',
 ];

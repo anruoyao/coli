@@ -9,15 +9,15 @@ return [
     'poll_question' => '質問',
     'remove_poll' => '投票を削除',
     'recording_audio' => '音声を録音中',
-    'post_drop_zone' => '写真または動画をドラッグ＆ドロップ здесь',
+    'post_drop_zone' => 'ここ に写真または動画をドラッグ＆ドロップ',
     'mark_ai_generated' => 'AI生成としてマーク',
     'unmark_ai_generated' => 'AI生成のマークを解除',
     'mark_sensitive' => 'センシティブとしてマーク',
     'unmark_sensitive' => 'センシティブのマークを解除',
     'publication_guidelines' => '公開ガイドライン',
     'add_option' => 'オプションを追加',
-    'post_privacy' => 'Anyone can see this post, comment, quote and react.',
-    'post_author_note' => 'Your posts are only visible on your profile. Become an Author to share your content in feeds and across the network.',
+    'post_privacy' => 'この投稿には誰もがコメント、引用、リアクションできます。',
+    'post_author_note' => 'あなたの投稿はプロフィールにのみ表示されます。著者になってフィードやネットワーク全体でコンテンツをシェアしましょう。',
     'main_menu' => [
         'image' => [
             'title' => '画像',
@@ -33,7 +33,7 @@ return [
         ],
         'document' => [
             'title' => 'ドキュメント',
-            'description' => 'Attach a document. PDF, Word, Excel, etc.',
+            'description' => 'ドキュメントを添付。PDF、Word、Excelなど。',
         ],
         'poll' => [
             'title' => '投票',

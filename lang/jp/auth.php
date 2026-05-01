@@ -29,7 +29,7 @@ return [
     ],
     'signup_for_app' => [
         'title' => ':app_name にサインアップ',
-        'caption' => 'に参加してください 쉽고 빠릅니다',
+        'caption' => 'に参加してください。簡単而且つ快速です。',
     ],
     'linker_login' => [
         'title' => 'アカウントをリンク',
@@ -43,14 +43,14 @@ return [
     'resend_link' => 'リンクを再送信',
     'resend_link_helper' => 'メールを受け取れませんでしたか？スパムまたはプロモーションボックスを確認するか、再送信してください：',
     'resend_link_error' => '30分ごとに再送信できます。最初の試行から30分経過するまでお待ちください',
-    'resend_link_success' => 'リンクが再送されました。受信トレイまたはスパムフォルダを確認してください。メールがそこに届く場合があります',
+    'resend_link_success' => 'リンクが再送されました。受信トレイまたはスパムフォルダを確認してください。メールがそこ届く場合があります',
     'forgot_success_message' => [
         'title' => 'メールが送信されました！',
         'caption' => 'アカウントを回復するには、メール内のリンクに従ってください：:email_address。',
     ],
     'signup_success_message' => [
         'title' => 'もう少しです！',
-        'caption' => 'メールアドレスに固有のログサーリンクを送 信しました：:email_address。',
+        'caption' => 'メールアドレスに固有のログインリンクを送信しました：:email_address。',
     ],
     'login_or_email' => 'ログインまたはメール',
     'enter_email' => 'メールアドレスを入力',
@@ -63,5 +63,5 @@ return [
     'other_options' => 'その他のオプション',
     'enter_password' => 'パスワードを入力',
     'already_have_account' => 'アカウントをお持ちですか？',
-    'auth_agreement' => '続行することで、:app_name の利用規約 <a href=":terms_link" target="_blank" class="underline hover:text-brand-900">Terms of Service</a> および <a href=":policy_link" target="_blank" class="underline hover:text-brand-900">Privacy Policy</a> に同意したものとみなされます。',
+    'auth_agreement' => '続行することで、:app_name の<a href=":terms_link" target="_blank" class="underline hover:text-brand-900">利用規約</a>および<a href=":policy_link" target="_blank" class="underline hover:text-brand-900">プライバシーポリシー</>に同意したものとみなされます。',
 ];

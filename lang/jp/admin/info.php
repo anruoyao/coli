@@ -3,63 +3,63 @@
 return [
 	'you_are_admin' => '管理者としてログインしています。🛡️',
     'env_edit_notice' => [
-		'title' => 'How to edit?',
-		'line_one' => 'These settings are managed from the <code>.env</code> file (located in the root of your ColibriPlus installation) and cannot be changed from the admin panel.',
-		'line_two' => 'To update them, please edit the <code>.env</code> file directly and then just click to Reset Cache button.',
-		'env_privacy' => '⚠️ Please do not share your .env file with anyone. It contains all application\'s confidential information.'
+		'title' => '編集方法',
+		'line_one' => 'これらの設定は <code>.env</code> ファイル（ColibriPlus インストールのルートにあります）から管理されており、管理パネルから変更することはできません。',
+		'line_two' => '更新するには、<code>.env</code> ファイルを直接編集してから「キャッシュをリセット」ボタンをクリックしてください。',
+		'env_privacy' => '⚠️ .env ファイルを誰とも共有しないでください。アプリケーションのすべての機密情報が含まれています。'
 	],
 	'payment_preview' => [
-		'title' => 'Payment Object',
-		'line_one' => 'Payment object is an administrative object to represent payment made by user.',
-		'line_two' => 'It contains payment reference id and other data related to payment.',
-		'line_three' => 'Please avoid editing or deleting this object until payment is completed or expired.'
+		'title' => '支払いオブジェクト',
+		'line_one' => '支払いオブジェクトは、ユーザーによって行われた支払いを表す管理オブジェクトです。',
+		'line_two' => '支払い参照IDおよび支払いに関連するその他のデータが含まれています。',
+		'line_three' => '支払いが完了または期限切れになるまで、このオブジェクトの編集または削除は避けてください。'
 	],
 	'language_edit_notice' => [
-		'title' => 'How to edit?',
-		'line_one' => 'All language texts are stored in local files in <code>.php</code> and <code>.json</code> format.',
-		'line_two' => 'To edit the texts, please edit the <code>.php</code> or <code>.json</code> file directly following <a class="text-brand-900 underline" href=":documentation_url" target="_blank">Documentation</a>.'
+		'title' => '編集方法',
+		'line_one' => 'すべての言語テキストは <code>.php</code> および <code>.json</code> 形式のローカルファイルに保存されています。',
+		'line_two' => 'テキストを編集するには、<a class="text-brand-900 underline" href=":documentation_url" target="_blank">ドキュメント</a> に従って <code>.php</code> または <code>.json</code> ファイルを直接編集してください。'
 	],
 	'translation_notice' => [
-		'title' => 'Manual Translation Required!',
-		'line_one' => 'All translation files will be copied from English (en - permanent locale) as a base.',
-		'line_two' => 'Please note that new added language will not be translated by default.',
-		'line_three' => 'You must manually update the translation files to reflect the correct language.',
-		'line_four' => '👉 Follow the translation guide in the documentation for instructions.'
+		'title' => '手動翻訳が必要です！',
+		'line_one' => 'すべての翻訳ファイルは、ベースとして英語（en - 永続的なロケール）からコピーされます。',
+		'line_two' => '新しく追加された言語はデフォルトで翻訳されないことに注意してください。',
+		'line_three' => '正しい言語を反映するために、翻訳ファイルを手動で更新する必要があります。',
+		'line_four' => '👉 ドキュメントの翻訳ガイドに従って指示に従ってください。'
 	],
 	'currency_notice' => [
-		'title' => 'Fiat Currency 💰',
-		'line_one' => 'Currencies are fiat currencies that are used in the application for business content like jobs, products, etc.',
-		'line_two' => 'Please avoid deleting currencies that are already in use by your users.'
+		'title' => '法定通貨 💰',
+		'line_one' => '通貨は、ジョブ、製品などのビジネスコンテンツに使用される法定通貨です。',
+		'line_two' => 'ユーザーが既に使用している通貨の削除は避けてください。'
 	],
 	'ban_notice' => [
-		'title' => 'Banned Content 🚫',
-		'line_one' => 'Banned content is content that has been banned from the application.',
-		'line_two' => 'You can choose to ban several types of content like IP, email, phone, username, email domain, etc.',
-		'line_three' => 'Banned content will be automatically removed after the expiration date if set.'
+		'title' => '禁止コンテンツ 🚫',
+		'line_one' => '禁止コンテンツは、アプリケーションから禁止されたコンテンツです。',
+		'line_two' => 'IP、メール、電話、ユーザー名、メールドメインなど、複数の種類のコンテンツを禁止することができます。',
+		'line_three' => '禁止コンテンツは、有効期限が設定されている場合、期限切れ後に自動的に削除されます。'
 	],
 	'round_robin_notice' => [
-		'title' => 'Round Robin Storage 🔄',
-		'line_one' => 'ColibriPlus features a round-robin storage system that supports both S3 and FTP as backend options.',
-		'line_two' => 'You can add as many S3 or FTP storage accounts as you need — whether from AWS, DigitalOcean, Vultr, or any other provider that supports these protocols.',
-		'line_three' => 'Once configured, ColibriPlus will automatically distribute files across the available storage accounts in a round-robin fashion, helping you balance storage usage seamlessly.'
+		'title' => 'ラウンドロビンストレージ 🔄',
+		'line_one' => 'ColibriPlus は、S3 と FTP の両方をバックエンドオプションとしてサポートするラウンドロビンストレージシステムを備えています。',
+		'line_two' => 'AWS、DigitalOcean、Vultr、またはこれらのプロトコルをサポートする他のプロバイダーから、必要な数だけ S3 または FTP ストレージアカウントを追加できます。',
+		'line_three' => '構成されると、ColibriPlus はラウンドロビン方式で利用可能なストレージアカウントに自動的にファイルを分散し、ストレージ使用量をシームレスにバランスさせます。'
 	],
 	'laravel_notice' => [
-		'title' => 'Laravel Ecosystem 🚀',
-		'line_one' => 'ColibriPlus is built on top of Laravel :laravel_version. <a href="https://www.laravel.com" target="_blank" class="text-brand-900">Learn more</a>',
-		'line_two' => 'It means that you are free to use any Laravel ecosystem tools, packages and services you want.'
+		'title' => 'Laravel エコシステム 🚀',
+		'line_one' => 'ColibriPlus は Laravel :laravel_version 上に構築されています。<a href="https://www.laravel.com" target="_blank" class="text-brand-900">詳細を学ぶ</a>',
+		'line_two' => 'つまり、必要な任意の Laravel エコシステムツール、パッケージ、サービスを自由に使用できます。'
 	],
 	'category_notice' => [
-		'title' => 'Category',
-		'line_one' => 'Create entity categories (e.g., products or vacancies) to fit your needs. Add translations so category names match each user's selected language.',
+		'title' => 'カテゴリ',
+		'line_one' => 'ニーズに合わせてエンティティカテゴリ（例：製品または職位）を作成します。翻訳を追加して、カテゴリ名が各ユーザーの選択した言語に一致するようにします。',
 	],
 	'page_edit_notice' => [
-		'title' => 'Static Page',
-		'line_one' => 'Static pages are used to display legal or informational content related to your project. For example: Cookies Policy, Privacy Policy, Terms of Service, About your company, and similar pages.',
-		'line_two' => 'You can add translations for each supported language so the information is shown to users in their preferred language.',
+		'title' => '静的ページ',
+		'line_one' => '静的ページは、プロジェクトに関連する法的または情報コンテンツを表示するために使用されます。例：Cookie ポリシー、プライバシーポリシー、利用規約、会社についてなどのページです。',
+		'line_two' => 'サポートされている各言語に対して翻訳を追加して、ユーザーに自分の好みの言語で情報を表示できます。',
 	],
 	'chat_notice' => [
-		'title' => 'Direct Chat',
-		'line_one' => 'A chat is a private conversation between two or more users. In this version, message contents viewing is not supported from the admin panel.',
-		'line_two' => 'You may delete an entire chat if necessary.',
+		'title' => 'ダイレクトチャット',
+		'line_one' => 'チャットは、2人以上のユーザー間のプライベートな会話です。このバージョンでは、管理パネルからメッセージコンテンツの表示はサポートされていません。',
+		'line_two' => '必要に応じて、チャット全体を削除することができます。',
 	]
 ];

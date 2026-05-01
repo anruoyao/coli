@@ -13,11 +13,11 @@ return [
 	],
 	'archived_chats' => [
 		'title' => 'アーカイブされたチャット',
-		'description' => 'Here you can find all your archived chats. You can unarchive them at any time.',
+		'description' => 'ここですべてのアーカイブされたチャットを見つけることができます。いつでもアーカイブを解除できます。',
 	],
 	'chat_requests' => [
 		'title' => 'リクエスト',
-		'description' => 'Request from people to join to some groups or chats. You can accept or decline them at any time.',
+		'description' => 'グループやチャットへの参加リクエスト。いつでも受け入れまたは拒否できます。',
 	],
 	'clear_conversation' => '会話をクリア',
 	'delete_chat' => 'チャットを削除',
@@ -29,14 +29,14 @@ return [
 	'edit_group' => 'グループを編集',
 	'delete_message_for_all' => 'このメッセージを全員に対して削除',
 	'invite_participants' => '参加者を招待',
-	'participant_add_rights' => 'Only admins can invite participants to this group.',
-	'participant_remove_rights' => 'Only admins can remove participants from this group.',
-	'invite_participants_description' => 'All selected people will be invited to this group. Invitation is valid for ({days}) days.',
+	'participant_add_rights' => 'このグループに参加者を招待できる人是管理者だけです。',
+	'participant_remove_rights' => 'このグループから参加者を削除できる人は管理者だけです。',
+	'invite_participants_description' => '選択したすべての人々がこのグループに招待されます。招待は（{days}）日間有効です。',
 	'pending_invitations' => '保留中の招待',
 	'leave_group' => 'このグループを退出',
 	'group_admin' => 'グループ管理者',
 	'search_by_name' => '名前で検索',
-	'forbidden_to_invite' => 'has restricted group invites',
+	'forbidden_to_invite' => 'グループの招待が制限されています',
 	'delete_group' => 'グループを削除',
 	'report_group' => 'このグループを報告',
 	'recent_joins' => '最近の参加',
@@ -68,7 +68,7 @@ return [
 	'alerts' => [
 		'ws_connection' => [
 			'title' => 'WS接続に失敗しました。',
-			'desc' => 'It looks like the chat isn\'t working properly due to a server issue.',
+			'desc' => 'サーバー問題により、チャットが正しく機能していないようです。',
 		],
 	],
 	'main_menu' => [
@@ -91,9 +91,9 @@ return [
 			'name_helper' => 'タイトルを入力し、必要に応じてグループアバターをアップロードしてください。あとから変更できます。',
 			'submit_button' => 'グループを作成',
 			'public' => '公開グループ',
-			'public_helper' => 'If you select public, anyone will be able to find this group in search results.',
+			'public_helper' => '公開を選択すると、どなたても検索結果でこのグループを見つけることができます。',
 			'description_placeholder' => 'グループの説明',
-			'description_helper' => 'Description is visible to all participants and and to everyone who can see this group.',
+			'description_helper' => '説明はすべての参加者とこのグループを見ることができるすべての人に表示されます。',
 		],
 	],
 ];

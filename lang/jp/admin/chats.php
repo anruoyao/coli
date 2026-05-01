@@ -2,8 +2,8 @@
 
 return [
     'index_title' => 'チャット＆グループ',
-    'index_desc' => 'Here you can manage all chats and groups over the platform.',
-    'show_title' => 'Chat Details',
-    'show_desc' => 'View and manage chat details.',
+    'index_desc' => 'ここでプラットフォーム上のすべてのチャットとグループを管理できます。',
+    'show_title' => 'チャットの詳細',
+    'show_desc' => 'チャットの詳細を表示および管理します。',
     'no_participants' => '参加者が見つかりません',
 ];
