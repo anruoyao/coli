@@ -1,0 +1,23 @@
+<?php
+return [
+	'entertainment' => '娱乐',
+	'news' => '新闻',
+	'sport' => '体育',
+	'technologies' => '科技',
+	'science' => '科学',
+	'education' => '教育',
+	'health' => '健康',
+	'fashion' => '时尚',
+	'food' => '美食',
+	'travel' => '旅游',
+	'business' => '商业',
+	'music' => '音乐',
+	'art' => '艺术',
+	'gaming' => '游戏',
+	'literature' => '文学',
+	'finance' => '金融',
+	'politics' => '政治',
+	'automobiles' => '汽车',
+	'fitness' => '健身',
+	'home-and-garden' => '家居与园艺',
+];

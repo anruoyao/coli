@@ -1,0 +1,46 @@
+<?php
+
+return [
+    'general_settings' => '常规设置',
+	'general_settings_desc' => '应用程序的常规设置。',
+	'email_settings' => '邮件（SMTP）设置',
+	'email_settings_desc' => '在这里您可以配置应用程序的 SMTP 设置。',
+	'notifications_settings' => '通知设置',
+	'notifications_settings_desc' => '在这里您可以配置应用程序的通知设置。',
+	'api_settings' => 'API 设置',
+	'api_settings_desc' => '应用程序的 API 设置。',
+	'verification_settings' => '认证设置',
+	'verification_settings_desc' => '在这里您可以配置认证设置。',
+	'tabs' => [
+		'email_testing' => '邮件测试',
+	],
+	'captions' => [
+		'app_name' => '应用程序名称。它显示在浏览器标签页和所有其他地方以识别应用程序。',
+		'app_url' => '主 URL。避免末尾斜杠。更改此值后请务必重新构建（npm run build）应用程序。',
+		'app_description' => '您的项目描述。它显示在链接预览和搜索引擎结果中。',
+		'app_keywords' => '您的项目关键词。用于帮助搜索引擎了解您的项目。',
+		'app_timezone' => '应用程序时区。用于显示日期和时间。',
+		'app_locale' => '默认语言环境。您可以根据需要更改它。',
+		'email_driver' => '邮件驱动。',
+		'email_host' => '邮件服务器主机地址。如果您使用本地邮件服务器，请使用 localhost。',
+		'email_port' => '邮件服务器端口。取决于您的邮件服务器和配置。',
+		'email_username' => '如果需要身份验证，则为服务器用户名。',
+		'email_password' => '如果需要身份验证，则为服务器密码。',
+		'email_encryption' => 'SMTP 加密方法。SSL 或 TLS。',
+		'email_from_address' => '用作邮件发件人的电子邮件地址。',
+		'email_from_name' => '用作邮件发件人的邮件名称。',
+		'notifications_email_enabled' => '启用邮件通知。需要配置 SMTP 设置。',
+		'notifications_broadcast_enabled' => '启用广播通知。需要配置 Reverb 服务器。',
+		'api_key' => '主 API 密钥。用于验证对 API 的请求。您可以生成新密钥并添加到 .env 文件中。',
+		'verification_service_url' => '认证服务 URL。用于验证用户身份。在 ColibriPlus 文档中了解更多关于认证服务的工作原理。',
+	],
+	'email_testing' => [
+		'form' => [
+			'email_testing' => '邮件测试',
+			'email' => '电子邮件',
+			'email_placeholder' => '输入电子邮件',
+			'email_helper' => '在这里输入您想要接收测试邮件的测试电子邮件地址。',
+			'send_button' => '发送邮件',
+		],
+	],
+];
