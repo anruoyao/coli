@@ -23,4 +23,15 @@ return [
         'is_default' => false,
         'usage_count' => 0,
     ],
+    [
+        'code' => 'jp',
+        'status' => true,
+        'name' => 'Japanese',
+        'native_name' => '日本語',
+        'direction' => 'ltr',
+        'flag_path' => '',
+        'order' => 3,
+        'is_default' => false,
+        'usage_count' => 0,
+    ],
 ];
