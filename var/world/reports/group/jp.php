@@ -1,48 +1,48 @@
 <?php
 
 return [
-	'title' => 'Why do you want to report this group?',
-	'description' => 'Your complaint is anonymous. No one will know you reported this post.',
+	'title' => 'このグループを報告する理由は何ですか？',
+	'description' => 'あなたの苦情は匿名です。この投稿を報告したことを誰も知りません。',
 	'reasons' => [
 		[
-			'title' => 'Hate',
-			'description' => 'Slurs, Racist or sexist stereotypes, Dehumanization, Incitement of fear or discrimination, Hateful references, Hateful symbols & logos.',
+			'title' => 'ヘイト',
+			'description' => '差別用語、人種的・性別的固定観念、非人間化、恐怖や差別の扇動、ヘイトな参照、ヘイトな記号・ロゴ。',
 		],
 		[
-			'title' => 'Abuse & Harassment',
-			'description' => 'Insults, Unwanted Sexual Content & Graphic Objectification, Unwanted NSFW & Graphic Content, Violent Event Denial, Targeted Harassment and Inciting Harassment.',
+			'title' => '虐待・ハラスメント',
+			'description' => '侮辱、望まない性的なコンテンツ・グラフィックな対象化、望まないNSFW・グラフィックコンテンツ、暴力的なイベントの否定、標的型ハラスメント・ハラスメント扇動。',
 		],
 		[
-			'title' => 'Violence & Dangerous Content',
-			'description' => 'Violent Threats, Wish of Harm, Glorification of Violence, Incitement of Violence, Coded Incitement of Violence.',
+			'title' => '暴力・危険なコンテンツ',
+			'description' => '暴力的な脅迫、危害のwish、暴力の美化和、暴力の扇動、コード化された暴力の扇動。',
 		],
 		[
-			'title' => 'Child Safety',
-			'description' => 'Child sexual exploitation, grooming, physical child abuse, underage user.',
+			'title' => '子供の安全',
+			'description' => '子供の性的搾取、個人情報搾取、身体的な児童虐待未成年ユーザー。',
 		],
 		[
-			'title' => 'Privacy & Safety',
-			'description' => 'Sharing private information, threatening to share/expose private information, sharing non-consensual intimate images, sharing images of me that I don’t want on the platform.',
+			'title' => 'プライバシー・安全',
+			'description' => '個人情報の共有、個人情報脅迫・暴露、同意のない亲密な画像の共有、プラットフォームに不希望の自分の画像の共有。',
 		],
 		[
-			'title' => 'Spam',
-			'description' => 'Fake engagement, scams, fake accounts, malicious links.',
+			'title' => 'スパム',
+			'description' => '偽りのエンゲージメント、詐欺、偽りのアカウント、悪意のあるリンク。',
 		],
 		[
-			'title' => 'Suicide or self-harm',
-			'description' => 'Encouraging, promoting, providing instructions or sharing strategies for self-harm.',
+			'title' => '自殺または自傷行為',
+			'description' => '自傷の鼓励、促進、指示の共有、自傷戦略の共有。',
 		],
 		[
-			'title' => 'Sensitive or disturbing media',
-			'description' => 'Graphic Content, Gratuitous Gore, Adult Nudity & Sexual Behavior, Violent Sexual Conduct, Bestiality & Necrophilia, Media depicting a deceased individual.',
+			'title' => '法人情深く擽乱的なメディア',
+			'description' => 'グラフィックコンテンツ、容赦のない血迹的新闻裸露・性的な行為、獣奸・納棺、死亡した個人を表したメディア。',
 		],
 		[
-			'title' => 'Impersonation',
-			'description' => 'Pretending to be someone else, including non-compliant parody/fan accounts.',
+			'title' => '冒充',
+			'description' => '他の人になりすますこと、非準拠なパロディ・ファンアカウントを含む。',
 		],
 		[
-			'title' => 'Violent & hateful entities',
-			'description' => 'Violent extremism and terrorism, hate groups & networks.',
+			'title' => '暴力的なヘイトのあるエンティティ',
+			'description' => '暴力的な過激派とテロリズム、ヘイトグループ・ネットワーク。',
 		]
 	]
 ];
