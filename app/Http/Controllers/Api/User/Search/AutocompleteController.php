@@ -18,6 +18,7 @@ namespace App\Http\Controllers\Api\User\Search;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Services\Meilisearch\MeilisearchService;
 use App\Traits\Http\Api\SupportsApiResponses;
 
 class AutocompleteController extends Controller
@@ -46,6 +47,46 @@ class AutocompleteController extends Controller
                         'caption' => $user->caption,
                     ];
                 });
+            }
+        }
+
+        return $this->responseSuccess([
+            'data' => $searchResults
+        ]);
+    }
+
+    public function searchPosts(Request $request)
+    {
+        $searchResults = [];
+        $validated = validator([
+            'query' => $request->input('query')
+        ], [
+            'query' => ['required', 'string', 'min:2', 'max:255']
+        ])->validate();
+
+        $meilisearch = app(MeilisearchService::class);
+
+        if ($meilisearch->isAvailable()) {
+            $results = $meilisearch->search(
+                indexName: 'posts',
+                query: $validated['query'],
+                options: [
+                    'limit' => 8,
+                    'attributesToRetrieve' => ['id', 'content'],
+                    'attributesToHighlight' => ['content'],
+                ],
+            );
+
+            if ($results && ! empty($results['hits'])) {
+                $searchResults = collect($results['hits'])->map(function ($hit) {
+                    $content = strip_tags($hit['_formatted']['content'] ?? $hit['content'] ?? '');
+                    $content = mb_substr($content, 0, 120);
+
+                    return [
+                        'id' => $hit['id'],
+                        'preview' => $content,
+                    ];
+                })->toArray();
             }
         }
 

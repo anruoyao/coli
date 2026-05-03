@@ -46,3 +46,8 @@ resources/views/apps/mpa/document/help/i18n
 resources/views/apps/mpa/document/privacy/i18n
 resources/views/apps/mpa/document/terms/i18n
 resources/views/apps/mpa/document/verification/i18n
+
+
+/doc/
+.trae
+.agents

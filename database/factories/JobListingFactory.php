@@ -18,7 +18,7 @@ class JobListingFactory extends Factory
                 return User::active()->inRandomOrder()->first()->id;
             },
             'category_id' => function() {
-                return Category::jobs()->inRandomOrder()->first()->id;
+                return Category::query()->jobs()->inRandomOrder()->first()->id;
             },
             'title' => fake()->jobTitle(),
             'description' => fake()->paragraph(),

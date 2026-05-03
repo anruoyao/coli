@@ -70,7 +70,9 @@ const useExplorePostsStore = defineStore('mobile_explore_posts_store', {
 		},
 		resetFilter: function() {
 			this.filter = {
-				page: 1
+				page: 1,
+				query: '',
+				sort_by: ''
 			};
 		}
     }
