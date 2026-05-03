@@ -8,7 +8,9 @@ const useExplorePostsStore = defineStore('explore_posts_store', {
 			posts: [],
 			update: [],
 			filter: {
-				page: 1
+				page: 1,
+				query: '',
+				sort_by: ''
 			}
 		}
 	},
@@ -69,7 +71,9 @@ const useExplorePostsStore = defineStore('explore_posts_store', {
 		},
 		resetFilter: function() {
 			this.filter = {
-				page: 1
+				page: 1,
+				query: '',
+				sort_by: ''
 			};
 		}
     }

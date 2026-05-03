@@ -4,11 +4,18 @@ namespace Database\Seeders;
 
 use App\Models\JobListing;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class JobSeeder extends Seeder
 {
     public function run(): void
     {
-        JobListing::factory()->count(4)->create();
+        Schema::disableForeignKeyConstraints();
+
+        JobListing::query()->delete();
+
+        JobListing::factory()->count(200)->create();
+
+        Schema::enableForeignKeyConstraints();
     }
 }

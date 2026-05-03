@@ -12,6 +12,10 @@
                 </ContentTabs>
                 <Border></Border>
 
+                <div class="p-4">
+                    <SearchBar v-model.lazy="postsSearchQuery" v-bind:placeholder="$t('labels.search')"></SearchBar>
+                </div>
+
                 <TimelineCallout
 					iconName="star-04"
 					iconType="solid"
@@ -53,7 +57,7 @@
 </template>
 
 <script>
-    import { defineComponent, reactive, computed, onMounted, onUnmounted } from 'vue';
+    import { defineComponent, reactive, computed, onMounted, onUnmounted, ref, watch } from 'vue';
     import { useExplorePostsStore } from '@D/store/explore/posts.store.js';
     import { useInfiniteScroll } from '@/kernel/vue/composables/infinite-scroll/index.js';
     
@@ -69,6 +73,7 @@
     import TimelineCallout from '@D/components/timeline/info/TimelineCallout.vue';
     import ScrollTopButton from '@D/components/inter-ui/buttons/ScrollTopButton.vue';
     import FeedUpdate from '@D/components/timeline/update/FeedUpdate.vue';
+    import SearchBar from '@D/components/general/search/SearchBar.vue';
 
     export default defineComponent({
         setup: function() {
@@ -76,8 +81,11 @@
 				isLoading: true,
                 isLoadingContent: false,
                 noMoreContent: false,
-                isUpdating: false
+                isUpdating: false,
+                isSearchLoading: false
 			});
+
+            const postsSearchQuery = ref('');
 
             let updateIntervalId = null;
             let updateAttempts = 0;
@@ -89,6 +97,22 @@
             const posts = computed(() => {
 				return explorePostsStore.posts;
 			});
+
+            const applySearch = async () => {
+                explorePostsStore.filter.page = 1;
+                state.noMoreContent = false;
+                state.isSearchLoading = true;
+                await explorePostsStore.fetchPosts();
+                state.isSearchLoading = false;
+            };
+
+            watch(postsSearchQuery, () => {
+                explorePostsStore.filter.query = postsSearchQuery.value;
+
+                debounce(async () => {
+                    await applySearch();
+                }, 500);
+            });
 
             useInfiniteScroll({
                 callback: async () => {
@@ -152,6 +176,7 @@
                 state: state,
 				posts: posts,
                 newPosts: newPosts,
+                postsSearchQuery: postsSearchQuery,
                 applyNewPosts: () => {
                     explorePostsStore.applyUpdate();
                 }
@@ -169,7 +194,8 @@
             TabsLink: TabsLink,
             TimelineCallout: TimelineCallout,
             ScrollTopButton: ScrollTopButton,
-            FeedUpdate: FeedUpdate
+            FeedUpdate: FeedUpdate,
+            SearchBar: SearchBar
         }
     });
 </script>

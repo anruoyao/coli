@@ -19,6 +19,7 @@ use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Database\Configs\Table;
+use App\Actions\Post\SearchPostsAction;
 use App\Http\Controllers\Controller;
 use App\Traits\Http\Api\SupportsApiResponses;
 use App\Http\Resources\User\People\PeopleCollection;
@@ -69,6 +70,12 @@ class ExploreController extends Controller
 
         $this->filter['page'] = data_get_integer($filter, 'page', 1);
         $this->filter['onset'] = data_get_integer($filter, 'onset', 0);
+        $this->filter['query'] = (string) data_get($filter, 'query', '');
+        $this->filter['sort_by'] = (string) data_get($filter, 'sort_by', '');
+
+        if (! empty($this->filter['query'])) {
+            return $this->getSearchResults();
+        }
 
         $feedORMQuery = Post::timelineFormatPosts()
             ->when(! empty($this->filter['onset']), function($query) {
@@ -87,9 +94,47 @@ class ExploreController extends Controller
             ->orderBy('quotes_count', 'desc');
 
         $timelinePosts = $feedORMQuery->simplePaginateManual(config('post.paginate_per'), $this->filter['page']);
-        
+
         return $this->responseSuccess([
             'data' => TimelineCollection::make($timelinePosts)
+        ]);
+    }
+
+    private function getSearchResults()
+    {
+        $perPage = config('meilisearch.search.per_page');
+
+        $searchAction = new SearchPostsAction(
+            query: $this->filter['query'],
+            page: $this->filter['page'],
+            perPage: $perPage,
+            sortBy: $this->filter['sort_by'] ?: null,
+        );
+
+        $searchResults = $searchAction->execute();
+
+        $postIds = $searchResults['ids'];
+
+        if (empty($postIds)) {
+            return $this->responseSuccess([
+                'data' => [],
+            ]);
+        }
+
+        $posts = Post::timelineFormatPosts()
+            ->whereIn('id', $postIds)
+            ->when((! $this->me->isAdmin()), function($query) {
+                $query->where(function($query) {
+                    $query->where('user_id', $this->me->id)->orWhereHas('user', function($u) {
+                        $u->author();
+                    });
+                });
+            })
+            ->orderByRaw('FIELD(id, ' . implode(',', array_map('intval', $postIds)) . ')')
+            ->get();
+
+        return $this->responseSuccess([
+            'data' => TimelineCollection::make($posts)
         ]);
     }
 }

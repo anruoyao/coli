@@ -17,7 +17,7 @@ class ProductFactory extends Factory
             },
             'title' => $this->faker->words(12, true),
             'category_id' => function() {
-                return Category::marketplace()->inRandomOrder()->first()->id;
+                return Category::query()->marketplace()->inRandomOrder()->first()->id;
             },
             'description' => $this->faker->words(30, true),
             'stock_quantity' => $this->faker->numberBetween(10, 100),

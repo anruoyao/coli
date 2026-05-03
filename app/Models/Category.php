@@ -38,14 +38,14 @@ class Category extends Model
         return $this->where('status', CategoryStatus::DRAFT);
     }
 
-    public function scopeMarketplace()
+    public function scopeMarketplace($query)
     {
-        return $this->where('categorizable_type', CategoryType::PRODUCT)->whereNull('parent_id');    
+        return $query->where('categorizable_type', CategoryType::PRODUCT)->whereNull('parent_id');
     }
 
-    public function scopeJobs()
+    public function scopeJobs($query)
     {
-        return $this->where('categorizable_type', CategoryType::JOB)->whereNull('parent_id');    
+        return $query->where('categorizable_type', CategoryType::JOB)->whereNull('parent_id');
     }
 
     public function children()
