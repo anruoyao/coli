@@ -18,7 +18,7 @@ return [
     'avatar' => 'assets/avatars/default-avatar.png',
     'cover' => 'assets/covers/default-cover.png',
     'verified' => false,
-    'authorize_users' => false,
+    'authorize_users' => true,
     'require' => [
         'last_name' => false,
     ],
@@ -103,4 +103,5 @@ return [
         'compress_rate' => 20
     ],
     'auto_follow_list' => env('AUTO_FOLLOW_LIST', ''),
+    'blocked_users_paginate_per' => 30,
 ];

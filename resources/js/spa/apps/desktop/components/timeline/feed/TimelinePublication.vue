@@ -85,7 +85,7 @@
                     <div class="block mb-3 -ml-1">
                         <div class="flex items-center">
                             <div class="shrink-0 relative leading-zero">
-                                <PrimaryIconButton iconSize="icon-normal" v-on:click.stop="openReactionsPicker" iconName="heart-rounded" iconType="line"></PrimaryIconButton>
+                                <PrimaryIconButton v-on:click.stop="likeOrLogin" iconSize="icon-normal" iconName="heart-rounded" iconType="line"></PrimaryIconButton>
                                 <PrimaryTransition v-if="state.isReactionPickerOpen">
                                     <div class="absolute left-0 bottom-8 origin-top-left z-20">
                                         <ReactionsPicker
@@ -150,8 +150,8 @@
                 
                 <div class="absolute top-full right-0 z-50" v-if="state.isMenuOpen">
                     <DropdownMenu v-outside-click="toggleMenu" v-on:click="toggleMenu">
-                        <DropdownReactions v-on:add="addReaction"></DropdownReactions>
-                        <DropdownMenuItem v-on:click="openReactionsPicker" iconName="heart-rounded" v-bind:textLabel="$t('dd.add_reaction')"></DropdownMenuItem>
+                        <DropdownReactions v-if="authStore.authCheck" v-on:add="addReaction"></DropdownReactions>
+                        <DropdownMenuItem v-if="authStore.authCheck" v-on:click="openReactionsPicker" iconName="heart-rounded" v-bind:textLabel="$t('dd.add_reaction')"></DropdownMenuItem>
                         
                         <template v-if="postHasContent && isTranslatable">
                             <DropdownMenuItem
@@ -173,10 +173,10 @@
                             </RouterLink>
                         </template>
 
-                        <DropdownMenuItem v-on:click="quotePost" iconName="pencil-line" v-bind:textLabel="$t('dd.post.quote_post')"></DropdownMenuItem>
-                        <DropdownMenuItem v-on:click="mentionAuthor" iconName="at-sign" v-bind:textLabel="$t('dd.post.mention_author', { name: `@${postData.relations.user.name}`})"></DropdownMenuItem>
+                        <DropdownMenuItem v-if="authStore.authCheck" v-on:click="quotePost" iconName="pencil-line" v-bind:textLabel="$t('dd.post.quote_post')"></DropdownMenuItem>
+                        <DropdownMenuItem v-if="authStore.authCheck" v-on:click="mentionAuthor" iconName="at-sign" v-bind:textLabel="$t('dd.post.mention_author', { name: `@${postData.relations.user.name}`})"></DropdownMenuItem>
                         <Border/>
-                        <DropdownMenuItem
+                        <DropdownMenuItem v-if="authStore.authCheck"
                             v-on:click="bookmarkPost"
                             v-bind:iconName="postData.meta.activity.bookmarked ? 'bookmark-minus' : 'bookmark'"
                         v-bind:textLabel="postData.meta.activity.bookmarked ? $t('dd.post.unbookmark') : $t('dd.post.bookmark')"></DropdownMenuItem>
@@ -204,6 +204,7 @@
     import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
     import { useLightboxStore } from '@D/store/lightbox/lightbox.store.js';
     import { colibriTranslator } from '@/kernel/services/translator/index.js';
+    import { useAuthStore } from '@D/store/auth/auth.store.js';
 
     import AvatarSmall from '@D/components/general/avatars/AvatarSmall.vue';
     import DropdownButton from '@D/components/general/dropdowns/parts/DropdownButton.vue';
@@ -229,6 +230,7 @@
         },
         setup: function(props) {
             const route = useRoute();
+            const authStore = useAuthStore();
             const state = reactive({
                 isMenuOpen: false,
                 isReactionPickerOpen: false,
@@ -266,8 +268,17 @@
                 toggleMenu: () => {
                     state.isMenuOpen = !state.isMenuOpen;
                 },
+                authStore: authStore,
                 postContent: postContent,
                 openReactionsPicker: openReactionsPicker,
+                likeOrLogin: () => {
+                    if (! authStore.authCheck) {
+                        window.location.href = embedder('routes.user_auth_index');
+
+                        return;
+                    }
+                    openReactionsPicker();
+                },
                 PostTypeUtils: PostTypeUtils,
                 closeReactionsPicker: closeReactionsPicker,
                 postData: postData,

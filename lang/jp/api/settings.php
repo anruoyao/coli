@@ -37,6 +37,8 @@ return [
 	'hotkey_settings' => 'ホットキー設定',
 	'api_settings' => 'API設定',
 	'settings_and_privacy_description' => '設定は現在のアカウントにのみ適用されます。別のアカウントに変更するには、切り替えてください。',
+	'empty_blocked_list' => 'ブロックされたアカウントはありません',
+	'empty_blocked_list_desc' => '誰かをブロックすると、ここに表示されます。ブロックされたユーザーはあなたのコンテンツとやり取りしたり、メッセージを送信したりできません。',
 	'forms' => [
 		'authorship' => [
 			' about_authorship' => [

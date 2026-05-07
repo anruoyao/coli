@@ -42,6 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
 
             $middleware->alias([
                 'user.status' => App\Http\Middleware\UserStatusMiddleware::class,
+                'guest_or_auth' => App\Http\Middleware\GuestOrAuthMiddleware::class,
                 'device.identifier' => App\Http\Middleware\DeviceIdentifierMiddleware::class,
                 'terminator' => App\Http\Middleware\TerminatingMiddleware::class,
                 'restrict.ip' => App\Http\Middleware\RestrictIPAddressMiddleware::class,
@@ -50,7 +51,7 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
                 'admin' => App\Http\Middleware\AdminRoleMiddleware::class,
                 'log.request' => App\Http\Middleware\LogRequestMiddleware::class,
             ]);
-            
+
             $middleware->web(append: [
                 App\Http\Middleware\UserLanguageMiddleware::class,
                 App\Http\Middleware\UserOnlineMiddleware::class

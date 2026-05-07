@@ -59,6 +59,11 @@ export default {
 
         return this;
     },
+    blocks: function() {
+        this.namespace = 'blocks';
+
+        return this;
+    },
     marketplace: function() {
         this.namespace = 'marketplace';
 

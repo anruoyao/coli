@@ -18,4 +18,8 @@ return [
 		'title' => 'Explore community.',
 		'desc'  => 'Browse fresh content from community authors and discover posts beyond your feed.',
 	],
+	'login_required' => [
+		'title' => 'Login required',
+		'desc' => 'This content is only visible to logged-in users. Please log in or sign up to continue.',
+	],
 ];

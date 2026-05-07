@@ -10,7 +10,7 @@ class GroupResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $isOwner = (me()->id == $this->user_id);
+        $isOwner = auth_check() && (me()->id == $this->user_id);
 
         $participantsCount = $this->chat->participants()->count();
         
@@ -36,9 +36,9 @@ class GroupResource extends JsonResource
                 'iso' => $this->created_at->getIso(),
             ],
             'meta' => [
-                'is_participant' => $this->chat->isParticipant(me()->id),
-                'is_archived' => $this->chat->isArchived(me()->id),
-                'is_invited' => $this->chat->isInvited(me()->id),
+                'is_participant' => auth_check() ? $this->chat->isParticipant(me()->id) : false,
+                'is_archived' => auth_check() ? $this->chat->isArchived(me()->id) : false,
+                'is_invited' => auth_check() ? $this->chat->isInvited(me()->id) : false,
                 'permissions' => [
                     'can_add_participant' => $isOwner,
                     'can_delete_participant' => $isOwner,

@@ -14,7 +14,8 @@
                         </div>
                     </div>
                     <div class="pl-6">
-                        <ApplicationNavbar></ApplicationNavbar>
+                        <ApplicationNavbar v-if="isAuthenticated"></ApplicationNavbar>
+                        <GuestNavbar v-else></GuestNavbar>
                     </div>
                     <div class="pl-6 mt-auto mb-4">
                         <ApplicationFooter></ApplicationFooter>
@@ -26,15 +27,27 @@
 </template>
 
 <script>
-    import { defineComponent, computed, defineAsyncComponent } from 'vue';
+    import { defineComponent, computed } from 'vue';
+    import { useAuthStore } from '@D/store/auth/auth.store.js';
 
     import ApplicationNavbar from '@D/components/layout/ApplicationNavbar.vue';
+    import GuestNavbar from '@D/components/layout/parts/navbar/GuestNavbar.vue';
     import ApplicationActionBar from '@D/components/layout/parts/navbar/ApplicationActionBar.vue';
     import ApplicationFooter from '@D/components/layout/ApplicationFooter.vue';
-    
+
     export default defineComponent({
+        setup: function() {
+            const authStore = useAuthStore();
+
+            return {
+                isAuthenticated: computed(() => {
+                    return authStore.authCheck;
+                })
+            };
+        },
         components: {
             ApplicationNavbar: ApplicationNavbar,
+            GuestNavbar: GuestNavbar,
             ApplicationActionBar: ApplicationActionBar,
             ApplicationFooter: ApplicationFooter
         }

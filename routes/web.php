@@ -40,34 +40,51 @@ Route::name('user.')->prefix('onboarding')->middleware(['auth'])->group(function
     Route::get('/step-{step}', [App\Http\Controllers\User\Onboarding\OnboardingController::class, 'index'])->whereIn('step', ['one', 'two', 'three', 'four'])->name('onboarding.index');
 });
 
+Route::get('/sitemap.xml', [App\Http\Controllers\Seo\SitemapController::class, 'index']);
+
+Route::get('/sitemap-{type}-{page}.xml', [App\Http\Controllers\Seo\SitemapController::class, 'show'])
+    ->where(['type' => '[a-z_]+', 'page' => '[0-9]+']);
+
+Route::get('/publication/{hashId}', [App\Http\Controllers\Seo\ContentProxyController::class, 'post']);
+Route::get('/@{username}', [App\Http\Controllers\Seo\ContentProxyController::class, 'profile'])->where('username', '[a-zA-Z0-9._]+');
+Route::get('/marketplace/product/{hashId}', [App\Http\Controllers\Seo\ContentProxyController::class, 'product']);
+Route::get('/jobs/{hashId}', [App\Http\Controllers\Seo\ContentProxyController::class, 'job']);
+
 Route::prefix('switcher')->get('/device/{type}', function ($type) {
     Cookie::queue('device_type', $type);
 
     return redirect()->back();
 })->name('device.switch')->whereIn('type', ['desktop', 'mobile']);
 
-Route::middleware(['user.status', 'auth:sanctum'])->group(function() {
-    Route::get('/', function () {
-        $deviceType = Cookie::get('device_type', 'desktop');
-        
-        if($deviceType == 'mobile') {
-            return view('mobile::index');
-        }
+$spaEntry = function (Request $request) {
+    $deviceType = Cookie::get('device_type', 'desktop');
 
-        else{
-            return view('desktop::index');
-        }
-    })->name('user.desktop.index');
+    if ($deviceType == 'mobile') {
+        return view('mobile::index');
+    }
 
-    Route::get('{any}', function (Request $request) {
-        $deviceType = Cookie::get('device_type', 'desktop');
-        
-        if($deviceType == 'mobile') {
-            return view('mobile::index');
-        }
+    return view('desktop::index');
+};
 
-        else{
-            return view('desktop::index');
-        }
-    })->where('any', '.*');
+Route::middleware(['guest_or_auth'])->group(function () use ($spaEntry) {
+    Route::get('/', $spaEntry)->name('user.desktop.index');
+    Route::get('/explore', $spaEntry);
+    Route::get('/explore/{any}', $spaEntry)->where('any', '.*');
+    Route::get('/marketplace', $spaEntry);
+    Route::get('/jobs', $spaEntry);
+});
+
+Route::middleware(['user.status', 'auth:sanctum'])->group(function () use ($spaEntry) {
+    Route::get('/bookmarks', $spaEntry);
+    Route::get('/messenger', $spaEntry);
+    Route::get('/messenger/{any}', $spaEntry)->where('any', '.*');
+    Route::get('/settings', $spaEntry);
+    Route::get('/settings/{any}', $spaEntry)->where('any', '.*');
+    Route::get('/wallet', $spaEntry);
+    Route::get('/live-stream', $spaEntry);
+    Route::get('/stories/{story_uuid}', $spaEntry);
+    Route::get('/new/post', $spaEntry);
+    Route::get('/new/story', $spaEntry);
+
+    Route::get('{any}', $spaEntry)->where('any', '.*');
 });

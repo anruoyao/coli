@@ -24,7 +24,7 @@ class StoryResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $isOwner = me()->isAdmin() || (me()->id === $this->user_id);
+        $isOwner = auth_check() && (me()->isAdmin() || (me()->id === $this->user_id));
 
         return [
             'id' => $this->id,
@@ -72,7 +72,7 @@ class StoryResource extends JsonResource
 
     private function checkIfStoryFrameSeen($frameItem)
     {
-        return $frameItem->views()->where('user_id', me()->id)->exists();
+        return auth_check() && $frameItem->views()->where('user_id', me()->id)->exists();
     }
 
     private function getStoryMedia($frameItem)

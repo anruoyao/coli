@@ -35,7 +35,7 @@ class AutocompleteController extends Controller
         ])->validate();
 
         if($validated['query']) {
-            $mentionedUsers = User::active()->whereLike('username', "%{$validated['query']}%")->limit(50)->get();
+            $mentionedUsers = User::active()->excludeBlocked()->whereLike('username', "%{$validated['query']}%")->limit(50)->get();
             
             if($mentionedUsers->isNotEmpty()) {
                 $searchResults = $mentionedUsers->map(function($user) {

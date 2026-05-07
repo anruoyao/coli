@@ -2,7 +2,7 @@
 	<TimelineContainer>
 		<div class="sticky top-0 popup-background-tr z-10">
 			<div class="px-4 pt-4">
-				<QuickSearch v-on:cancel="handleSearchCancel" v-model.lazy="peopleSearchQuery" v-bind:placeholder="$t('labels.search')"></QuickSearch>
+				<QuickSearch v-if="!state.isGuest" v-on:cancel="handleSearchCancel" v-model.lazy="peopleSearchQuery" v-bind:placeholder="$t('labels.search')"></QuickSearch>
 			</div>
 			<ContentTabs v-bind:cols="2">
 				<TabsLink v-bind:link="{ name: 'explore_posts' }">
@@ -14,7 +14,28 @@
 			</ContentTabs>
 			<Border></Border>
 		</div>
-		<template v-if="state.isLoading">
+		<template v-if="state.isGuest">
+			<div class="py-32">
+				<p class="text-lab-sc text-par-s text-center mb-4">
+					{{ $t('info.login_required.desc') }}
+				</p>
+				<div class="flex gap-3 justify-center">
+					<a v-bind:href="$getRoute('user_auth_index')" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surf-prim text-lab-pr2">
+						<span class="size-icon-normal shrink-0">
+							<SvgIcon name="log-in-01" type="line"></SvgIcon>
+						</span>
+						{{ $t('labels.login') }}
+					</a>
+					<a v-bind:href="$getRoute('user_auth_signup')" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surf-prim text-lab-pr2">
+						<span class="size-icon-normal shrink-0">
+							<SvgIcon name="user-plus-01" type="line"></SvgIcon>
+						</span>
+						{{ $t('labels.signup') }}
+					</a>
+				</div>
+			</div>
+		</template>
+		<template v-else-if="state.isLoading">
 			<PeopleListItemSkeleton v-for="i in 15" v-bind:key="i"></PeopleListItemSkeleton>
 		</template>
 		<template v-else-if="state.isEmpty">
@@ -59,6 +80,7 @@
 <script>
 	import { defineComponent, reactive, onMounted, ref, watch, computed } from 'vue';
 	import { useExplorePeopleStore } from '@M/store/explore/people.store.js';
+	import { useAuthStore } from '@M/store/auth/auth.store.js';
 	import { useInfiniteScroll } from '@/kernel/vue/composables/infinite-scroll/index.js';
 
 	import TimelineContainer from '@M/components/timeline/feed/TimelineContainer.vue';
@@ -79,7 +101,8 @@
                 isLoadingContent: false,
 				isEmpty: false,
 				isLoading: true,
-				isSearchLoading: false
+				isSearchLoading: false,
+				isGuest: false
 			});
 
 			const people = computed(() => {
@@ -87,8 +110,15 @@
 			});
 
 			const explorePeopleStore = useExplorePeopleStore();
+			const authStore = useAuthStore();
 
 			onMounted(async () => {
+				if (!authStore.authCheck) {
+					state.isGuest = true;
+					state.isLoading = false;
+					return;
+				}
+
 				// Reset filter on mount.
 				// Because there can be a filter applied from the previous visits.
 
@@ -138,6 +168,7 @@
 			});
 
 			return {
+				authStore: authStore,
 				people: people,
 				state: state,
 				peopleSearchQuery: peopleSearchQuery,

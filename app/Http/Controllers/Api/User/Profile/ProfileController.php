@@ -22,6 +22,7 @@ use Illuminate\Http\Request;
 use App\Enums\User\FollowStatus;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use App\Database\Configs\Table;
 use App\Traits\Http\Api\SupportsApiResponses;
 use App\Http\Resources\User\People\PeopleCollection;
 use App\Http\Resources\User\Profile\ProfileResource;
@@ -167,7 +168,7 @@ class ProfileController extends Controller
                 $query->where('id', '<', $cursorId);
             })->when(($contentType == 'media'), function($query) {
                 $query->whereNot('type', PostType::TEXT);
-            })->latest()->take(config('post.paginate_per'))->get();
+            })->excludeBlockedUsers()->latest()->take(config('post.paginate_per'))->get();
 
             return $this->responseSuccess([
                 'data' => TimelineCollection::make($profilePosts)
@@ -208,7 +209,13 @@ class ProfileController extends Controller
                 if($onlyVerified) {
                     $query->where('verified', true);
                 }
-            })->where('status', FollowStatus::FOLLOWING)->when($cursorId, function($query) use ($cursorId) {
+            })->where('status', FollowStatus::FOLLOWING)->when(auth_check(), function ($query) {
+                $query->whereNotIn('follower_id', function ($subQuery) {
+                    $subQuery->select('blocked_user_id')->from(Table::USER_BLOCKS)->where('user_id', me()->id);
+                })->whereNotIn('following_id', function ($subQuery) {
+                    $subQuery->select('blocked_user_id')->from(Table::USER_BLOCKS)->where('user_id', me()->id);
+                });
+            })->when($cursorId, function($query) use ($cursorId) {
                 $query->where('id', '<', $cursorId);
             })->latest('id')->take(30)->get();
 

@@ -25,7 +25,7 @@ class ProfileResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $isMe = ($this->id == me()->id);
+        $isMe = auth_check() && ($this->id == me()->id);
 
         $profileData = [
             'id' => $this->id,
@@ -61,15 +61,15 @@ class ProfileResource extends JsonResource
             'meta' => [
                 'is_owner' => $isMe,
                 'permissions' => [
-                    'can_sanction' => (! $isMe && me()->isAdmin()),
-                    'can_follow' => $this->canFollow(me()),
+                    'can_sanction' => (! $isMe && auth_check() && me()->isAdmin()),
+                    'can_follow' => auth_check() && ! $isMe ? me()->canFollow($this->resource) : false,
                     'can_mention' => (! $isMe),
                     'can_message' => (! $isMe),
                     'can_block' => (! $isMe),
                     'can_report' => (! $isMe),
                     'can_mute' => (! $isMe),
                 ],
-                'relationship' => [
+                'relationship' => auth_check() ? [
                     Relationship::FOLLOW_GROUP => [
                         Relationship::FOLLOWING => me()->isFollowing($this->resource),
                         Relationship::FOLLOWED_BY => $this->isFollowing(me()),
@@ -77,14 +77,14 @@ class ProfileResource extends JsonResource
                         Relationship::REQUESTED => me()->followRequested($this->resource)
                     ],
                     Relationship::BLOCK_GROUP => [
-                        Relationship::BLOCKING => false,
-                        Relationship::BLOCKED_BY => false
+                        Relationship::BLOCKING => auth_check() ? me()->hasBlocked($this->resource) : false,
+                        Relationship::BLOCKED_BY => auth_check() ? me()->isBlockedBy($this->resource) : false
                     ],
                     Relationship::MUTING_GROUP => [
                         Relationship::MUTING => false,
                         Relationship::MUTING_NOTIFICATIONS => false
                     ]
-                ]
+                ] : []
             ]
         ];
 

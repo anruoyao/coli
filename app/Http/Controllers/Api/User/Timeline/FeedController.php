@@ -1,17 +1,4 @@
 <?php
-/*
-|--------------------------------------------------------------------------
-| ColibriPlus - The Social Network Web Application.
-|--------------------------------------------------------------------------
-| Author: Mansur Terla. Full-Stack Web Developer, UI/UX Designer.
-| Website: www.terla.me
-| E-mail: mansurtl.contact@gmail.com
-| Instagram: @mansur_terla
-| Telegram: @mansurtl_contact
-|--------------------------------------------------------------------------
-| Copyright (c)  ColibriPlus. All rights reserved.
-|--------------------------------------------------------------------------
-*/
 
 namespace App\Http\Controllers\Api\User\Timeline;
 
@@ -35,11 +22,19 @@ class FeedController extends Controller
 
     public function __construct()
     {
-        $this->me = me();
+        if (auth_check()) {
+            $this->me = me();
+        }
     }
 
     public function getFeed()
     {
+        if (! auth_check()) {
+            return $this->responseSuccess([
+                'data' => TimelineCollection::make([])
+            ]);
+        }
+
         $filter = request()->array('filter');
 
         $this->filter['page'] = data_get_integer($filter, 'page', 1);
@@ -48,6 +43,7 @@ class FeedController extends Controller
         $processingPosts = $this->me->posts()->where('status', PostStatus::PROCESSING_VIDEO)->get();
 
         $feedORMQuery = Post::timelineFormatPosts()
+            ->excludeBlockedUsers()
             ->when(! empty($this->filter['onset']), function($query) {
                 $query->where('id', '>', $this->filter['onset']);
             })->when((! $this->me->isAdmin()), function($query) {
@@ -68,7 +64,7 @@ class FeedController extends Controller
         $timelinePosts = $feedORMQuery->simplePaginateManual(config('post.paginate_per'), $this->filter['page']);
 
         $timelinePosts = $processingPosts->merge($timelinePosts);
-        
+
         return $this->responseSuccess([
             'data' => TimelineCollection::make($timelinePosts)
         ]);
@@ -79,7 +75,7 @@ class FeedController extends Controller
         $postHashId = $request->route('hashId');
 
         $postData = Post::active()->whereHashId($postHashId)->timelineFormatPosts()->first();
-        
+
         if($postData) {
             $postComments = $this->fetchPostItemComments($postData);
 
@@ -119,7 +115,7 @@ class FeedController extends Controller
     }
 
     private function fetchPostItemComments(Post $postData, int|string $cursorId = 0)
-    {   
+    {
         $postComments = $postData->comments()->with([
             'post:id,user_id',
             'user:id,first_name,last_name,avatar,username',

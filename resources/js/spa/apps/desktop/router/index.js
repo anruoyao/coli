@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { Layouts } from '@D/core/constants/layouts.js';
+import { useAuthStore } from '@D/store/auth/auth.store.js';
 
 const Router = createRouter({
 	history: createWebHistory(),
@@ -28,7 +29,7 @@ const Router = createRouter({
 			alias: '/home',
             meta: {
                 layout: Layouts.MAIN,
-                auth: true
+                auth: false
             },
             name: 'home_index'
 		},
@@ -40,7 +41,7 @@ const Router = createRouter({
 			alias: '/jobs',
             meta: {
                 layout: Layouts.MAIN,
-                auth: true,
+                auth: false,
                 feature: 'jobs',
             },
             name: 'jobs_index'
@@ -64,7 +65,7 @@ const Router = createRouter({
             },
             meta: {
                 layout: Layouts.MAIN,
-                auth: true,
+                auth: false,
                 feature: 'jobs',
             },
             name: 'jobs_show',
@@ -77,7 +78,7 @@ const Router = createRouter({
             },
             meta: {
                 layout: Layouts.MAIN,
-                auth: true,
+                auth: false,
                 feature: 'marketplace'
             },
             name: 'marketplace_index',
@@ -90,7 +91,7 @@ const Router = createRouter({
             },
             meta: {
                 layout: Layouts.MAIN,
-                auth: true,
+                auth: false,
                 feature: 'marketplace'
             },
             name: 'marketplace_show',
@@ -375,7 +376,7 @@ const Router = createRouter({
             },
             meta: {
                 layout: Layouts.MAIN,
-                auth: true
+                auth: false
             },
             name: 'publication_index'
 		},
@@ -429,7 +430,7 @@ const Router = createRouter({
             ],
             meta: {
                 layout: Layouts.MAIN,
-                auth: true
+                auth: false
             }
 		},
         {
@@ -464,7 +465,7 @@ const Router = createRouter({
             },
             meta: {
                 layout: Layouts.MAIN,
-                auth: true
+                auth: false
             },
             name: 'profile_index',
             props: true,
@@ -521,7 +522,14 @@ const Router = createRouter({
 });
 
 Router.beforeEach((to, from, next) => {
+    const authStore = useAuthStore();
     let feature = to.meta.feature || null;
+
+    if (to.meta.auth === true && ! authStore.authCheck) {
+        window.location.href = embedder('routes.user_auth_index');
+
+        return;
+    }
 
     if(feature) {
         if(! config(`features.${feature}.enabled`)) {

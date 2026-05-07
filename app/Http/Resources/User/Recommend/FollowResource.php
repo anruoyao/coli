@@ -32,14 +32,14 @@ class FollowResource extends JsonResource
             'caption' => $this->getCaption(),
             'verified' => $this->isVerified(),
             'meta' => [
-                'relationship' => [
+                'relationship' => auth_check() ? [
                     Relationship::FOLLOW_GROUP => [
                         Relationship::FOLLOWING => me()->isFollowing($this->resource),
                         Relationship::FOLLOWED_BY => $this->isFollowing(me()),
                         Relationship::REQUESTED_BY => false,
                         Relationship::REQUESTED => false
                     ]
-                ]
+                ] : null
             ]
         ];
     }

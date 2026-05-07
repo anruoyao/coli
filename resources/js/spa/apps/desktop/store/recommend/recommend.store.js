@@ -15,6 +15,8 @@ const useRecommendStore = defineStore('recommend_store', {
 
 			await colibriAPI().recommendations().getFrom('follow').then((response) => {
 				state.followRecommendations = response.data.data;
+			}).catch(() => {
+				state.followRecommendations = [];
 			});
 		}
     }

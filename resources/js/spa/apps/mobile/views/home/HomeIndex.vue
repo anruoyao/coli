@@ -1,7 +1,7 @@
 <template>
 	<TimelineContainer>
         <div class="px-4 pb-3 pt-1">
-            <StoriesFeed></StoriesFeed>
+            <StoriesFeed v-if="authStore.authCheck"></StoriesFeed>
         </div>
         <Border height="h-2" opacity="opacity-30"></Border>
 		<div v-if="state.isLoading">
@@ -44,7 +44,9 @@
 
 <script>
     import { defineComponent, ref, reactive, onMounted, computed, onUnmounted } from 'vue';
+    import { useRouter } from 'vue-router';
     import { useTimelineStore } from '@M/store/timeline/timeline.store.js';
+    import { useAuthStore } from '@M/store/auth/auth.store.js';
     import { useDeletePost } from '@/kernel/vue/composables/delete-post/index.js';
     import { useInfiniteScroll } from '@/kernel/vue/composables/infinite-scroll/index.js';
     import { colibriEventBus } from '@/kernel/events/bus/index.js';
@@ -75,6 +77,8 @@
             const { postDeleter } = useDeletePost();
 
             const timelineStore = useTimelineStore();
+            const authStore = useAuthStore();
+            const router = useRouter();
 
             const timelineNewPosts = computed(() => {
                 return timelineStore.update;
@@ -85,6 +89,11 @@
             });
 
             onMounted(async () => {
+                if (!authStore.authCheck) {
+                    router.push({ name: 'explore_posts' });
+                    return;
+                }
+
                 state.isLoading = true;
 
                 // If they are loaded, we don't need to load them again.
@@ -159,6 +168,7 @@
             });
 
             return {
+                authStore: authStore,
                 timelinePosts: timelinePosts,
                 state: state,
                 timelineNewPosts: timelineNewPosts,

@@ -29,7 +29,7 @@
 					<ActionSheetItem v-on:click="reportProfile" itemColor="text-red-900" iconName="annotation-alert" v-bind:textLabel="$t('dd.user.report', { username: profileData.username })"></ActionSheetItem>
 				</template>
 				<template v-if="permissions.can_block">
-					<ActionSheetItem v-bind:disabled="true" v-on:click="$comingSoon" itemColor="text-red-900" iconName="slash-circle-01" v-bind:textLabel="$t('dd.user.block', { username: profileData.username })"></ActionSheetItem>
+					<ActionSheetItem v-on:click="toggleBlock" itemColor="text-red-900" iconName="slash-circle-01" v-bind:textLabel="isBlocking ? $t('dd.user.unblock', { username: profileData.username }) : $t('dd.user.block', { username: profileData.username })"></ActionSheetItem>
 				</template>
 				<template v-if="permissions.can_mute">
 					<ActionSheetItem v-bind:disabled="true" v-on:click="$comingSoon" itemColor="text-red-900" iconName="volume-x" v-bind:textLabel="$t('dd.user.mute', { username: profileData.username })"></ActionSheetItem>
@@ -38,7 +38,7 @@
 				<RouterLink v-bind:to="{ name: 'profile_info', params: { id: profileData.username } }">
 					<ActionSheetItem v-bind:notLast="true" iconName="info-circle" v-bind:textLabel="$t('dd.user.about')"></ActionSheetItem>
 				</RouterLink>
-				<template v-if="! permissions.can_follow">
+				<template v-if="profileData.meta.is_owner">
 					<ActionSheetItem v-on:click="state.editProfileMenu.open" iconName="pencil-02" v-bind:textLabel="$t('labels.edit_profile')"></ActionSheetItem>
 
 					<RouterLink v-bind:to="{ name: 'settings_navigator' }">
@@ -55,9 +55,10 @@
 </template>
 
 <script>
-	import { defineComponent, reactive, inject } from 'vue';
+	import { defineComponent, reactive, inject, computed } from 'vue';
 	import { useRouter } from 'vue-router';
 	import { colibriEventBus } from '@/kernel/events/bus/index.js';
+	import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
 	import { useMenu } from '@/kernel/vue/composables/menu/index.js';
 
 	import DropdownButton from '@M/components/general/dropdowns/DropdownButton.vue';
@@ -79,10 +80,27 @@
 
 			const profileData = inject('profileData');
 
+			const isBlocking = computed(() => profileData.value.meta.relationship.block.blocking);
+
+			async function toggleBlock() {
+				state.mainMenu.close();
+				const endpoint = isBlocking.value ? 'unblock/user' : 'block/user';
+				try {
+					await colibriAPI().blocks().with({ id: profileData.value.id }).sendTo(endpoint);
+					profileData.value.meta.relationship.block.blocking = !isBlocking.value;
+				} catch (error) {
+					if (error.response) {
+						alert(error.response.data.message);
+					}
+				}
+			}
+
 			return {
 				permissions: profileData.value.meta.permissions,
 				state: state,
 				profileData: profileData,
+				isBlocking: isBlocking,
+				toggleBlock: toggleBlock,
 				goBack: function() {
 					router.go(-1);
 				},

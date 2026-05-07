@@ -56,7 +56,7 @@
                 <div class="pr-4 pl-3 mb-3">
                     <div class="flex items-center gap-1.5">
                         <div class="shrink-0 relative leading-zero">
-                            <PrimaryIconButton v-on:click.stop="state.reactionMenu.open" buttonColor="text-lab-pr2" iconSize="6" iconName="heart-rounded" iconType="line"></PrimaryIconButton>
+                            <PrimaryIconButton v-on:click.stop="likeOrLogin" buttonColor="text-lab-pr2" iconSize="6" iconName="heart-rounded" iconType="line"></PrimaryIconButton>
                         </div>
                         <div class="shrink-0 leading-zero relative">
                             <PrimaryIconButton v-on:click.stop="state.shareMenu.open" buttonColor="text-lab-pr2" iconSize="6" iconName="share-06" iconType="line"></PrimaryIconButton>
@@ -98,12 +98,12 @@
     <ActionSheet v-if="state.mainMenu.status" v-on:close="state.mainMenu.close" v-bind:isMuted="true">
         <div v-on:click.stop="state.mainMenu.close" class="h-full overflow-y-auto">
             <div class="mb-4">
-                <ActionSheetReactions v-on:add="addReaction"></ActionSheetReactions>
+                <ActionSheetReactions v-if="authStore.authCheck" v-on:add="addReaction"></ActionSheetReactions>
             </div>
 
             <div class="mb-4">
                 <ActionSheetGroup>
-                    <ActionSheetItem
+                    <ActionSheetItem v-if="authStore.authCheck"
                         v-on:click="state.reactionMenu.open"
                         iconName="heart-rounded"
                     v-bind:textLabel="$t('dd.add_reaction')"></ActionSheetItem>
@@ -112,7 +112,7 @@
                         <ActionSheetItem v-bind:notLast="true" iconName="arrow-up-right" v-bind:textLabel="$t('dd.post.open_post')"></ActionSheetItem>
                     </RouterLink>
             
-                    <ActionSheetItem
+                    <ActionSheetItem v-if="authStore.authCheck"
                         v-on:click="bookmarkPost"
                         v-bind:iconName="postData.meta.activity.bookmarked ? 'bookmark-minus' : 'bookmark'"
                     v-bind:textLabel="postData.meta.activity.bookmarked ? $t('dd.post.unbookmark') : $t('dd.post.bookmark')"></ActionSheetItem>
@@ -149,6 +149,7 @@
     import { colibriTranslator } from '@/kernel/services/translator/index.js';
     import { useLightboxStore } from '@M/store/lightbox/lightbox.store.js';
     import { useMenu } from '@/kernel/vue/composables/menu/index.js';
+    import { useAuthStore } from '@M/store/auth/auth.store.js';
 
 	// Mobile components
 	import PublicationHeader from '@M/components/timeline/feed/parts/PublicationHeader.vue';
@@ -182,6 +183,7 @@
         emits: ['delete'],
         setup: function(props) {
             const lightboxStore = useLightboxStore();
+            const authStore = useAuthStore();
 
             const state = reactive({
                 shareMenu: useMenu(),
@@ -203,6 +205,7 @@
             });
 
             return {
+                authStore: authStore,
                 postContent: postContent,
                 PostTypeUtils: PostTypeUtils,
                 postData: postData,
@@ -235,6 +238,14 @@
                 canReportPost: computed(() => {
                     return postData.value.meta.permissions.can_report;
                 }),
+                likeOrLogin: () => {
+                    if (! authStore.authCheck) {
+                        window.location.href = embedder('routes.user_auth_index');
+
+                        return;
+                    }
+                    state.reactionMenu.open();
+                },
                 addReaction: (reactionId) => {
                     state.reactionMenu.close();
 

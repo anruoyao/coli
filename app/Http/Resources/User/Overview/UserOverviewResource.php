@@ -19,7 +19,7 @@ class UserOverviewResource extends JsonResource
             'avatar_url' => $this->avatar_url,
             'description' => $this->bio,
             'verified' => $this->isVerified(),
-            'is_me' => me()->id === $this->id,
+            'is_me' => auth_check() && me()->id === $this->id,
             'followers_count' => [
                 'raw' => $this->followers_count,
                 'formatted' => Num::abbreviate($this->followers_count)
@@ -28,7 +28,7 @@ class UserOverviewResource extends JsonResource
                 'raw' => $this->getLastActive()->getTimestamp(),
                 'formatted' => $this->getLastActive()->getCalendar()
             ],
-            'meta' => [
+            'meta' => auth_check() ? [
                 'relationship' => [
                     Relationship::FOLLOW_GROUP => [
                         Relationship::FOLLOWED_BY => $this->isFollowing(me()),
@@ -45,7 +45,7 @@ class UserOverviewResource extends JsonResource
                         Relationship::MUTING_NOTIFICATIONS => false
                     ]
                 ]
-            ]
+            ] : []
         ];
     }
 }

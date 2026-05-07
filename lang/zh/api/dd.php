@@ -31,6 +31,7 @@ return [
 	'user' => [
 		'follow' => '关注 {\'@\'}{username}',
 		'block' => '屏蔽 {\'@\'}{username}',
+		'unblock' => '取消屏蔽 {\'@\'}{username}',
 		'report' => '举报 {\'@\'}{username}',
 		'mute' => '静音 {\'@\'}{username}',
 		'mention' => '提及 {\'@\'}{username}',

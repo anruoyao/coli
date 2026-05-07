@@ -238,7 +238,7 @@ class User extends Authenticatable
 
     public function canFollow(User $user)
     {
-        return $this->id !== $user->id;
+        return $this->id !== $user->id && ! $this->hasBlocked($user) && ! $this->isBlockedBy($user);
     }
 
     public function scopeReader($query)
@@ -254,6 +254,19 @@ class User extends Authenticatable
     public function scopeExcludeSelf($query)
     {
         return $query->where('id', '!=', me()->id);
+    }
+
+    public function scopeExcludeBlocked($query)
+    {
+        if (! auth_check()) {
+            return $query;
+        }
+
+        return $query->whereNotIn('id', function ($subQuery) {
+            $subQuery->select('blocked_user_id')
+                ->from(Table::USER_BLOCKS)
+                ->where('user_id', me()->id);
+        });
     }
 
     public function scopeActive($query)
@@ -352,6 +365,26 @@ class User extends Authenticatable
     public function authorshipRequest()
     {
         return $this->hasOne(AuthorshipRequest::class, 'user_id', 'id');
+    }
+
+    public function blockedUsers()
+    {
+        return $this->hasMany(UserBlock::class, 'user_id', 'id');
+    }
+
+    public function blockedBy()
+    {
+        return $this->hasMany(UserBlock::class, 'blocked_user_id', 'id');
+    }
+
+    public function hasBlocked(User $user): bool
+    {
+        return $this->blockedUsers()->where('blocked_user_id', $user->id)->exists();
+    }
+
+    public function isBlockedBy(User $user): bool
+    {
+        return $this->blockedBy()->where('user_id', $user->id)->exists();
     }
 
     public function devices()

@@ -27,7 +27,7 @@ class UserLanguageMiddleware
     {
         $locale = config('app.locale');
 
-        if(auth_check()) {
+        if(auth_check() && ! empty(me()->language)) {
             $locale = me()->language;
         }
         
