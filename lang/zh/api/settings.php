@@ -37,6 +37,8 @@ return [
 	'hotkey_settings' => '快捷键设置',
 	'api_settings' => 'API 设置',
 	'settings_and_privacy_description' => '设置仅适用于当前账户。要为另一个账户更改，请切换到该账户。',
+	'empty_blocked_list' => '没有已屏蔽的账户',
+	'empty_blocked_list_desc' => '当您屏蔽某人时，他们会出现在这里。被屏蔽的用户无法与您的内容互动或向您发送消息。',
 	'forms' => [
 		'authorship' => [
 			'about_authorship' => [

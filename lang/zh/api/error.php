@@ -1,6 +1,7 @@
 <?php
 
 return [
+	'cannot_block_self' => '您不能屏蔽自己。',
 	'error_404' => [
 		'page_title' => '页面未找到',
 		'title' => '抱歉，此页面不可用。',

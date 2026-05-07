@@ -66,4 +66,5 @@ class Table
     public const CHAT_INVITES = 'chat_invites';
     public const ARCHIVED_CHATS = 'archived_chats';
     public const AUTHORSHIP_REQUESTS = 'authorship_requests';
+    public const USER_BLOCKS = 'user_blocks';
 }

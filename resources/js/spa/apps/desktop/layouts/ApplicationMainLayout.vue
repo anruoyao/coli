@@ -9,7 +9,7 @@
 
     <ToastNotification></ToastNotification>
 
-    <PublicationEditorModal></PublicationEditorModal>
+    <PublicationEditorModal v-if="authStore.authCheck"></PublicationEditorModal>
     <AccountSwitcherModal></AccountSwitcherModal>
     
     <StoriesEditorModal v-if="openStoriesEditorModal"></StoriesEditorModal>
@@ -26,12 +26,13 @@
 
     <ReportModal></ReportModal>
 
-    <OnboardingTips></OnboardingTips>
+    <OnboardingTips v-if="authStore.authCheck"></OnboardingTips>
 </template>
 
 <script>
     import { defineComponent, watch, ref, computed, onMounted, defineAsyncComponent } from 'vue';
     import { useRoute } from 'vue-router';
+    import { useAuthStore } from '@D/store/auth/auth.store.js';
     import { useStoriesEditorStore } from '@D/store/stories/editor.store.js';
     import { useNotificationsStore } from '@D/store/notifications/notifications.store.js';
 
@@ -48,6 +49,7 @@
 
     export default defineComponent({
         setup: function() {
+            const authStore = useAuthStore();
             const storiesEditorStore = useStoriesEditorStore();
             const notificationsStore = useNotificationsStore();
             const route = useRoute();
@@ -62,6 +64,7 @@
             });
 
             return {
+                authStore: authStore,
                 rightOffset: rightOffset,
                 openStoriesEditorModal: computed(() => {
                     return storiesEditorStore.isOpen;

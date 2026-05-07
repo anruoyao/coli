@@ -24,7 +24,7 @@
 					
 					<template v-if="permissions.can_block">
 						<Border/>
-						<DropdownMenuItem v-bind:disabled="true" v-on:click="$comingSoon" itemColor="text-red-900" iconName="slash-circle-01" v-bind:textLabel="$t('dd.user.block', { username: profileData.username })"></DropdownMenuItem>
+						<DropdownMenuItem v-on:click="toggleBlock" v-bind:loading="state.togglingBlock" itemColor="text-red-900" iconName="slash-circle-01" v-bind:textLabel="isBlocking ? $t('dd.user.unblock', { username: profileData.username }) : $t('dd.user.block', { username: profileData.username })"></DropdownMenuItem>
 					</template>
 					<template v-if="permissions.can_report">
 						<DropdownMenuItem v-on:click="reportProfile" itemColor="text-red-900" iconName="annotation-alert" v-bind:textLabel="$t('dd.user.report', { username: profileData.username })"></DropdownMenuItem>
@@ -35,11 +35,11 @@
 				</DropdownMenu>
 			</div>
 		</div>
-		<template v-if="permissions.can_follow">
-			<FollowPillButton v-bind:relationship="profileData.meta.relationship.follow" v-bind:followableId="profileData.id"></FollowPillButton>
-		</template>
-		<template v-else>
+		<template v-if="profileData.meta.is_owner">
 			<PrimaryPillButton v-on:click="state.isModalOpen = true" v-bind:buttonText="$t('labels.edit_profile')" buttonSize="md"></PrimaryPillButton>
+		</template>
+		<template v-else-if="permissions.can_follow">
+			<FollowPillButton v-bind:relationship="profileData.meta.relationship.follow" v-bind:followableId="profileData.id"></FollowPillButton>
 		</template>
 	</div>
 	<template v-if="state.isModalOpen">
@@ -48,7 +48,7 @@
 </template>
 
 <script>
-	import { defineComponent, reactive, inject } from 'vue';
+	import { defineComponent, reactive, inject, computed } from 'vue';
 	import { useRouter } from 'vue-router';
 	import { colibriEventBus } from '@/kernel/events/bus/index.js';
 	import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
@@ -68,12 +68,32 @@
 			const state = reactive({
                 isDropdownOpen: false,
 				sendingMessage: false,
-				isModalOpen: false
+				isModalOpen: false,
+				togglingBlock: false
             });
+
+			const isBlocking = computed(() => profileData.value.meta.relationship.block.blocking);
+
+			async function toggleBlock() {
+				state.togglingBlock = true;
+				const endpoint = isBlocking.value ? 'unblock/user' : 'block/user';
+				try {
+					await colibriAPI().blocks().with({ id: profileData.value.id }).sendTo(endpoint);
+					profileData.value.meta.relationship.block.blocking = !isBlocking.value;
+				} catch (error) {
+					if (error.response) {
+						alert(error.response.data.message);
+					}
+				} finally {
+					state.togglingBlock = false;
+				}
+			}
 
 			return {
 				state: state,
 				profileData: profileData,
+				isBlocking: isBlocking,
+				toggleBlock: toggleBlock,
 				toggleMainDropdown: () => {
                     state.isDropdownOpen = !state.isDropdownOpen;
                 },

@@ -51,3 +51,4 @@ resources/views/apps/mpa/document/verification/i18n
 /doc/
 .trae
 .agents
+/command

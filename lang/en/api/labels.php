@@ -180,6 +180,8 @@ return [
 	'leave_comment' => 'Leave a comment',
 	'filters' => 'Filters',
 	'comment_was_deleted' => 'This comment was deleted.',
+	'login' => 'Login',
+	'signup' => 'Sign up',
 	'loading' => 'Loading',
 	'media' => 'Media',
 	'activity' => 'Activity',
@@ -190,6 +192,7 @@ return [
 	'join_date' => 'Join date',
 	'phone' => 'Phone',
 	'load_more' => 'Load more',
+	'unblock' => 'Unblock',
 	'profile_private_info_hiding' => 'Some information may be hidden by the profile owner for privacy purposes. For more information, please read our Police Privacy.',
 	'sensitive_content' => [
 		'title' => 'Sensitive content!',

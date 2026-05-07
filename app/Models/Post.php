@@ -59,6 +59,19 @@ class Post extends Model
         return $query->where('user_id', '!=', me()->id);
     }
 
+    public function scopeExcludeBlockedUsers($query)
+    {
+        if (! auth_check()) {
+            return $query;
+        }
+
+        return $query->whereNotIn('user_id', function ($subQuery) {
+            $subQuery->select('blocked_user_id')
+                ->from(Table::USER_BLOCKS)
+                ->where('user_id', me()->id);
+        });
+    }
+
     public function scopeTimelineFormatPosts($query)
     {
         return $query->active()->with(['user', 'reactions', 'quotedPost', 'linkSnapshot', 'comments' => function($query) {

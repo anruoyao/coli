@@ -30,7 +30,7 @@
 		</div>
 
 		<LinksGroupTitle v-bind:textLabel="$t('settings.blocked_accounts')"></LinksGroupTitle>
-		<NavItem v-bind:disabled="true" iconName="slash-circle-01" v-bind:textLabel="$t('settings.blocked_people')"></NavItem>
+		<LinkItem iconName="slash-circle-01" v-bind:textLabel="$t('settings.blocked_people')" v-bind:routeData="{ name: 'settings_blocked' }"></LinkItem>
 
 		<div class="mb-4 mt-2">
 			<Border height="h-2" opacity="opacity-50"></Border>

@@ -39,7 +39,7 @@ Route::post('/sanctum/token', function (Request $request) {
 
 Route::prefix('translations')->middleware(['throttle:60,1'])->group(base_path('routes/api/translations.php'));
 
-Route::prefix('bootstrap')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/bootstrap.php'));
+Route::prefix('bootstrap')->middleware(['throttle:60,1'])->group(base_path('routes/api/user/bootstrap.php'));
 
 Route::prefix('settings')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/account_settings.php'));
 
@@ -49,13 +49,15 @@ Route::prefix('post/editor')->middleware(['auth:sanctum', 'throttle:240,1'])->gr
 
 Route::prefix('story/editor')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/story_editor.php'));
 
-Route::prefix('timeline')->middleware(['auth:sanctum', 'throttle:240,1'])->group(base_path('routes/api/user/timeline.php'));
+Route::prefix('timeline')->middleware(['throttle:240,1'])->group(base_path('routes/api/user/timeline.php'));
 
 Route::prefix('stories')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/stories.php'));
 
-Route::prefix('profile')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/profile.php'));
+Route::prefix('profile')->middleware(['throttle:60,1'])->group(base_path('routes/api/user/profile.php'));
 
 Route::prefix('follows')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/follows.php'));
+
+Route::prefix('blocks')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/blocks.php'));
 
 Route::prefix('marketplace')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/marketplace.php'));
 
@@ -67,7 +69,7 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:60,1'])->group(bas
 
 Route::prefix('recommendations')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/recommend.php'));
 
-Route::prefix('explore')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/explore.php'));
+Route::prefix('explore')->middleware(['throttle:60,1'])->group(base_path('routes/api/user/explore.php'));
 
 Route::prefix('notifications')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/notifications.php'));
 

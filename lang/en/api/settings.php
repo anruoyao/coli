@@ -37,6 +37,8 @@ return [
 	'hotkey_settings' => 'Hotkey settings',
 	'api_settings' => 'API Settings',
 	'settings_and_privacy_description' => 'Settings apply only to the current account. To change them for another account, switch to it.',
+	'empty_blocked_list' => 'No blocked accounts',
+	'empty_blocked_list_desc' => 'When you block someone, they will appear here. Blocked users cannot interact with your content or send you messages.',
 	'forms' => [
 		'authorship' => [
 			'about_authorship' => [

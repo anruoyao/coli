@@ -25,7 +25,7 @@ class ProductResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $isOwner = (me()->id === $this->user_id);
+        $isOwner = auth_check() && (me()->id === $this->user_id);
         
         $item = [
             'id' => $this->id,
@@ -71,7 +71,7 @@ class ProductResource extends JsonResource
             ],
             'meta' => [
                 'activity' => [
-                    'bookmarked' => $this->isBookmarkedBy(me()->id)
+                    'bookmarked' => auth_check() ? $this->isBookmarkedBy(me()->id) : false
                 ],
                 'is_owner' => $isOwner
             ],

@@ -1,17 +1,4 @@
 <?php
-/*
-|--------------------------------------------------------------------------
-| ColibriPlus - The Social Network Web Application.
-|--------------------------------------------------------------------------
-| Author: Mansur Terla. Full-Stack Web Developer, UI/UX Designer.
-| Website: www.terla.me
-| E-mail: mansurtl.contact@gmail.com
-| Instagram: @mansur_terla
-| Telegram: @mansurtl_contact
-|--------------------------------------------------------------------------
-| Copyright (c)  ColibriPlus. All rights reserved.
-|--------------------------------------------------------------------------
-*/
 
 namespace App\Http\Controllers\Api\User\Explore;
 
@@ -36,16 +23,22 @@ class ExploreController extends Controller
 
     public function __construct()
     {
-        $this->me = me();
+        if (auth_check()) {
+            $this->me = me();
+        }
     }
 
     public function getPeople(Request $request)
     {
         $filterOptions = $this->getValidatedFilters($request);
-        
-        $people = User::active()->author()->excludeSelf()->whereNotIn('id', function ($query) {
-            $query->select('following_id')->from(Table::FOLLOWS)->where('follower_id', me()->id);
-        })->unless(empty($filterOptions['query']), function ($query) use ($filterOptions) {
+
+        $peopleQuery = User::active()->author()->excludeBlocked()->when(auth_check(), function ($query) {
+            $query->excludeSelf()->whereNotIn('id', function ($query) {
+                $query->select('following_id')->from(Table::FOLLOWS)->where('follower_id', me()->id);
+            });
+        });
+
+        $people = $peopleQuery->unless(empty($filterOptions['query']), function ($query) use ($filterOptions) {
             $query->where(function($query) use ($filterOptions) {
                 $query->whereLike('username', "%{$filterOptions['query']}%")
                     ->orWhereLike('first_name', "%{$filterOptions['query']}%")
@@ -78,13 +71,18 @@ class ExploreController extends Controller
         }
 
         $feedORMQuery = Post::timelineFormatPosts()
+            ->excludeBlockedUsers()
             ->when(! empty($this->filter['onset']), function($query) {
                 $query->where('id', '>', $this->filter['onset']);
-            })->when((! $this->me->isAdmin()), function($query) {
+            })->when(auth_check() && ! $this->me->isAdmin(), function($query) {
                 $query->where(function($query) {
                     $query->where('user_id', $this->me->id)->orWhereHas('user', function($u) {
                         $u->author();
                     });
+                });
+            })->when(! auth_check(), function($query) {
+                $query->whereHas('user', function($u) {
+                    $u->author();
                 });
             })
             ->orderBy('created_at', 'desc')
@@ -122,12 +120,17 @@ class ExploreController extends Controller
         }
 
         $posts = Post::timelineFormatPosts()
+            ->excludeBlockedUsers()
             ->whereIn('id', $postIds)
-            ->when((! $this->me->isAdmin()), function($query) {
+            ->when(auth_check() && ! $this->me->isAdmin(), function($query) {
                 $query->where(function($query) {
                     $query->where('user_id', $this->me->id)->orWhereHas('user', function($u) {
                         $u->author();
                     });
+                });
+            })->when(! auth_check(), function($query) {
+                $query->whereHas('user', function($u) {
+                    $u->author();
                 });
             })
             ->orderByRaw('FIELD(id, ' . implode(',', array_map('intval', $postIds)) . ')')

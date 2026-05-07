@@ -30,6 +30,8 @@ Schedule::command('story:clear')->dailyAt('00:00');
 
 Schedule::command('chat:invite-clear')->weekly();
 
+Schedule::command('sitemap:generate')->dailyAt('03:00');
+
 Artisan::command('app:version', function () {
     $this->info(ColibriPlus::VERSION);
 });

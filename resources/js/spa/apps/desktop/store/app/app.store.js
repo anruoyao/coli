@@ -6,8 +6,15 @@ import { useAuthStore } from '@D/store/auth/auth.store.js';
 const useAppStore = defineStore('app', {
     state: () => {
         return {
-            appData: null
+            appData: null,
+            isGuest: false,
+            guestAllowedRoutes: []
         };
+    },
+    getters: {
+        guestMode: function() {
+            return this.isGuest;
+        }
     },
     actions: {
         bootstrapApplication: async function() {
@@ -25,6 +32,8 @@ const useAppStore = defineStore('app', {
             await colibriAPI().bootstrap().getFrom('bootstrap').then(function(response) {
                 state.appData = response.data.data;
                 authStore.setUser(state.appData.auth.user);
+                state.isGuest = ! state.appData.auth.status;
+                state.guestAllowedRoutes = state.appData.guest?.allowed_routes || [];
             }).catch(function(error) {
                 if(error.response) {
                     router.push({ name: 'bootstrap_error' });

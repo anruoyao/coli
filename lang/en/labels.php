@@ -32,6 +32,8 @@ return [
         'urgent' => 'Urgent 🔥',
         'not_urgent' => 'Not urgent'
     ],
+    'login' => 'Login',
+    'signup' => 'Sign up',
     'master_account' => 'Master account',
     'skip_step' => 'Skip this step',
     'months' => [

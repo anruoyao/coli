@@ -180,6 +180,8 @@ return [
 	'leave_comment' => 'コメントを残す',
 	'filters' => 'フィルター',
 	'comment_was_deleted' => 'このコメントは削除されました。',
+	'login' => 'ログイン',
+	'signup' => '新規登録',
 	'loading' => '読み込み中',
 	'media' => 'メディア',
 	'activity' => 'アクティビティ',
@@ -190,6 +192,7 @@ return [
 	'join_date' => '参加日',
 	'phone' => '電話番号',
 	'load_more' => 'もっと読み込む',
+	'unblock' => 'ブロック解除',
 	'profile_private_info_hiding' => 'プライバシー保護のため、プロフィール所有者によって一部の情報が非表示にされている場合があります。詳細については、プライバシーポリシーをご覧ください。',
 	'sensitive_content' => [
 		'title' => 'センシティブコンテンツ！',

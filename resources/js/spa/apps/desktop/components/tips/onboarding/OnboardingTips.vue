@@ -49,7 +49,7 @@
             const totalSteps = ref(3);
 
             onMounted(() => {
-                if(userData.value.has_tips) {
+                if(userData.value && userData.value.has_tips) {
                     hasTips.value = true;
                     onboardingTips.value = userData.value.tips;
                     totalSteps.value = Object.keys(onboardingTips.value).length;

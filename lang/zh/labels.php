@@ -32,6 +32,8 @@ return [
         'urgent' => '紧急 🔥',
         'not_urgent' => '不紧急'
     ],
+    'login' => '登录',
+    'signup' => '注册',
     'master_account' => '主账户',
     'skip_step' => '跳过此步骤',
     'months' => [

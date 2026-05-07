@@ -14,16 +14,37 @@
 					<Border></Border>
 
 					<div class="p-4">
-						<SearchBar v-model.lazy="peopleSearchQuery" v-bind:placeholder="$t('labels.search')"></SearchBar>
+						<SearchBar v-if="!state.isGuest" v-model.lazy="peopleSearchQuery" v-bind:placeholder="$t('labels.search')"></SearchBar>
 					</div>
 				</div>
-				<TimelineCallout
+				<TimelineCallout v-if="!state.isGuest"
 					iconName="star-04"
 					iconType="solid"
 					v-bind:title="$t('info.follow_authors.title')"
 				v-bind:desc="$t('info.follow_authors.desc')"></TimelineCallout>
-				<Border></Border>
-				<template v-if="state.isLoading">
+				<Border v-if="!state.isGuest"></Border>
+				<template v-if="state.isGuest">
+					<div class="py-32">
+						<p class="text-lab-sc text-par-s text-center mb-4">
+							{{ $t('info.login_required.desc') }}
+						</p>
+						<div class="flex gap-3 justify-center">
+							<a v-bind:href="$getRoute('user_auth_index')" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surf-prim text-lab-pr2 hover:bg-surf-sec">
+								<span class="size-icon-normal shrink-0">
+									<SvgIcon name="log-in-01" type="line"></SvgIcon>
+								</span>
+								{{ $t('labels.login') }}
+							</a>
+							<a v-bind:href="$getRoute('user_auth_signup')" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surf-prim text-lab-pr2 hover:bg-surf-sec">
+								<span class="size-icon-normal shrink-0">
+									<SvgIcon name="user-plus-01" type="line"></SvgIcon>
+								</span>
+								{{ $t('labels.signup') }}
+							</a>
+						</div>
+					</div>
+				</template>
+				<template v-else-if="state.isLoading">
 					<PeopleListItemSkeleton v-for="i in 15" v-bind:key="i"></PeopleListItemSkeleton>
 				</template>
 				<template v-else-if="state.isEmpty">
@@ -53,6 +74,7 @@
 <script>
 	import { defineComponent, reactive, onMounted, ref, watch, computed } from 'vue';
 	import { useExplorePeopleStore } from '@D/store/explore/people.store.js';
+	import { useAuthStore } from '@D/store/auth/auth.store.js';
 	import { useInfiniteScroll } from '@/kernel/vue/composables/infinite-scroll/index.js';
 
 	import SidedContentLayout from '@D/components/layout/SidedContentLayout.vue';
@@ -76,7 +98,8 @@
                 isLoadingContent: false,
 				isEmpty: false,
 				isLoading: true,
-				isSearchLoading: false
+				isSearchLoading: false,
+				isGuest: false
 			});
 
 			const people = computed(() => {
@@ -84,8 +107,15 @@
 			});
 
 			const explorePeopleStore = useExplorePeopleStore();
+			const authStore = useAuthStore();
 
 			onMounted(async () => {
+				if (!authStore.authCheck) {
+					state.isGuest = true;
+					state.isLoading = false;
+					return;
+				}
+
 				// Reset filter on mount.
 				// Because there can be a filter applied from the previous visits.
 
@@ -135,6 +165,7 @@
 			});
 
 			return {
+				authStore: authStore,
 				people: people,
 				state: state,
 				peopleSearchQuery: peopleSearchQuery,

@@ -31,6 +31,7 @@ return [
 	'user' => [
 		'follow' => 'フォロー @{'.'@'.'}{username}',
 		'block' => 'ブロック @{'.'@'.'}{username}',
+		'unblock' => 'ブロック解除 @{'.'@'.'}{username}',
 		'report' => '報告 @{'.'@'.'}{username}',
 		'mute' => 'ミュート @{'.'@'.'}{username}',
 		'mention' => '言及 @{'.'@'.'}{username}',

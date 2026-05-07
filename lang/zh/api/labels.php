@@ -180,6 +180,8 @@ return [
 	'leave_comment' => '发表评论',
 	'filters' => '筛选',
 	'comment_was_deleted' => '此评论已删除。',
+	'login' => '登录',
+	'signup' => '注册',
 	'loading' => '加载中',
 	'media' => '媒体',
 	'activity' => '活动',
@@ -190,6 +192,7 @@ return [
 	'join_date' => '加入日期',
 	'phone' => '电话',
 	'load_more' => '加载更多',
+	'unblock' => '解除屏蔽',
 	'profile_private_info_hiding' => '部分信息可能因隐私原因被资料所有者隐藏。更多信息，请阅读我们的隐私政策。',
 	'sensitive_content' => [
 		'title' => '敏感内容！',

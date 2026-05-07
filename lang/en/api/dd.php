@@ -31,6 +31,7 @@ return [
 	'user' => [
 		'follow' => 'Follow  {\'@\'}{username}',
 		'block' => 'Block {\'@\'}{username}',
+		'unblock' => 'Unblock {\'@\'}{username}',
 		'report' => 'Report {\'@\'}{username}',
 		'mute' => 'Mute {\'@\'}{username}',
 		'mention' => 'Mention {\'@\'}{username}',

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import { Layouts } from '@M/core/constants/layouts.js';
+import { useAuthStore } from '@M/store/auth/auth.store.js';
 
 const Router = createRouter({
 	history: createWebHistory(),
@@ -31,7 +32,7 @@ const Router = createRouter({
 			alias: '/home',
             meta: {
                 layout: Layouts.MAIN,
-                auth: true
+                auth: false
             },
             name: 'home_index'
 		},
@@ -161,6 +162,13 @@ const Router = createRouter({
                     },
                     name: 'settings_actions'
                 },
+                {
+                    path: 'blocked',
+                    component: function() {
+                        return import('@M/views/settings/children/blocked/BlockSettings.vue');
+                    },
+                    name: 'settings_blocked'
+                },
             ]
 		},
 		{
@@ -171,7 +179,7 @@ const Router = createRouter({
             props: true,
             meta: {
                 layout: Layouts.MAIN,
-                auth: true,
+                auth: false,
                 hideHeader: true
             },
             name: 'publication_index'
@@ -183,7 +191,7 @@ const Router = createRouter({
             },
             meta: {
                 layout: Layouts.MAIN,
-                auth: true,
+                auth: false,
                 hideHeader: true
             },
             name: 'profile_index',
@@ -221,6 +229,7 @@ const Router = createRouter({
             },
             meta: {
                 layout: Layouts.POST_EDITOR,
+                auth: true
             }
         },
         {
@@ -231,6 +240,7 @@ const Router = createRouter({
             },
             meta: {
                 layout: Layouts.FLAT,
+                auth: true
             }
         },
         {
@@ -273,7 +283,7 @@ const Router = createRouter({
             ],
             meta: {
                 layout: Layouts.MAIN,
-                auth: true,
+                auth: false,
                 hideHeader: true
             }
 		},
@@ -312,6 +322,18 @@ const Router = createRouter({
             }
         },
 	]
+});
+
+Router.beforeEach((to, from, next) => {
+	const authStore = useAuthStore();
+
+	if (to.meta.auth === true && ! authStore.authCheck) {
+		window.location.href = embedder('routes.user_auth_index');
+
+		return;
+	}
+
+	next();
 });
 
 export default Router;

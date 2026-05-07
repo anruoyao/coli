@@ -9,11 +9,11 @@
                 </div>
                 <div class="block" v-else>
                     <div class="pb-4 px-4">
-                        <StoriesFeed></StoriesFeed>
+                        <StoriesFeed v-if="authStore.authCheck"></StoriesFeed>
                     </div>
                     <Border></Border>
                     <div class="block">
-                        <PublicationEditorTrigger></PublicationEditorTrigger>
+                        <PublicationEditorTrigger v-if="authStore.authCheck"></PublicationEditorTrigger>
                     </div>
                     <Border></Border>
                     <FeedUpdate v-if="timelineNewPosts.length" v-bind:posts="timelineNewPosts" v-on:click="applyTimelineUpdate"></FeedUpdate>
@@ -52,7 +52,9 @@
 
 <script>
     import { defineComponent, ref, reactive, onMounted, computed, onUnmounted } from 'vue';
+    import { useRouter } from 'vue-router';
     import { useTimelineStore } from '@D/store/timeline/timeline.store.js';
+    import { useAuthStore } from '@D/store/auth/auth.store.js';
     import { useDeletePost } from '@/kernel/vue/composables/delete-post/index.js';
     import { useInfiniteScroll } from '@/kernel/vue/composables/infinite-scroll/index.js';
     import { colibriEventBus } from '@/kernel/events/bus/index.js';
@@ -86,6 +88,8 @@
             let updateAttempts = 0;
             const { postDeleter } = useDeletePost();
             const timelineStore = useTimelineStore();
+            const authStore = useAuthStore();
+            const router = useRouter();
 
             const timelineNewPosts = computed(() => {
                 return timelineStore.update;
@@ -96,6 +100,11 @@
             });
 
             onMounted(async () => {
+                if (!authStore.authCheck) {
+                    router.push({ name: 'explore_posts' });
+                    return;
+                }
+
                 state.isLoading = true;
 
                 await timelineStore.initialLoad();
@@ -163,6 +172,7 @@
             });
 
             return {
+                authStore: authStore,
                 timelinePosts: timelinePosts,
                 state: state,
                 timelineNewPosts: timelineNewPosts,

@@ -32,6 +32,8 @@ return [
         'urgent' => '緊急 🔥',
         'not_urgent' => '緊急ではない'
     ],
+    'login' => 'ログイン',
+    'signup' => '新規登録',
     'master_account' => 'マスターアカウント',
     'skip_step' => 'このステップをスキップ',
     'months' => [

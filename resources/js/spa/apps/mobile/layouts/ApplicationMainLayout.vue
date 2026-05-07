@@ -6,16 +6,17 @@
 	</div>
 
 	<LightboxPlayer></LightboxPlayer>
-	
+
 	<ConfirmationModal></ConfirmationModal>
 
-	<ApplicationNavbar v-if="! hideNavbar"></ApplicationNavbar>
+	<ApplicationNavbar v-if="isAuthenticated && ! hideNavbar"></ApplicationNavbar>
+	<GuestNavbar v-if="! isAuthenticated && ! hideNavbar"></GuestNavbar>
 
 	<ReportModal></ReportModal>
 
 	<NotificationsModal v-if="isNotificationsOpen"></NotificationsModal>
 
-	
+
 </template>
 
 <script>
@@ -30,12 +31,13 @@
 
 	import ApplicationHeader from '@M/components/layout/ApplicationHeader.vue';
 	import ApplicationNavbar from '@M/components/layout/ApplicationNavbar.vue';
+	import GuestNavbar from '@M/components/layout/parts/navbar/GuestNavbar.vue';
 	import LightboxPlayer from '@M/components/lightbox/LightboxPlayer.vue';
 	import ConfirmationModal from '@M/components/general/modals/prompt/ConfirmationModal.vue';
 	import ReportModal from '@M/components/reports/ReportModal.vue';
 	import NotificationsModal from '@M/components/notifications/native/NotificationsModal.vue';
-	
-	
+
+
 	export default defineComponent({
 		setup: function() {
 			const notificationsStore = useNotificationsStore();
@@ -55,7 +57,7 @@
 			};
 
 			onMounted(() => {
-				if(window.ColibriBRD) {
+				if(authStore.authCheck && window.ColibriBRD) {
                     ColibriBRD.private(BRD.getChannel('AUTH_USER', [authStore.userData.id])).notification(function (event) {
                         if(event.type === 'chat.notification') {
                             // TODO: Handle chat notifications
@@ -73,7 +75,7 @@
 			});
 
 			onUnmounted(() => {
-                if(window.ColibriBRD) {
+                if(authStore.authCheck && window.ColibriBRD) {
                     ColibriBRD.leave(BRD.getChannel('AUTH_USER', [authStore.userData.id]));
                 }
 
@@ -89,12 +91,16 @@
 				}),
 				hideHeader: computed(() => {
 					return route.meta.hideHeader || false;
+				}),
+				isAuthenticated: computed(() => {
+					return authStore.authCheck;
 				})
 			};
 		},
 		components: {
 			ApplicationHeader: ApplicationHeader,
 			ApplicationNavbar: ApplicationNavbar,
+			GuestNavbar: GuestNavbar,
 			LightboxPlayer: LightboxPlayer,
 			ConfirmationModal: ConfirmationModal,
 			ReportModal: ReportModal,

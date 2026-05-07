@@ -20,6 +20,7 @@
 		routes: {
 			business_dashboard_index: "{{ route('business.dashboard.index') }}",
 			user_auth_index: "{{ route('user.auth.index') }}",
+			user_auth_signup: "{{ route('user.auth.signup') }}",
 			terms_of_use: "{{ route('document.terms.index') }}",
 			privacy_policy: "{{ route('document.privacy.index') }}",
 			cookies_policy: "{{ route('document.cookies.index') }}",

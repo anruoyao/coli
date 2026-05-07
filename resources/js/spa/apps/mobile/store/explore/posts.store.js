@@ -49,6 +49,8 @@ const useExplorePostsStore = defineStore('mobile_explore_posts_store', {
 		fetchPosts: async function() {
 			await this.makeLoadRequest().then((response) => {
 				this.posts = response.data.data;
+			}).catch(() => {
+				this.posts = [];
 			});
 		},
 		loadMorePosts: async function() {

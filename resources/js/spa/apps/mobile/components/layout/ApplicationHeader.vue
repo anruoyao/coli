@@ -13,7 +13,7 @@
 					</div>
 				</div>
 				<div class="ml-auto flex gap-2">
-					<NotificationsButton></NotificationsButton>
+					<NotificationsButton v-if="authStore.authCheck"></NotificationsButton>
 				</div>
 			</div>
 		</div>
@@ -27,6 +27,7 @@
 
 <script>
 	import { defineComponent, onMounted, onUnmounted, reactive, computed } from 'vue';
+	import { useAuthStore } from '@M/store/auth/auth.store.js';
 	import { useAudioStore } from '@M/store/audio/audio.store.js';
 
 	import { useMenu } from '@/kernel/vue/composables/menu/index.js';
@@ -38,6 +39,7 @@
 	
 	export default defineComponent({
 		setup: function () {
+			const authStore = useAuthStore();
 			const audioStore = useAudioStore();
 			const state = reactive({
 				hideHeader: false,
@@ -69,6 +71,7 @@
 			});
 
 			return {
+				authStore: authStore,
 				state: state
 			};
 		},
