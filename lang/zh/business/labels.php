@@ -1,0 +1,37 @@
+<?php
+
+return [
+    'business_account' => '企业账户',
+    'balance' => '余额',
+    'overview' => '概览',
+    'ads' => '广告',
+    'marketplace' => '商城',
+    'jobs' => '职位',
+    'wallet' => '钱包',
+    'business_account' => '企业账户',
+    'information' => '信息',
+    'help' => '帮助',
+    'for_developers' => 'API 文档',
+    'privacy_policy' => '隐私政策',
+    'terms_of_use' => '使用条款',
+    'language' => '语言',
+    'about_account' => '关于账户',
+    'account_settings' => '账户设置',
+    'more' => '更多',
+    'campaign' => '活动',
+    'product' => '产品',
+    'job' => '职位',
+    'service' => '服务',
+    'type_labels' => [
+        'physical' => '实体',
+        'digital' => '数字',
+        'service' => '服务',
+        'subscription' => '订阅',
+        'membership' => '会员',
+        'event_ticket' => '活动门票',
+        'gift_card' => '礼品卡',
+        'vacancy' => '职位空缺',
+        'project' => '项目',
+    ],
+    'product_contacts' => '联系方式'
+];
