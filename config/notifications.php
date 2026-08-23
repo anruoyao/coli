@@ -9,7 +9,7 @@ return [
 		'enabled' => env('NOTIFICATIONS_EMAIL_ENABLED', false),
 	],
 	'broadcast' => [
-		'enabled' => env('NOTIFICATIONS_BROADCAST_ENABLED', false),
+		'enabled' => env('NOTIFICATIONS_BROADCAST_ENABLED', true),
 	],
 	'push' => [
 		'enabled' => env('NOTIFICATIONS_PUSH_ENABLED', false),
