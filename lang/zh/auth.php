@@ -33,6 +33,8 @@ return [
     'master_account_error' => '请使用您的 :app_name 主账号来关联其他账号。',
     'registration_disabled' => '注册功能当前已禁用，请稍后再试。',
     'login_disabled' => '登录功能当前已禁用，请稍后再试。',
+    'email_send_failed' => '邮件发送失败，请稍后重试或检查邮箱设置。',
+    'invalid_reset_token' => '重置链接无效或已过期，请重新发起找回密码。',
     'login_to_cp' => [
         'title' => '管理后台',
         'caption' => '输入您的管理员账号和密码。',

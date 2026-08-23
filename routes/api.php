@@ -37,6 +37,19 @@ Route::post('/sanctum/token', function (Request $request) {
     return $user->createToken($request->device_name)->plainTextToken;
 });
 
+Route::prefix('auth')->middleware(['throttle:60,1'])->group(function () {
+    Route::post('/register', [App\Http\Controllers\Api\User\Auth\AuthController::class, 'register']);
+    Route::post('/forgot-password', [App\Http\Controllers\Api\User\Auth\AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [App\Http\Controllers\Api\User\Auth\AuthController::class, 'resetPassword']);
+});
+
+// App 私有频道 socket 认证（替代网页的 session 版 /broadcasting/auth）
+Route::prefix('broadcasting')->middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+    Route::post('/auth', function (Illuminate\Http\Request $request) {
+        return Illuminate\Support\Facades\Broadcast::auth($request);
+    });
+});
+
 Route::prefix('translations')->middleware(['throttle:60,1'])->group(base_path('routes/api/translations.php'));
 
 Route::prefix('bootstrap')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/bootstrap.php'));

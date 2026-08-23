@@ -33,6 +33,8 @@ return [
     'master_account_error' => 'Please use your :app_name master account to link other accounts.',
     'registration_disabled' => 'Registration is currently disabled. Please try again later.',
     'login_disabled' => 'Login is currently disabled. Please try again later.',
+    'email_send_failed' => 'Failed to send the email. Please try again later or check the email settings.',
+    'invalid_reset_token' => 'The reset link is invalid or has expired. Please request a new one.',
     'login_to_cp' => [
         'title' => 'Admin Panel',
         'caption' => 'Enter your admin login and password.',

@@ -113,15 +113,15 @@ class ProfileController extends Controller
                     $profileDetails['info']['website'] = $profileData->website;
                 }
 
-                if(empty($profileData->privacySettings->country_privacy)) {
+                if(empty($profileData->privacySettings->country_privacy) && ! empty($profileData->country_name)) {
                     $profileDetails['info']['location'] = $profileData->country_name;
 
-                    if(empty($profileData->privacySettings->city_privacy)) {
-                        $profileDetails['info']['location'] = "{$profileDetails['info']['location']}, {$profileData->city}";
+                    if(empty($profileData->privacySettings->city_privacy) && ! empty($profileData->city)) {
+                        $profileDetails['info']['location'] .= ", {$profileData->city}";
                     }
                 }
 
-                if(empty($profileData->privacySettings->birthdate_privacy)) {
+                if(empty($profileData->privacySettings->birthdate_privacy) && ! empty($profileData->birth_day) && ! empty($profileData->birth_month) && ! empty($profileData->birth_year)) {
                     $profileDetails['info']['birthdate'] = "{$profileData->birth_day} {$profileData->birth_month}, {$profileData->birth_year}";
 
                     $profileDetails['info']['age'] = Carbon::parse("{$profileData->birth_day}-{$profileData->birth_month}-{$profileData->birth_year}")->age;
