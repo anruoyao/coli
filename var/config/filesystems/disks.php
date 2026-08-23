@@ -16,7 +16,9 @@ return [
 		'description' => 'Public disk is the default disk for the application.',
 		'driver' => 'local',
 		'root' => storage_path('app/public'),
-		'url' => env('APP_URL').'/storage',
+		// 用 config('app.url') 而非 env('APP_URL')：config:cache 后 .env 不再加载，
+		// env() 会返回 null 导致 URL 丢失域名（媒体/头像全挂）。app.url 在任何情况下都可用。
+		'url' => config('app.url').'/storage',
 		'visibility' => 'public',
 		'throw' => false,
 	],
