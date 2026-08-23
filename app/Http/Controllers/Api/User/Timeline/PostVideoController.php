@@ -89,7 +89,7 @@ class PostVideoController extends Controller
                     ->compress(20)
                     ->upload();
 
-                $this->draftPost->media()->create([
+                $uploadedMedia = $this->draftPost->media()->create([
                     'source_path' => $videoData['video_path'],
                     'type' => MediaType::VIDEO,
                     'status' => MediaStatus::PROCESSING,
@@ -110,6 +110,7 @@ class PostVideoController extends Controller
 
                 return $this->responseSuccess([
                     'data' => [
+                        'id' => $uploadedMedia->id,
                         'url' => storage_url($imageData['image_path'], $videoStorageDisk)
                     ]
                 ]);

@@ -70,7 +70,7 @@ class PostDocumentController extends Controller
                     ->setStorageDisk($this->roundRobinService->getNextDisk())
                     ->upload($postDocumentFile);
 
-                $this->draftPost->media()->create([
+                $uploadedMedia = $this->draftPost->media()->create([
                     'source_path' => $documentData['document_path'],
                     'type' => MediaType::DOCUMENT,
                     'status' => MediaStatus::PROCESSED,
@@ -85,6 +85,7 @@ class PostDocumentController extends Controller
 
                 return $this->responseSuccess([
                     'data' => [
+                        'id' => $uploadedMedia->id,
                         'url' => storage_url($documentData['document_path'], $documentData['disk'])
                     ]
                 ]);

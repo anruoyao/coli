@@ -84,7 +84,7 @@ class PostImageController extends Controller
 
                     $LQIPBase64 = $this->base64ImageService->load($postImageFile->getRealPath())->getBase64();
 
-                    $this->draftPost->media()->create([
+                    $uploadedMedia = $this->draftPost->media()->create([
                         'source_path' => $imageData['image_path'],
                         'type' => MediaType::IMAGE,
                         'status' => MediaStatus::PROCESSED,
@@ -103,6 +103,7 @@ class PostImageController extends Controller
 
                     return $this->responseSuccess([
                         'data' => [
+                            'id' => $uploadedMedia->id,
                             'url' => storage_url($imageData['image_path'], $imageData['disk'])
                         ]
                     ]);

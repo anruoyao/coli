@@ -64,7 +64,7 @@ class PostAudioController extends Controller
                     ->setStorageDisk($this->roundRobinService->getNextDisk())
                     ->tempSaveLocally($postAudioFile);
 
-                $this->draftPost->media()->create([
+                $uploadedMedia = $this->draftPost->media()->create([
                     'source_path' => $audioData['audio_path'],
                     'type' => MediaType::AUDIO,
                     'status' => MediaStatus::PROCESSING,
@@ -80,6 +80,7 @@ class PostAudioController extends Controller
 
                 return $this->responseSuccess([
                     'data' => [
+                        'id' => $uploadedMedia->id,
                         'file_name' => $postAudioFile->getClientOriginalName(),
                         'size' => $postAudioFile->getSize(),
                         'extension' => $postAudioFile->getClientOriginalExtension()
