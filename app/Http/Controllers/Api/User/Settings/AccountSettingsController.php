@@ -75,13 +75,13 @@ class AccountSettingsController extends Controller
     public function updateAccountData(Request $request)
     {
         $validator = Validator::make(data: [
-            'first_name' => $request->get('first_name', ''),
-            'gender' => $request->get('gender', ''),
-            'bio' => $request->get('bio', ''),
-            'website' => $request->get('website', ''),
-            'username' => $request->get('username', ''),
-            'last_name' => $request->get('last_name', ''),
-            'caption' => $request->get('caption', '')
+            'first_name' => $request->input('first_name'),
+            'gender' => $request->input('gender'),
+            'bio' => $request->input('bio'),
+            'website' => $request->input('website'),
+            'username' => $request->input('username'),
+            'last_name' => $request->input('last_name'),
+            'caption' => $request->input('caption')
         ], rules: [
             'gender' => UserdataRules::gender(),
             'website' => UserdataRules::website(),
