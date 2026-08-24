@@ -42,6 +42,7 @@ return [
     'wallet_settings' => '钱包设置',
     'auth_settings' => '认证设置',
     'mobile_app_settings' => '移动应用设置',
+    'app_version_settings' => '版本管理',
     'custom_code' => '自定义代码注入',
     'pwa_settings' => 'PWA 设置',
 ];

@@ -16,3 +16,6 @@
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['api.key'])->post('/verification/user/verify', [App\Http\Controllers\Api\Admin\VerificationController::class, 'verifyUser']);
+
+// App 版本检测（客户端启动时调用，无需鉴权）
+Route::get('/version/check', [App\Http\Controllers\Api\System\VersionController::class, 'check']);

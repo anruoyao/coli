@@ -42,6 +42,7 @@ return [
     'wallet_settings' => 'Wallet Settings',
     'auth_settings' => 'Auth Settings',
     'mobile_app_settings' => 'Mobile App Settings',
+    'app_version_settings' => 'App Versioning',
     'custom_code' => 'Custom Code Injection',
     'pwa_settings' => 'PWA Settings',
 ];

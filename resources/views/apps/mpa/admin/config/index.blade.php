@@ -55,6 +55,9 @@
                 <x-navbar.item href="{{ route('admin.config.mobile-apps') }}" icon="phone-01">
                     {{ __('admin/sidebar.mobile_app_settings') }}
                 </x-navbar.item>
+                <x-navbar.item href="{{ route('admin.config.versions') }}" icon="refresh-cw-04">
+                    {{ __('admin/sidebar.app_version_settings') }}
+                </x-navbar.item>
             </x-navbar>
         </div>
         <div class="col-span-1">

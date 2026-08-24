@@ -14,6 +14,8 @@ Route::get('/email', [App\Http\Controllers\Admin\Config\ConfigController::class,
 
 Route::get('/mobile-apps/{tab?}', [App\Http\Controllers\Admin\Config\ConfigController::class, 'mobileApps'])->name('admin.config.mobile-apps');
 
+Route::get('/versions', [App\Http\Controllers\Admin\Config\ConfigController::class, 'versions'])->name('admin.config.versions');
+
 Route::get('/social-login', [App\Http\Controllers\Admin\Config\ConfigController::class, 'socialLogin'])->name('admin.config.social-login');
 
 Route::post('/email/testing', [App\Http\Controllers\Admin\Config\ConfigController::class, 'emailTesting'])->name('admin.config.email-testing');
