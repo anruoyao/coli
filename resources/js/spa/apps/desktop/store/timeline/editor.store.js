@@ -92,6 +92,7 @@ const usePostEditorStore = defineStore('post_editor_store', {
             this.initialType = PostType.TEXT;
             this.marks.isSensitive = false;
             this.marks.isAiGenerated = false;
+            this.preservedPostData = {};
             this.resetDraftPost();
         },
         getDraftPostDefaultValue: function() {

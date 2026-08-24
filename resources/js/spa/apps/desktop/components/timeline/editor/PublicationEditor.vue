@@ -339,6 +339,12 @@
                     state.postMediaUploadProgress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
                 }).sendTo(`media/${type}/upload`).then((response) => {
 
+                    // Preserve the user's typed content: fetchDraftPost()
+                    // would otherwise overwrite it with the server draft
+                    postEditorStore.preservedPostData = {
+                        content: postData.value.content
+                    };
+
                     postEditorStore.fetchDraftPost();
 
                     state.postMediaUploadProgress = 0;
@@ -413,6 +419,10 @@
 
             const createPoll = () => {
                 colibriAPI().postEditor().sendTo('poll/create').then((response) => {
+                    postEditorStore.preservedPostData = {
+                        content: postData.value.content
+                    };
+
                     postEditorStore.fetchDraftPost();
                 });
             };
@@ -421,6 +431,10 @@
                 colibriAPI().postEditor().with({
                     id: gifItem.id
                 }).sendTo('gif/create').then((response) => {
+                    postEditorStore.preservedPostData = {
+                        content: postData.value.content
+                    };
+
                     postEditorStore.fetchDraftPost();
                 }).catch((error) => {
                     toastError(error.response.data.message);
@@ -456,10 +470,6 @@
                     uploadPostMedia(audioFile, 'audio');
                 },
                 onMediaPaste: (event) => {
-                    postEditorStore.preservedPostData = {
-                        content: postData.value.content
-                    };
-
                     imagePasteHandler(event, (imageFile) => {
                         uploadPostMedia(imageFile, 'image');
                     });
@@ -471,6 +481,10 @@
                     colibriAPI().postEditor().with({
                         id: mediaItem.id
                     }).delete('media/delete').then((response) => {
+                        postEditorStore.preservedPostData = {
+                            content: postData.value.content
+                        };
+
                         postEditorStore.fetchDraftPost();
                     });
                 },

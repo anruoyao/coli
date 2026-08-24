@@ -160,6 +160,12 @@
                     state.uploadProgress = Math.round((progressEvent.loaded / progressEvent.total) * 100);
                 }).sendTo(`media/${type}/upload`).then((response) => {
 
+                    // Preserve the user's typed content: fetchDraftPost()
+                    // would otherwise overwrite it with the server draft
+                    postEditorStore.preservedPostData = {
+                        content: postData.value.content
+                    };
+
                     postEditorStore.fetchDraftPost();
 
                     state.uploadProgress = 0;
@@ -247,23 +253,31 @@
                     return postData.value.relations.media;
                 }),
 				selectGif: (gifItem) => {
-					colibriAPI().postEditor().with({
-						id: gifItem.id
-					}).sendTo('gif/create').then((response) => {
-						postEditorStore.fetchDraftPost();
-					}).catch((error) => {
-						validatePost(error.response.data.message);
-					});
+				colibriAPI().postEditor().with({
+					id: gifItem.id
+				}).sendTo('gif/create').then((response) => {
+					postEditorStore.preservedPostData = {
+                        content: postData.value.content
+                    };
 
-					state.isGifPickerOpen = false;
-				},
-				createPoll: () => {
-					colibriAPI().postEditor().sendTo('poll/create').then((response) => {
-						postEditorStore.fetchDraftPost();
-					}).catch((error) => {
-						validatePost(error.response.data.message);
-					});
-				},
+					postEditorStore.fetchDraftPost();
+				}).catch((error) => {
+					validatePost(error.response.data.message);
+				});
+
+				state.isGifPickerOpen = false;
+			},
+			createPoll: () => {
+				colibriAPI().postEditor().sendTo('poll/create').then((response) => {
+					postEditorStore.preservedPostData = {
+                        content: postData.value.content
+                    };
+
+					postEditorStore.fetchDraftPost();
+				}).catch((error) => {
+					validatePost(error.response.data.message);
+				});
+			},
 				submitButtonStatus: computed(() => {
 					return state.postSubmitting || state.uploadProgress;
 				}),
@@ -296,6 +310,10 @@
                     colibriAPI().postEditor().with({
                         id: mediaItem.id
                     }).delete('media/delete').then((response) => {
+                        postEditorStore.preservedPostData = {
+                            content: postData.value.content
+                        };
+
                         postEditorStore.fetchDraftPost();
                     });
                 },

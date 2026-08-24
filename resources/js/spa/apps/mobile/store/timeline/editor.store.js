@@ -6,6 +6,9 @@ const usePostEditorStore = defineStore('mobile_post_editor_store', {
     state: function() {
 		return {
             draftPost: {},
+            preservedPostData: {
+
+            },
             quotedPost: null,
             mentionName: null,
             initialType: PostType.TEXT
@@ -24,7 +27,10 @@ const usePostEditorStore = defineStore('mobile_post_editor_store', {
                 quoted_post_id: this.quotePostId
             }).getFrom('draft').then((response) => {
                 if (response.data.data.draft) {
-                    state.draftPost = response.data.data.draft;
+                    state.draftPost = {
+                        ...response.data.data.draft,
+                        ...state.preservedPostData
+                    };
                 }
                 else {
                     state.draftPost = this.getDraftPostDefaultValue();
@@ -48,6 +54,7 @@ const usePostEditorStore = defineStore('mobile_post_editor_store', {
         finishEditing: function() {
             this.initialType = PostType.TEXT;
             this.mentionName = null;
+            this.preservedPostData = {};
             this.resetDraftPost();
         },
         getDraftPostDefaultValue: function() {
@@ -60,7 +67,8 @@ const usePostEditorStore = defineStore('mobile_post_editor_store', {
             return {
                 content: content,
                 type: PostType.TEXT,
-                relations: {}
+                relations: {},
+                ...this.preservedPostData
             };
         }
     }
