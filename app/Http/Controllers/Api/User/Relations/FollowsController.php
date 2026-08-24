@@ -15,6 +15,7 @@
 
 namespace App\Http\Controllers\Api\User\Relations;
 
+use App\Constants\Notifications;
 use App\Constants\Relationship;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -24,6 +25,7 @@ use App\Notifications\User\Follows\NewFollowerNotification;
 use App\Services\Relations\FollowService;
 use App\Traits\Http\Api\SupportsApiResponses;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class FollowsController extends Controller
 {
@@ -80,6 +82,9 @@ class FollowsController extends Controller
             $followService = new FollowService($userData, me());
             $followService->accept();
 
+            // 清理该请求者发给我的「关注请求」通知，避免刷新后残留幽灵请求
+            $this->clearFollowRequestNotifications($userData->id);
+
             $userData->notify(new FollowAcceptNotification());
 
             return $this->responseSuccess([
@@ -100,11 +105,26 @@ class FollowsController extends Controller
             $followService = new FollowService($userData, me());
             $followService->decline();
 
+            // 清理该请求者发给我的「关注请求」通知，避免刷新后残留幽灵请求
+            $this->clearFollowRequestNotifications($userData->id);
+
             return $this->responseSuccess([
                 'data' => null
             ]);
         }
 
         return $this->responseResourceNotFoundError('User', $userId);
+    }
+
+    /**
+     * 删除某个请求者发给当前用户的所有「关注请求」通知。
+     */
+    private function clearFollowRequestNotifications(int $requesterUserId): void
+    {
+        DB::table('notifications')
+            ->where('notifiable_id', me()->id)
+            ->where('type', Notifications::FOLLOWED_REQUESTED)
+            ->whereJsonContains('data->actor->id', $requesterUserId)
+            ->delete();
     }
 }
