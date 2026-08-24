@@ -44,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
             $middleware->alias([
                 'user.status' => App\Http\Middleware\UserStatusMiddleware::class,
                 'maintenance' => App\Http\Middleware\CheckMaintenance::class,
+                'app.version' => App\Http\Middleware\CheckAppVersion::class,
                 'device.identifier' => App\Http\Middleware\DeviceIdentifierMiddleware::class,
                 'terminator' => App\Http\Middleware\TerminatingMiddleware::class,
                 'restrict.ip' => App\Http\Middleware\RestrictIPAddressMiddleware::class,

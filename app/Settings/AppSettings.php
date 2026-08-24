@@ -22,6 +22,8 @@ class AppSettings extends Settings
     public string $default_currency;
     public string $mobile_app_android_link;
     public string $mobile_app_ios_link;
+    public string $min_supported_version_android;
+    public string $min_supported_version_ios;
     public bool $pwa_enabled;
     public bool $hide_sensitive_data;
 

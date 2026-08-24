@@ -45,5 +45,15 @@ return [
         'created' => '版本已创建。',
         'updated' => '版本已更新。',
         'deleted' => '版本已删除。',
+        'min_supported_saved' => '最低安全版本已保存。',
+    ],
+    'min_supported' => [
+        'title' => '最低安全版本（危险版本下线）',
+        'helper' => '低于该版本的客户端，任何 API 请求都会被拦截并强制进入更新页（运行中的旧版本也无法继续使用）。留空表示不启用。',
+        'android' => 'Android 最低安全版本',
+        'android_helper' => '如 1.5.0，低于此版本的 Android 客户端将被强制更新。',
+        'ios' => 'iOS 最低安全版本',
+        'ios_helper' => '如 1.5.0，低于此版本的 iOS 客户端将被强制更新。',
+        'save' => '保存最低安全版本',
     ],
 ];

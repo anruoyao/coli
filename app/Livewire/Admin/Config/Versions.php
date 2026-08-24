@@ -3,14 +3,16 @@
 namespace App\Livewire\Admin\Config;
 
 use App\Models\AppVersion;
+use App\Settings\AppSettings;
 use App\Support\Views\Flash;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 /**
- * App 版本管理（规格列表 + 创建/编辑 + 启停/删除）。
+ * App 版本管理（规格列表 + 创建/编辑 + 启停/删除 + 最低安全版本）。
  *
  * 列表页：展示全部版本，支持编辑、删除、上线/下线、切换强制更新；
+ * 顶部提供「最低安全版本」配置（按平台），低于该线的客户端请求将被 426 强制更新。
  * 表单页：新建 / 编辑版本（版本代号、平台、下载链接、更新公告、发布时间、强制/上线开关）。
  */
 class Versions extends Component
@@ -20,6 +22,11 @@ class Versions extends Component
     public array $formData = [];
 
     public ?int $editingId = null;
+
+    public array $minVersionData = [
+        'android' => '',
+        'ios' => '',
+    ];
 
     protected function rules(): array
     {
@@ -39,6 +46,15 @@ class Versions extends Component
             'formData.is_forced' => ['boolean'],
             'formData.is_active' => ['boolean'],
             'formData.released_at' => ['nullable', 'date'],
+        ];
+    }
+
+    public function mount()
+    {
+        $appSettings = app(AppSettings::class);
+        $this->minVersionData = [
+            'android' => $appSettings->min_supported_version_android ?? '',
+            'ios' => $appSettings->min_supported_version_ios ?? '',
         ];
     }
 
@@ -119,6 +135,29 @@ class Versions extends Component
     {
         $version = AppVersion::query()->findOrFail($id);
         $version->update(['is_active' => ! $version->is_active]);
+    }
+
+    /**
+     * 保存「最低安全版本」（空 = 不启用版本拦截）。
+     * 低于该线的客户端请求将被 CheckAppVersion 中间件以 426 强制更新。
+     */
+    public function saveMinVersion()
+    {
+        $this->validate([
+            'minVersionData.android' => ['nullable', 'string', 'max:32', 'regex:/^[0-9]+(\.[0-9]+){1,3}$/'],
+            'minVersionData.ios' => ['nullable', 'string', 'max:32', 'regex:/^[0-9]+(\.[0-9]+){1,3}$/'],
+        ], attributes: [
+            'minVersionData.android' => __('admin/version.min_supported.android'),
+            'minVersionData.ios' => __('admin/version.min_supported.ios'),
+        ]);
+
+        $appSettings = app(AppSettings::class);
+        $appSettings->min_supported_version_android = trim($this->minVersionData['android'] ?? '');
+        $appSettings->min_supported_version_ios = trim($this->minVersionData['ios'] ?? '');
+        $appSettings->save();
+
+        return redirect()->with('flashMessage', (new Flash(content: __('admin/version.flash.min_supported_saved')))->get())
+            ->route('admin.config.versions');
     }
 
     public function delete(int $id)

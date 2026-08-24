@@ -45,5 +45,15 @@ return [
         'created' => 'Version created.',
         'updated' => 'Version updated.',
         'deleted' => 'Version deleted.',
+        'min_supported_saved' => 'Minimum supported version saved.',
+    ],
+    'min_supported' => [
+        'title' => 'Minimum supported version (dangerous version cutoff)',
+        'helper' => 'Clients below this version get every API request rejected and are forced into the update screen (running old builds are blocked too). Leave empty to disable.',
+        'android' => 'Android minimum supported version',
+        'android_helper' => 'e.g. 1.5.0. Android clients below this version are force-updated.',
+        'ios' => 'iOS minimum supported version',
+        'ios_helper' => 'e.g. 1.5.0. iOS clients below this version are force-updated.',
+        'save' => 'Save minimum supported version',
     ],
 ];

@@ -6,6 +6,41 @@
             </x-ui.buttons.pill>
         </div>
 
+        {{-- 最低安全版本配置：低于该线的客户端请求将被 426 强制更新 --}}
+        <div class="mb-6 p-4 rounded-2xl bg-input-pr border border-bord-sc">
+            <form wire:submit.prevent="saveMinVersion">
+                <div class="mb-3">
+                    <p class="text-par-m font-medium text-lab-pr">{{ __('admin/version.min_supported.title') }}</p>
+                    <p class="text-par-s text-lab-sc mt-1">{{ __('admin/version.min_supported.helper') }}</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                    <x-form.text-input
+                        labelText="{{ __('admin/version.min_supported.android') }}"
+                        type="text"
+                        wire:model="minVersionData.android"
+                        name="minVersionData.android"
+                        :placeholder="'1.5.0'">
+                        <x-slot:feedbackInfo>
+                            {{ __('admin/version.min_supported.android_helper') }}
+                        </x-slot:feedbackInfo>
+                    </x-form.text-input>
+                    <x-form.text-input
+                        labelText="{{ __('admin/version.min_supported.ios') }}"
+                        type="text"
+                        wire:model="minVersionData.ios"
+                        name="minVersionData.ios"
+                        :placeholder="'1.5.0'">
+                        <x-slot:feedbackInfo>
+                            {{ __('admin/version.min_supported.ios_helper') }}
+                        </x-slot:feedbackInfo>
+                    </x-form.text-input>
+                </div>
+                <div class="mt-3">
+                    <x-ui.buttons.pill size="sm" type="submit" btnText="{{ __('admin/version.min_supported.save') }}"></x-ui.buttons.pill>
+                </div>
+            </form>
+        </div>
+
         <x-table.table>
             <x-table.thead>
                 <x-table.th>{{ __('admin/version.table.version') }}</x-table.th>

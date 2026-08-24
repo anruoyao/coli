@@ -265,22 +265,22 @@
 			</x-striped-table.row>
 		</x-striped-table.table>
 	</x-sided-content>
-</div>
 
-{{-- 封禁弹窗：填写封禁原因 --}}
-<div x-show="blockModalOpen" x-cloak class="fixed inset-0 bg-black/15 z-50 backdrop-blur-xs" x-on:click.self="blockModalOpen = false">
-	<div class="flex justify-center px-6 py-32">
-		<div class="w-full max-w-md shrink-0 bg-bg-pr rounded-2xl overflow-hidden shadow-xs">
-			<form method="POST" action="{{ route('admin.users.block', $userData->id) }}" class="p-6">
-				@csrf
-				<h3 class="text-par-m font-semibold mb-1">{{ __('admin/prompt.block_user.title') }}</h3>
-				<p class="text-par-n text-lab-sc mb-4">{{ __('admin/prompt.block_user.description') }}</p>
-				<textarea name="reason" rows="3" class="w-full bg-input-pr rounded-xl p-3 text-par-n outline-hidden resize-none" placeholder="{{ __('admin/prompt.block_user.reason_placeholder') }}"></textarea>
-				<div class="mt-4 flex items-center justify-end gap-2">
-					<button type="button" x-on:click="blockModalOpen = false" class="cursor-pointer text-par-n text-lab-sc hover:text-lab-pr px-4 py-2 rounded-lg">{{ __('buttons.cancel') }}</button>
-					<x-ui.buttons.pill variant="danger" size="sm" type="submit" btnText="{{ __('admin/prompt.block_user.confirm_btn_text') }}"></x-ui.buttons.pill>
-				</div>
-			</form>
+	{{-- 封禁弹窗：填写封禁原因（必须位于 x-data 作用域内） --}}
+	<div x-show="blockModalOpen" class="fixed inset-0 bg-black/15 z-50 backdrop-blur-xs" x-on:click.self="blockModalOpen = false">
+		<div class="flex justify-center px-6 py-32">
+			<div class="w-full max-w-md shrink-0 bg-bg-pr rounded-2xl overflow-hidden shadow-xs">
+				<form method="POST" action="{{ route('admin.users.block', $userData->id) }}" class="p-6">
+					@csrf
+					<h3 class="text-par-m font-semibold mb-1">{{ __('admin/prompt.block_user.title') }}</h3>
+					<p class="text-par-n text-lab-sc mb-4">{{ __('admin/prompt.block_user.description') }}</p>
+					<textarea name="reason" rows="3" class="w-full bg-input-pr rounded-xl p-3 text-par-n outline-hidden resize-none" placeholder="{{ __('admin/prompt.block_user.reason_placeholder') }}"></textarea>
+					<div class="mt-4 flex items-center justify-end gap-2">
+						<button type="button" x-on:click="blockModalOpen = false" class="cursor-pointer text-par-n text-lab-sc hover:text-lab-pr px-4 py-2 rounded-lg">{{ __('buttons.cancel') }}</button>
+						<x-ui.buttons.pill variant="danger" size="sm" type="submit" btnText="{{ __('admin/prompt.block_user.confirm_btn_text') }}"></x-ui.buttons.pill>
+					</div>
+				</form>
+			</div>
 		</div>
 	</div>
 </div>
