@@ -34,18 +34,23 @@ class AutocompleteController extends Controller
         ])->validate();
 
         if($validated['query']) {
-            $mentionedUsers = User::active()->whereLike('username', "%{$validated['query']}%")->limit(50)->get();
-            
+            $mentionedUsers = User::active()->whereLike('username', "%{$validated['query']}%")->with(['permitSettings'])->limit(50)->get();
+
             if($mentionedUsers->isNotEmpty()) {
-                $searchResults = $mentionedUsers->map(function($user) {
-                    return [
-                        'id' => $user->id,
-                        'username' => $user->username,
-                        'name' => $user->name,
-                        'avatar_url' => $user->avatar_url,
-                        'caption' => $user->caption,
-                    ];
-                });
+                $searchResults = $mentionedUsers
+                    // 提及隐私：过滤掉「谁能@我」设置不允许我提及的用户
+                    ->filter(function($user) {
+                        return $user->permitSettings?->mentions->allows(me(), $user) ?? true;
+                    })
+                    ->map(function($user) {
+                        return [
+                            'id' => $user->id,
+                            'username' => $user->username,
+                            'name' => $user->name,
+                            'avatar_url' => $user->avatar_url,
+                            'caption' => $user->caption,
+                        ];
+                    });
             }
         }
 

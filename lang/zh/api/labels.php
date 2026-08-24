@@ -166,6 +166,7 @@ return [
 	'follow_requested_button' => '已请求',
 	'follow_accept_button' => '接受',
 	'follow_accepted_button' => '已接受',
+	'follow_decline_button' => '拒绝',
 	'condition' => '成色',
 	'all' => '全部',
 	'ai_generated' => 'AI 生成内容',

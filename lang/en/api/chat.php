@@ -66,6 +66,11 @@ return [
 	'invited_you_to_group' => 'Has invited your to ~ {group_name} group.',
 	'typing' => 'Typing...',
 	'user_is_typing' => '{name} is typing...',
+	'dm_denied_nobody' => 'This user has turned off direct messages.',
+	'dm_denied_followers' => 'Only followers can send direct messages to this user.',
+	'story_reply_denied_nobody' => 'This user has turned off story replies.',
+	'story_reply_denied_followers' => 'Only followers can reply to this user\'s stories.',
+	'invite_denied' => 'The following users do not accept group invitations: {usernames}',
 	'search' => 'Search',
 	'alerts' => [
 		'ws_connection' => [

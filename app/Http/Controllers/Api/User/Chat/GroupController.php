@@ -183,7 +183,23 @@ class GroupController extends Controller
                 $invitees = User::excludeSelf()->active()->whereIn('id', $participantIds)->whereNotIn('id', function ($query) use ($chatData) {
                     // Do not invite users who have already been invited to the group.
                     $query->select('receiver_id')->from(Table::CHAT_INVITES)->where('chat_id', $chatData->id);
-                })->get();
+                })->with(['permitSettings'])->get();
+
+                // 群组邀请隐私：过滤掉「谁能邀请我加群」设置不允许我的用户
+                $deniedUsernames = $invitees
+                    ->filter(function ($invitee) {
+                        return ! ($invitee->permitSettings?->group_invites->allows(me(), $invitee) ?? true);
+                    })
+                    ->map(function ($invitee) {
+                        return $invitee->username;
+                    })
+                    ->values();
+
+                if($deniedUsernames->isNotEmpty()) {
+                    return $this->responseError([
+                        'message' => __('api/chat.invite_denied', ['usernames' => $deniedUsernames->implode(', ')], me()->language)
+                    ], 403);
+                }
 
                 $invitees->each(function ($invitee) use ($chatData) {
                     ChatInvite::create([
@@ -321,7 +337,7 @@ class GroupController extends Controller
 
             return $this->responseSuccess([
                 'data' => $invitees->map(function ($invitee) {
-                    $canInvite = (! $invitee->permitSettings->group_invites->nobody());
+                    $canInvite = $invitee->permitSettings?->group_invites->allows(me(), $invitee) ?? true;
 
                     return [
                         'id' => $invitee->id,

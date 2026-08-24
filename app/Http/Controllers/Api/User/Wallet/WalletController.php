@@ -191,6 +191,17 @@ class WalletController extends Controller
         $walletData = Wallet::excludeSelf()->whereWalletNumber($walletNumber)->with('user')->first();
 
         if($walletData) {
+            // 转账隐私：收款方「谁能给我转账」设置不允许时禁止转账
+            $receiverPermit = $walletData->user->permitSettings?->payment_transfers;
+
+            if($receiverPermit && ! $receiverPermit->allows(me(), $walletData->user)) {
+                return $this->responseError([
+                    'message' => ($receiverPermit->nobody())
+                        ? __('api/wallet.transfer_denied_nobody', [], me()->language)
+                        : __('api/wallet.transfer_denied_followers', [], me()->language)
+                ], 403);
+            }
+
             if(me()->wallet->balance->canAfford($transferAmount)) {
                 $walletService = app(WalletService::class);
                 $walletService->setUserData(me())->subtractWalletBalance($transferAmount)->addWalletTransaction([

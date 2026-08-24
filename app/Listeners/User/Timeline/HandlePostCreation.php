@@ -41,10 +41,15 @@ class HandlePostCreation
 
         if ($mentions) {
             $mentionedUsers = User::active()->excludeSelf()->whereIn('username', $mentions)->get();
-            
-            $mentionedUsers->each(function($userData) use ($postData) {        
+
+            $mentionedUsers->each(function($userData) use ($postData) {
+                // 提及隐私：被@用户「谁能@我」设置不允许作者提及时，不发送提及通知
+                if(! ($userData->permitSettings?->mentions->allows($postData->user, $userData) ?? true)) {
+                    return;
+                }
+
                 $userData->notify(new PostMentionNotification($postData));
             });
-        }   
+        }
     }
 }

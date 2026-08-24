@@ -1,6 +1,8 @@
 <?php
 
 return [
+	'transfer_denied_nobody' => '对方已关闭转账收款。',
+	'transfer_denied_followers' => '对方设置了仅粉丝可转账，您暂无法向对方转账。',
 	'wallet_page' => '钱包',
 	'current_balance' => '当前余额',
 	'wallet_address' => '钱包地址',

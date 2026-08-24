@@ -89,4 +89,22 @@ class FollowsController extends Controller
 
         return $this->responseResourceNotFoundError('User', $userId);
     }
+
+    public function declineFollowRequest(Request $request)
+    {
+        $userId = $request->integer('id', 0);
+
+        $userData = User::activeById($userId)->first();
+
+        if($userData) {
+            $followService = new FollowService($userData, me());
+            $followService->decline();
+
+            return $this->responseSuccess([
+                'data' => null
+            ]);
+        }
+
+        return $this->responseResourceNotFoundError('User', $userId);
+    }
 }

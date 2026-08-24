@@ -69,8 +69,9 @@ class ProfileResource extends JsonResource
                 'permissions' => [
                     'can_sanction' => (! $isMe && me()->isRoot()),
                     'can_follow' => (new FollowService($this->resource, me()))->canFollow() && ! $hideContent,
-                    'can_mention' => (! $isMe && ! $hideContent),
-                    'can_message' => (! $isMe && ! $hideContent),
+                    'can_mention' => (! $isMe && ! $hideContent && ($this->permitSettings?->mentions->allows(me(), $this->resource) ?? true)),
+                    'can_message' => (! $isMe && ! $hideContent && ($this->permitSettings?->direct_messages->allows(me(), $this->resource) ?? true)),
+                    'can_story_reply' => (! $isMe && ! $hideContent && ($this->permitSettings?->story_replies->allows(me(), $this->resource) ?? true)),
                     'can_block' => (! $isMe),
                     'can_report' => (! $isMe && ! $hideContent),
                     'can_mute' => (! $isMe && ! $hideContent),

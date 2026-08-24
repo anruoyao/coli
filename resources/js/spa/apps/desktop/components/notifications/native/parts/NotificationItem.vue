@@ -33,9 +33,14 @@
             <div v-else-if="isViewable" class="shrink-0 ml-4">
                 <PrimaryPillButton v-on:click="handleRouting" v-bind:buttonText="$t('labels.view')" buttonSize="md"></PrimaryPillButton>
             </div>
-            <div v-else-if="isFollowRequest" class="shrink-0 ml-4">
-                <FollowAcceptPillButton 
-                    v-bind:followableId="notificationData.entity.id" 
+            <div v-else-if="isFollowRequest" class="shrink-0 ml-4 flex items-center gap-2">
+                <FollowDeclinePillButton
+                    v-if="! metadata.is_approved"
+                    v-bind:followableId="notificationData.entity.id"
+                    v-on:click="handleFollowDecline"
+                buttonSize="md"></FollowDeclinePillButton>
+                <FollowAcceptPillButton
+                    v-bind:followableId="notificationData.entity.id"
                     v-bind:isApproved="metadata.is_approved"
                     v-on:click="handleFollowAccept"
                 buttonSize="md"></FollowAcceptPillButton>
@@ -52,6 +57,7 @@
     import DropdownButton from '@D/components/general/dropdowns/parts/DropdownButton.vue';
     import PrimaryPillButton from '@D/components/inter-ui/buttons/PrimaryPillButton.vue';
     import FollowAcceptPillButton from '@D/components/inter-ui/buttons/follows/FollowAcceptPillButton.vue';
+    import FollowDeclinePillButton from '@D/components/inter-ui/buttons/follows/FollowDeclinePillButton.vue';
 
     export default defineComponent({
         props: {
@@ -151,6 +157,11 @@
                     debounce(() => {
                         notificationsStore.deleteNotification(props.notificationData.id);
                     }, 2500);
+                },
+                handleFollowDecline: function() {
+                    debounce(() => {
+                        notificationsStore.deleteNotification(props.notificationData.id);
+                    }, 2500);
                 }
             }
         },
@@ -158,7 +169,8 @@
             AvatarSmall: AvatarSmall,
             DropdownButton: DropdownButton,
             PrimaryPillButton: PrimaryPillButton,
-            FollowAcceptPillButton: FollowAcceptPillButton
+            FollowAcceptPillButton: FollowAcceptPillButton,
+            FollowDeclinePillButton: FollowDeclinePillButton
         }
     });
 </script>

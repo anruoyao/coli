@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /*
 |--------------------------------------------------------------------------
 | ColibriPlus - The Social Network Web Application.
@@ -218,6 +218,11 @@ class ChatController extends Controller
             return $this->responseResourceNotFoundError('User', $userId);
         }
         else {
+            // 私信隐私校验：对方「谁能私信我」设置不允许时不允许发起新会话（已有会话不受影响）
+            if( ! $this->canDirectMessage($userData)) {
+                return $this->directMessageDeniedResponse($userData);
+            }
+
             $chatData = $this->initiateChat($userId);
 
             return $this->responseSuccess([
@@ -238,6 +243,11 @@ class ChatController extends Controller
             return $this->responseResourceNotFoundError('User', $userId);
         }
         else {
+            // 私信隐私校验（与 createChat 一致）
+            if( ! $this->canDirectMessage($userData)) {
+                return $this->directMessageDeniedResponse($userData);
+            }
+
             $chatData = $this->initiateChat($userId);
 
             return $this->responseSuccess([
@@ -384,6 +394,15 @@ class ChatController extends Controller
             $chatData = Chat::participatedChats()->where('chat_id', $chatId)->first();
 
             if($chatData) {
+                // 私信隐私校验：单聊中对方「谁能私信我」设置不允许时禁止发送
+                if($chatData->type->isDirect()) {
+                    $interlocutorData = $chatData->interlocutor?->user;
+
+                    if($interlocutorData && ! $this->canDirectMessage($interlocutorData)) {
+                        return $this->directMessageDeniedResponse($interlocutorData);
+                    }
+                }
+
                 $participantData = $chatData->participants()->where('user_id', me()->id)->first();
                 $otherParticipants = $chatData->participants()->whereNot('user_id', me()->id)->get();
                 $messageContentLanguage = '';
@@ -478,6 +497,15 @@ class ChatController extends Controller
             $chatData = Chat::participatedChats()->where('chat_id', $chatId)->first();
 
             if($chatData) {
+                // 私信隐私校验（与 sendMessage 一致）
+                if($chatData->type->isDirect()) {
+                    $interlocutorData = $chatData->interlocutor?->user;
+
+                    if($interlocutorData && ! $this->canDirectMessage($interlocutorData)) {
+                        return $this->directMessageDeniedResponse($interlocutorData);
+                    }
+                }
+
                 $participantData = $chatData->participants()->where('user_id', me()->id)->first();
 
                 $messageInsertData = [
@@ -763,5 +791,31 @@ class ChatController extends Controller
         $blockService = new BlockService(me(), $interlocutorData);
 
         return $blockService->blockedAny();
+    }
+
+    /**
+     * 私信隐私：对方「谁能私信我」设置是否允许我发消息。
+     */
+    private function canDirectMessage(User $interlocutorData): bool
+    {
+        return $interlocutorData->permitSettings?->direct_messages->allows(me(), $interlocutorData) ?? true;
+    }
+
+    /**
+     * 私信被拒时的统一响应，message 按对方设置给出明确提示。
+     */
+    private function directMessageDeniedResponse(User $interlocutorData)
+    {
+        $permit = $interlocutorData->permitSettings?->direct_messages ?? \App\Enums\User\PrivacyPermit::NOBODY;
+
+        $message = match($permit) {
+            \App\Enums\User\PrivacyPermit::NOBODY => __('api/chat.dm_denied_nobody', [], me()->language),
+            \App\Enums\User\PrivacyPermit::FOLLOWERS, \App\Enums\User\PrivacyPermit::APPROVED => __('api/chat.dm_denied_followers', [], me()->language),
+            default => __('api/chat.dm_denied_nobody', [], me()->language),
+        };
+
+        return $this->responseError([
+            'message' => $message
+        ], 403);
     }
 }

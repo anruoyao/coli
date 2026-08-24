@@ -66,6 +66,11 @@ return [
 	'invited_you_to_group' => '邀请您加入 ~ {group_name} 群组。',
 	'typing' => '正在输入...',
 	'user_is_typing' => '{name} 正在输入...',
+	'dm_denied_nobody' => '对方已关闭私信，无法发送消息。',
+	'dm_denied_followers' => '对方设置了仅粉丝可私信，您暂无法发送消息。',
+	'story_reply_denied_nobody' => '对方已关闭故事回复。',
+	'story_reply_denied_followers' => '对方设置了仅粉丝可回复故事。',
+	'invite_denied' => '以下用户设置了群组邀请限制，无法被邀请：{usernames}',
 	'search' => '搜索',
 	'alerts' => [
 		'ws_connection' => [

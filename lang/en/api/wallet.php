@@ -1,6 +1,8 @@
 <?php
 
 return [
+	'transfer_denied_nobody' => 'This user does not accept wallet transfers.',
+	'transfer_denied_followers' => 'Only followers can transfer money to this user.',
 	'wallet_page' => 'Wallet',
 	'current_balance' => 'Current balance',
 	'wallet_address' => 'Wallet address',

@@ -25,10 +25,15 @@ class HandleStoryCreation
 
         if ($mentions) {
             $mentionedUsers = User::active()->excludeSelf()->whereIn('username', $mentions)->get();
-            
-            $mentionedUsers->each(function($userData) use ($frameData) {        
+
+            $mentionedUsers->each(function($userData) use ($frameData) {
+                // 提及隐私：被@用户「谁能@我」设置不允许作者提及时，不发送提及通知
+                if(! ($userData->permitSettings?->mentions->allows($frameData->user, $userData) ?? true)) {
+                    return;
+                }
+
                 $userData->notify(new StoryMentionNotification($frameData));
             });
-        }   
+        }
     }
 }

@@ -166,6 +166,7 @@ return [
 	'follow_requested_button' => 'Requested',
 	'follow_accept_button' => 'Accept',
 	'follow_accepted_button' => 'Accepted',
+	'follow_decline_button' => 'Decline',
 	'condition' => 'Condition',
 	'all' => 'All',
 	'ai_generated' => 'AI generated content',

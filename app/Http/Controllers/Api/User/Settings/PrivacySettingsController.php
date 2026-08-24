@@ -17,14 +17,17 @@ namespace App\Http\Controllers\Api\User\Settings;
 
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Enums\User\FollowStatus;
 use App\Enums\User\PrivacyPermit;
 use App\Http\Controllers\Controller;
+use App\Models\Follow;
+use App\Services\Relations\FollowService;
 use App\Traits\Http\Api\SupportsApiResponses;
 
 class PrivacySettingsController extends Controller
 {
     use SupportsApiResponses;
-    
+
     private $me;
 
     public function __construct() {
@@ -56,6 +59,8 @@ class PrivacySettingsController extends Controller
             'payment_transfers' => ['required', 'string', Rule::in(array_column(PrivacyPermit::cases(), 'value'))],
         ]);
 
+        $oldFollowersPermit = $this->me->permitSettings->followers;
+
         $this->me->permitSettings()->update([
             'mentions' => $request->mentions,
             'followers' => $request->followers,
@@ -64,7 +69,22 @@ class PrivacySettingsController extends Controller
             'group_invites' => $request->group_invites,
             'payment_transfers' => $request->payment_transfers,
         ]);
-        
+
+        // 关注权限从「需批准」放宽为「所有人」时，自动批准所有待处理请求，
+        // 避免历史请求永久停留在「请求中」。
+        if($oldFollowersPermit->onlyApproved() && $request->followers === PrivacyPermit::ALL->value) {
+            Follow::where([
+                'following_id' => $this->me->id,
+                'status' => FollowStatus::REQUESTED
+            ])->pluck('follower_id')->each(function ($followerId) {
+                $followerData = \App\Models\User::activeById($followerId)->first();
+
+                if($followerData) {
+                    (new FollowService($followerData, $this->me))->accept();
+                }
+            });
+        }
+
         return $this->responseSuccess([
             'data' => null
         ]);

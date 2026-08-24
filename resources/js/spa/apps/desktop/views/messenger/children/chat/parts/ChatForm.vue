@@ -121,7 +121,11 @@
 
                         repliedMessage.value = null;
                     } catch (error) {
-                        alert(error);
+                        const serverMessage = error?.response?.data?.message;
+
+                        alert(serverMessage || error?.message || error);
+
+                        state.isSubmitting = false;
                     }
                 }
             }

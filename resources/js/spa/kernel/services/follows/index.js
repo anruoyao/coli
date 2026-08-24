@@ -28,6 +28,11 @@ const colibriFollow = function() {
 			colibriAPI().relations().with({
 				id: this.__followableId
 			}).sendTo(`accept/${this.__followableType}`);
+		},
+		decline: function() {
+			colibriAPI().relations().with({
+				id: this.__followableId
+			}).sendTo(`decline/${this.__followableType}`);
 		}
 	};
 }
