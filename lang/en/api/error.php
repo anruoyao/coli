@@ -5,5 +5,6 @@ return [
 		'page_title' => 'Page not found',
 		'title' => 'Sorry, this page is not available.',
 		'desc' => 'You may have used an invalid link or the page has been removed.',
-	]
+	],
+	'maintenance' => 'We are performing maintenance. Please try again later.',
 ];

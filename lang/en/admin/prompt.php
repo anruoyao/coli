@@ -118,6 +118,17 @@ return [
 		'description' => 'This action will remove the verification badge from the user\'s profile.',
 		'confirm_btn_text' => 'Yes, unverify',
 	],
+	'block_user' => [
+		'title' => 'Block user',
+		'description' => 'The user will be logged out immediately and prevented from signing in. Their app will show a blocked notice.',
+		'reason_placeholder' => 'Block reason (shown to the user)…',
+		'confirm_btn_text' => 'Block user',
+	],
+	'unblock_user' => [
+		'title' => 'Unblock user?',
+		'description' => 'The user will be able to sign in and use the app again.',
+		'confirm_btn_text' => 'Yes, unblock',
+	],
 	'delete_category' => [
 		'title' => 'Delete category?',
 		'description' => 'Are you sure you want to delete this category? Related entities will not be deleted but they will moved to the Uncategorized category.',

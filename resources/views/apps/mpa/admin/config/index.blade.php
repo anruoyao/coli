@@ -58,6 +58,9 @@
                 <x-navbar.item href="{{ route('admin.config.versions') }}" icon="refresh-cw-04">
                     {{ __('admin/sidebar.app_version_settings') }}
                 </x-navbar.item>
+                <x-navbar.item href="{{ route('admin.config.maintenance') }}" icon="shield-02">
+                    {{ __('admin/sidebar.maintenance_mode') }}
+                </x-navbar.item>
             </x-navbar>
         </div>
         <div class="col-span-1">

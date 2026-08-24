@@ -12,6 +12,9 @@ return [
 		'authorize_reject' => 'Request is rejected successfully!',
 		'verify_success' => 'User verified successfully!',
 		'unverify_success' => 'User unverified successfully!',
+		'block_success' => 'User blocked and logged out!',
+		'block_self' => 'You cannot block yourself or an admin account!',
+		'unblock_success' => 'User unblocked!',
 		'wallet_balance_success' => 'Wallet balance updated to :amount successfully!',
 	],
 	'post' => [

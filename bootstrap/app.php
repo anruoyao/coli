@@ -30,7 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
             Route::middleware(['web', 'restrict.ip', 'device.identifier', 'terminator'])->group(base_path('routes/social.php'));
             Route::middleware(['web', 'restrict.ip', 'device.identifier', 'terminator'])->group(base_path('routes/document.php'));
             Route::middleware(['web', 'restrict.ip', 'auth', 'user.status', 'device.identifier', 'terminator'])->prefix('business')->group(base_path('routes/business.php'));
-            Route::middleware(['api', 'log.request', 'restrict.ip', 'device.identifier', 'terminator'])->prefix('api')->group(base_path('routes/api.php'));
+            Route::middleware(['api', 'log.request', 'restrict.ip', 'device.identifier', 'terminator', 'user.status'])->prefix('api')->group(base_path('routes/api.php'));
             Route::withoutMiddleware()->group(base_path('routes/webhooks/payment_webhooks.php'));
             Route::withoutMiddleware()->group(base_path('routes/callbacks.php'));
 
@@ -43,6 +43,7 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
 
             $middleware->alias([
                 'user.status' => App\Http\Middleware\UserStatusMiddleware::class,
+                'maintenance' => App\Http\Middleware\CheckMaintenance::class,
                 'device.identifier' => App\Http\Middleware\DeviceIdentifierMiddleware::class,
                 'terminator' => App\Http\Middleware\TerminatingMiddleware::class,
                 'restrict.ip' => App\Http\Middleware\RestrictIPAddressMiddleware::class,

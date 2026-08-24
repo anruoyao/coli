@@ -16,6 +16,8 @@ return [
 		'verify_user' => 'Verify user',
 		'unverify_user' => 'Unverify user',
 		'wallet' => 'Wallet',
+		'block' => 'Block user',
+		'unblock' => 'Unblock user',
 	],
 	'post' => [
 		'delete' => 'Delete post',

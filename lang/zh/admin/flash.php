@@ -12,6 +12,9 @@ return [
 		'authorize_reject' => '申请已成功拒绝！',
 		'verify_success' => '用户认证成功！',
 		'unverify_success' => '用户取消认证成功！',
+		'block_success' => '用户已封禁并强制下线！',
+		'block_self' => '不能封禁自己或管理员账号！',
+		'unblock_success' => '用户已解封！',
 		'wallet_balance_success' => '钱包余额已成功更新为 :amount！',
 	],
 	'post' => [

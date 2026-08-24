@@ -16,6 +16,8 @@ return [
 		'verify_user' => '认证用户',
 		'unverify_user' => '取消认证用户',
 		'wallet' => '钱包',
+		'block' => '封禁用户',
+		'unblock' => '解封用户',
 	],
 	'post' => [
 		'delete' => '删除帖子',

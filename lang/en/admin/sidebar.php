@@ -43,6 +43,7 @@ return [
     'auth_settings' => 'Auth Settings',
     'mobile_app_settings' => 'Mobile App Settings',
     'app_version_settings' => 'App Versioning',
+    'maintenance_mode' => 'Maintenance (Emergency)',
     'custom_code' => 'Custom Code Injection',
     'pwa_settings' => 'PWA Settings',
 ];

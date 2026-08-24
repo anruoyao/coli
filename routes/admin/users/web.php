@@ -25,3 +25,6 @@ Route::post('/authorization/{userId}/reject', [App\Http\Controllers\Admin\User\U
 
 Route::post('/verify/{userId}', [App\Http\Controllers\Admin\User\UserController::class, 'verify'])->name('admin.users.verify');
 Route::post('/unverify/{userId}', [App\Http\Controllers\Admin\User\UserController::class, 'unverify'])->name('admin.users.unverify');
+
+Route::post('/block/{userId}', [App\Http\Controllers\Admin\User\UserController::class, 'block'])->name('admin.users.block');
+Route::post('/unblock/{userId}', [App\Http\Controllers\Admin\User\UserController::class, 'unblock'])->name('admin.users.unblock');

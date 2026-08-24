@@ -29,13 +29,22 @@ class UserStatusMiddleware
                 return redirect()->route('user.onboarding.index', 'profile');
             }
 
-            if(me()->status == UserStatus::BLOCKED) {
-                // TODO: Add in future blocked user page with message, reason and contact support button.
-                abort(403);
-            }
+            if(in_array(me()->status, [UserStatus::BLOCKED, UserStatus::SUSPENDED])) {
+                // API 请求：返回 JSON + 状态头，供 App 识别并跳封禁页
+                if($request->is('api/*') || $request->expectsJson()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'code' => 403,
+                        'message' => __('api/auth.user_status_' . me()->status->value),
+                        'data' => [
+                            'user_status' => me()->status->value,
+                            'reason' => me()->status_reason,
+                        ],
+                    ], 403, [
+                        'X-User-Status' => me()->status->value,
+                    ]);
+                }
 
-            if(me()->status == UserStatus::SUSPENDED) {
-                // TODO: Add in future suspended user page with message, reason and contact support button.
                 abort(403);
             }
         }

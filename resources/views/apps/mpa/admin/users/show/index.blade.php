@@ -62,11 +62,25 @@
 							</x-slot:itemIcon>
 						</x-ui.dropdown.item>
                         <x-div></x-div>
-						<x-ui.dropdown.item tag="a" :danger="true" x-on:click="deleteUser" itemText="{{ __('admin/dd.user.delete') }}">
+                        <x-ui.dropdown.item :danger="true" x-on:click="deleteUser" itemText="{{ __('admin/dd.user.delete') }}">
 							<x-slot:itemIcon>
 								<x-ui-icon type="line" name="trash-04"></x-ui-icon>
 							</x-slot:itemIcon>
 						</x-ui.dropdown.item>
+                        <x-div></x-div>
+						@if($userData->status === \App\Enums\User\UserStatus::BLOCKED)
+							<x-ui.dropdown.item :danger="true" x-on:click="unblockUser" itemText="{{ __('admin/dd.user.unblock') }}">
+								<x-slot:itemIcon>
+									<x-ui-icon type="line" name="user-check-01"></x-ui-icon>
+								</x-slot:itemIcon>
+							</x-ui.dropdown.item>
+						@else
+							<x-ui.dropdown.item :danger="true" x-on:click="openBlockModal" itemText="{{ __('admin/dd.user.block') }}">
+								<x-slot:itemIcon>
+									<x-ui-icon type="line" name="user-block-01"></x-ui-icon>
+								</x-slot:itemIcon>
+							</x-ui.dropdown.item>
+						@endif
 					</x-ui.dropdown.dropdown>
 				</x-slot:controlOptions>
 			</x-entity.header>
@@ -252,10 +266,33 @@
 		</x-striped-table.table>
 	</x-sided-content>
 </div>
+
+{{-- 封禁弹窗：填写封禁原因 --}}
+<div x-show="blockModalOpen" x-cloak class="fixed inset-0 bg-black/15 z-50 backdrop-blur-xs" x-on:click.self="blockModalOpen = false">
+	<div class="flex justify-center px-6 py-32">
+		<div class="w-full max-w-md shrink-0 bg-bg-pr rounded-2xl overflow-hidden shadow-xs">
+			<form method="POST" action="{{ route('admin.users.block', $userData->id) }}" class="p-6">
+				@csrf
+				<h3 class="text-par-m font-semibold mb-1">{{ __('admin/prompt.block_user.title') }}</h3>
+				<p class="text-par-n text-lab-sc mb-4">{{ __('admin/prompt.block_user.description') }}</p>
+				<textarea name="reason" rows="3" class="w-full bg-input-pr rounded-xl p-3 text-par-n outline-hidden resize-none" placeholder="{{ __('admin/prompt.block_user.reason_placeholder') }}"></textarea>
+				<div class="mt-4 flex items-center justify-end gap-2">
+					<button type="button" x-on:click="blockModalOpen = false" class="cursor-pointer text-par-n text-lab-sc hover:text-lab-pr px-4 py-2 rounded-lg">{{ __('buttons.cancel') }}</button>
+					<x-ui.buttons.pill variant="danger" size="sm" type="submit" btnText="{{ __('admin/prompt.block_user.confirm_btn_text') }}"></x-ui.buttons.pill>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
 <script>
 	window.addEventListener('alpine:init', () => {
 		Alpine.data('alpineComponent', () => {
 			return {
+				blockModalOpen: false,
+				openBlockModal: function () {
+					this.blockModalOpen = true;
+				},
 				deleteUser: () => {
 					Alpine.store('confirmModal').open({
 						title: "{{ __('admin/prompt.delete_user.title') }}",
@@ -301,6 +338,14 @@
 						desc: "{{ __('admin/prompt.unverify_user.description') }}",
 						confirmButtonText: "{{ __('admin/prompt.unverify_user.confirm_btn_text') }}",
 						formAction: "{{ route('admin.users.unverify', $userData->id) }}"
+					});
+				},
+				unblockUser: () => {
+					Alpine.store('confirmModal').open({
+						title: "{{ __('admin/prompt.unblock_user.title') }}",
+						desc: "{{ __('admin/prompt.unblock_user.description') }}",
+						confirmButtonText: "{{ __('admin/prompt.unblock_user.confirm_btn_text') }}",
+						formAction: "{{ route('admin.users.unblock', $userData->id) }}"
 					});
 				}
 			}

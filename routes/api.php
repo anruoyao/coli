@@ -34,6 +34,19 @@ Route::post('/sanctum/token', function (Request $request) {
         ]);
     }
 
+    // 封禁/停用账号禁止登录
+    if (in_array($user->status, [\App\Enums\User\UserStatus::BLOCKED, \App\Enums\User\UserStatus::SUSPENDED])) {
+        return response()->json([
+            'status' => 'error',
+            'code' => 403,
+            'message' => __('api/auth.user_status_' . $user->status->value),
+            'data' => [
+                'user_status' => $user->status->value,
+                'reason' => $user->status_reason,
+            ],
+        ], 403);
+    }
+
     return $user->createToken($request->device_name)->plainTextToken;
 });
 

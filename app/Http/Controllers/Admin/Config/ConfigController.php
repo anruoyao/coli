@@ -115,6 +115,11 @@ class ConfigController extends Controller
         return view('admin::config.version.index');
     }
 
+    public function maintenance()
+    {
+        return view('admin::config.maintenance.index');
+    }
+
     public function mobileApps()
     {
         $tab = request()->route('tab', 'mobile');

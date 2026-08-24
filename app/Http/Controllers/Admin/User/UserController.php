@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Admin\User;
 
 use App\Models\User;
 use App\Enums\User\UserType;
+use App\Enums\User\UserStatus;
 use App\Support\Views\Flash;
 use Illuminate\Http\Request;
 use App\Enums\User\ASRStatus;
 use App\Http\Controllers\Controller;
 use App\Actions\User\DeleteUserAction;
+use App\Events\Admin\User\UserStatusChangedEvent;
 
 class UserController extends Controller
 {
@@ -135,6 +137,50 @@ class UserController extends Controller
         ]);
 
         return redirect()->route('admin.users.show', $userId)->with('flashMessage', (new Flash(content: __('admin/flash.user.unverify_success')))->get());
+    }
+
+    /**
+     * 封禁用户：status=blocked + 原因，删除该用户全部 Sanctum token（强制下线），
+     * 并通过 Reverb 私有频道推送 main.command(banned) 让在线 App 秒级进入封禁页。
+     */
+    public function block(Request $request, int $userId)
+    {
+        $userData = $this->fetchUserById($userId);
+
+        if (me()->id == $userData->id || $userData->isRoot() || $userData->isAdmin()) {
+            return redirect()->route('admin.users.show', $userId)->with('flashMessage', (new Flash(content: __('admin/flash.user.block_self')))->get());
+        }
+
+        $reason = $request->string('reason')->value;
+
+        $userData->update([
+            'status' => UserStatus::BLOCKED,
+            'status_reason' => $reason ?: null,
+        ]);
+
+        // 清除全部会话 token，强制已登录设备失效
+        $userData->tokens()->delete();
+
+        event(new UserStatusChangedEvent($userData, UserStatus::BLOCKED, $reason));
+
+        return redirect()->route('admin.users.show', $userId)->with('flashMessage', (new Flash(content: __('admin/flash.user.block_success')))->get());
+    }
+
+    /**
+     * 解封用户：status=active，清空原因，广播 main.command(active) 恢复在线 App。
+     */
+    public function unblock(int $userId)
+    {
+        $userData = $this->fetchUserById($userId);
+
+        $userData->update([
+            'status' => UserStatus::ACTIVE,
+            'status_reason' => null,
+        ]);
+
+        event(new UserStatusChangedEvent($userData, UserStatus::ACTIVE, null));
+
+        return redirect()->route('admin.users.show', $userId)->with('flashMessage', (new Flash(content: __('admin/flash.user.unblock_success')))->get());
     }
 
     private function fetchUserById(int $userId)

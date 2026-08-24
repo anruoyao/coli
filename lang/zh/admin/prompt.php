@@ -118,6 +118,17 @@ return [
 		'description' => '此操作将从用户资料中移除认证徽章。',
 		'confirm_btn_text' => '是的，取消认证',
 	],
+	'block_user' => [
+		'title' => '封禁用户',
+		'description' => '封禁后该用户将立即被强制下线，无法登录，App 端会进入封禁提示页。',
+		'reason_placeholder' => '填写封禁原因（将展示给用户）…',
+		'confirm_btn_text' => '确认封禁',
+	],
+	'unblock_user' => [
+		'title' => '解封用户？',
+		'description' => '解封后该用户可重新登录并正常使用 App。',
+		'confirm_btn_text' => '是的，解封',
+	],
 	'delete_category' => [
 		'title' => '删除分类？',
 		'description' => '确定要删除此分类吗？相关实体不会被删除，但会被移动到未分类类别中。',
