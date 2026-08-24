@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /*
 |--------------------------------------------------------------------------
 | ColibriPlus - The Social Network Web Application.
