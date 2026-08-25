@@ -34,8 +34,24 @@ return [
         ],
         '503' => [
             'title' => 'Service unavailable!',
-            'message' => 'Sorry, but the service is not available. Please try again later.'
+            'message' => 'Sorry, but the service is currently unavailable. Please try again later.'
         ]
+    ],
+    'account_blocked' => [
+        'title' => 'Account blocked',
+        'desc' => 'Your account has been blocked for violating our community guidelines and can no longer access the platform. Contact support if you have questions.',
+        'contact' => 'Contact support',
+        'subject' => 'Account blocked appeal',
+    ],
+    'account_suspended' => [
+        'title' => 'Account suspended',
+        'desc' => 'Your account has been suspended for violating our community guidelines and can no longer access the platform. Contact support if you have questions.',
+    ],
+    'maintenance' => [
+        'title' => 'Maintenance in progress',
+        'default_desc' => 'We are performing maintenance. Please try again later. Thank you for your patience.',
+        'until' => 'Expected recovery: :until',
+        'retry' => 'Refresh and retry',
     ]
 ];
 

@@ -45,7 +45,11 @@ class UserStatusMiddleware
                     ]);
                 }
 
-                abort(403);
+                // 网页端：渲染账号封禁/停用友好提示页（含原因 + 申诉 + 退出登录）
+                return response()->view('errors.account-blocked', [
+                    'userStatus' => me()->status->value,
+                    'reason' => me()->status_reason,
+                ], 403);
             }
         }
 

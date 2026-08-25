@@ -42,6 +42,10 @@ class CheckMaintenance
             ]);
         }
 
-        return $next($request);
+        // 网页端：渲染维护公告页（503），后台与下载链接不在本中间件内，不受影响
+        return response()->view('errors.maintenance', [
+            'message' => $settings->message ?: '',
+            'until' => $settings->until?->format('Y-m-d H:i'),
+        ], 503);
     }
 }

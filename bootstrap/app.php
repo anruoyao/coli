@@ -34,7 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
             Route::withoutMiddleware()->group(base_path('routes/webhooks/payment_webhooks.php'));
             Route::withoutMiddleware()->group(base_path('routes/callbacks.php'));
 
-            Route::middleware(['web', 'restrict.ip', 'device.identifier', 'terminator'])->group(base_path('routes/web.php'));
+            Route::middleware(['web', 'maintenance', 'restrict.ip', 'device.identifier', 'terminator'])->group(base_path('routes/web.php'));
 
         })->withMiddleware(function (Middleware $middleware) {
 
