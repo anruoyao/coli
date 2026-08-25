@@ -130,7 +130,7 @@ return [
 	'block_this_user' => '屏蔽用户 {user_name}',
 	'message' => '消息',
 	'detailed_info' => '详细信息',
-	'following' => '关注中',
+	'following' => '关注',
 	'posts' => '帖子',
 	'shop' => '商店',
 	'groups' => '群组',

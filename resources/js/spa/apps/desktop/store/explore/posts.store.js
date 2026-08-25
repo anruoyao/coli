@@ -2,6 +2,8 @@ import { defineStore } from 'pinia';
 import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
 
 const useExplorePostsStore = defineStore('explore_posts_store', {
+    // 让删除帖子事件自动从推荐流中移除对应帖子
+    deleteAware: true,
     state: function() {
 		return {
 			updateAttempts: 0,
