@@ -24,7 +24,8 @@ class Maintenance extends Component
         $this->formData = [
             'enabled' => $settings->enabled,
             'message' => $settings->message,
-            'until' => $settings->until?->format('Y-m-d H:i') ?? '',
+            // settings 存储读回的是字符串（spatie settings 序列化），需 Carbon::parse 再格式化
+            'until' => ! empty($settings->until) ? \Illuminate\Support\Carbon::parse($settings->until)->format('Y-m-d H:i') : '',
         ];
     }
 
