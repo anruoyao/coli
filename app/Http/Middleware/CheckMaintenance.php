@@ -23,8 +23,16 @@ class CheckMaintenance
             return $next($request);
         }
 
-        // 白名单：版本检测等关键接口在维护期间必须可用，避免 App 将「维护」误判为「无更新」
-        if ($request->is('api/system/version/check')) {
+        // 白名单：维护期间保持可用 —— 后台（用于关闭维护）、文件下载（配合 App 强制更新）、
+        // 版本检测（App 启动时据此区分「维护」与「无更新」，避免误判）。
+        // 注意 Laravel 中间件优先级会让 Authenticate 提前执行，导致未登录的页面请求在
+        // 本中间件之前被 302 到登录页，因此本中间件以「全局前置（before）」方式挂载。
+        $adminPrefix = trim((string) config('app.admin_prefix'), '/');
+        $isWhitelisted = ($adminPrefix !== '' && $request->is($adminPrefix, $adminPrefix.'/*'))
+            || $request->is('file-downloads/*')
+            || $request->is('api/system/version/check');
+
+        if ($isWhitelisted) {
             return $next($request);
         }
 

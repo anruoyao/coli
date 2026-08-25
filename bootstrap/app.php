@@ -30,16 +30,20 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
             Route::middleware(['web', 'restrict.ip', 'device.identifier', 'terminator'])->group(base_path('routes/social.php'));
             Route::middleware(['web', 'restrict.ip', 'device.identifier', 'terminator'])->group(base_path('routes/document.php'));
             Route::middleware(['web', 'restrict.ip', 'auth', 'user.status', 'device.identifier', 'terminator'])->prefix('business')->group(base_path('routes/business.php'));
-            Route::middleware(['api', 'maintenance', 'app.version', 'log.request', 'restrict.ip', 'device.identifier', 'terminator', 'user.status'])->prefix('api')->group(base_path('routes/api.php'));
+            Route::middleware(['api', 'app.version', 'log.request', 'restrict.ip', 'device.identifier', 'terminator', 'user.status'])->prefix('api')->group(base_path('routes/api.php'));
             Route::withoutMiddleware()->group(base_path('routes/webhooks/payment_webhooks.php'));
             Route::withoutMiddleware()->group(base_path('routes/callbacks.php'));
 
-            Route::middleware(['web', 'maintenance', 'restrict.ip', 'device.identifier', 'terminator'])->group(base_path('routes/web.php'));
+            Route::middleware(['web', 'restrict.ip', 'device.identifier', 'terminator'])->group(base_path('routes/web.php'));
 
         })->withMiddleware(function (Middleware $middleware) {
 
             $middleware->redirectGuestsTo('auth/login');
 
+            // 维护模式：全局前置（before）——早于一切中间件（含 Laravel 优先执行的 Authenticate），
+            // 保证未登录用户访问任何页面也能看到维护页而非被 302 到登录页；
+            // 后台/下载/版本检测由 CheckMaintenance 内部白名单豁免。
+            $middleware->prepend(App\Http\Middleware\CheckMaintenance::class);
 
             $middleware->alias([
                 'user.status' => App\Http\Middleware\UserStatusMiddleware::class,
