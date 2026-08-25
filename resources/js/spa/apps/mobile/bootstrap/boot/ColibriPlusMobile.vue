@@ -71,7 +71,7 @@
 				ColibriBRD.private(BRD.getChannel('AUTH_USER', [authStore.userData.id])).listen('.main.command', function(event) {
 					if(!event) return;
 
-					if(event.action === 'banned' || event.action === 'suspended') {
+					if(event.action === 'blocked' || event.action === 'suspended') {
 						appStore.setUserStatus({
 							status: event.action,
 							reason: event.reason
