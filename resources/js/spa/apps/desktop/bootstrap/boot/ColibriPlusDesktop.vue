@@ -23,6 +23,8 @@
     <NetworkStatusBar></NetworkStatusBar>
 
     <MaintenanceOverlay v-if="appStore.maintenance && appStore.maintenance.on" :message="appStore.maintenance.message" :until="appStore.maintenance.until"></MaintenanceOverlay>
+
+    <UserBlockedOverlay v-if="appStore.userStatus && appStore.userStatus.status" :status="appStore.userStatus.status" :reason="appStore.userStatus.reason"></UserBlockedOverlay>
 </template>
 
 <script>
@@ -35,6 +37,9 @@
     import ApplicationMainLayout from '@D/layouts/ApplicationMainLayout.vue';
     import NetworkStatusBar from '@D/components/layout/parts/network/NetworkStatusBar.vue';
     import MaintenanceOverlay from '@D/components/layout/parts/maintenance/MaintenanceOverlay.vue';
+    import UserBlockedOverlay from '@D/components/layout/parts/maintenance/UserBlockedOverlay.vue';
+    import { useAuthStore } from '@D/store/auth/auth.store.js';
+    import BRD from '@/kernel/websockets/brd/index.js';
 
     // 公共命令频道：维护模式等全局指令广播（与 App 端一致）
     const PUBLIC_COMMAND_CHANNEL = 'App.Commands';
@@ -45,6 +50,7 @@
             const appLoading = ref(true);
             const route = useRoute();
             const appStore = useAppStore();
+            const authStore = useAuthStore();
 
             const layoutType = computed(() => {
                 return route.meta.layout;
@@ -72,6 +78,25 @@
             };
 
             // 订阅公共命令频道：维护模式实时开/关（开维护即时盖遮罩，关维护即时恢复）
+            // 订阅用户私有频道：封禁/停用实时指令（banned/suspended → 封禁页，active → 恢复）
+            const subscribeUserStatus = () => {
+                if(!window.ColibriBRD || !authStore.userData) return;
+
+                ColibriBRD.private(BRD.getChannel('AUTH_USER', [authStore.userData.id])).listen('.main.command', function(event) {
+                    if(!event) return;
+
+                    if(event.action === 'banned' || event.action === 'suspended') {
+                        appStore.setUserStatus({
+                            status: event.action,
+                            reason: event.reason
+                        });
+                    }
+                    else if(event.action === 'active') {
+                        appStore.setUserStatus({ status: '' });
+                    }
+                });
+            };
+
             const maintenanceSubscription = () => {
                 if(!window.ColibriBRD) return;
 
@@ -105,6 +130,8 @@
                 setupInteractionListeners();
 
                 maintenanceSubscription();
+
+                subscribeUserStatus();
             });
 
             onUnmounted(() => {
@@ -134,6 +161,7 @@
             }
         },
         components: {
+            UserBlockedOverlay: UserBlockedOverlay,
             MaintenanceOverlay: MaintenanceOverlay,
             NetworkStatusBar: NetworkStatusBar,
             ApplicationMainLayout: ApplicationMainLayout,

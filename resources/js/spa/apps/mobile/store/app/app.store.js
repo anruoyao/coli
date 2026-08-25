@@ -12,6 +12,11 @@ const useAppStore = defineStore('mobile_app_store', {
                 on: false,
                 message: '',
                 until: ''
+            },
+            // 账号封禁/停用（SPA 实时封禁页）：由用户私有频道 main.command 指令驱动
+            userStatus: {
+                status: '', // blocked / suspended / ''（正常）
+                reason: ''
             }
         };
     },
@@ -43,6 +48,10 @@ const useAppStore = defineStore('mobile_app_store', {
             this.maintenance.on = payload.on === true;
             this.maintenance.message = payload.message ?? '';
             this.maintenance.until = payload.until ?? '';
+        },
+        setUserStatus: function(payload) {
+            this.userStatus.status = payload.status ?? '';
+            this.userStatus.reason = payload.reason ?? '';
         }
     }
 });

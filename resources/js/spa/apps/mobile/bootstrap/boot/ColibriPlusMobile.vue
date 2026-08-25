@@ -32,6 +32,8 @@
 	import MessengerLayout from '@M/layouts/MessengerLayout.vue';
 	import FlatLayout from '@M/layouts/FlatLayout.vue';
 	import MaintenanceOverlay from '@M/components/layout/parts/maintenance/MaintenanceOverlay.vue';
+	import UserBlockedOverlay from '@M/components/layout/parts/maintenance/UserBlockedOverlay.vue';
+	import BRD from '@/kernel/websockets/brd/index.js';
 
 	// 公共命令频道：维护模式等全局指令广播（与 App 端一致）
 	const PUBLIC_COMMAND_CHANNEL = 'App.Commands';
@@ -62,6 +64,25 @@
 				});
 			};
 
+			// 订阅用户私有频道：封禁/停用实时指令（banned/suspended → 封禁页，active → 恢复）
+			const subscribeUserStatus = () => {
+				if(!window.ColibriBRD || !authStore.userData) return;
+
+				ColibriBRD.private(BRD.getChannel('AUTH_USER', [authStore.userData.id])).listen('.main.command', function(event) {
+					if(!event) return;
+
+					if(event.action === 'banned' || event.action === 'suspended') {
+						appStore.setUserStatus({
+							status: event.action,
+							reason: event.reason
+						});
+					}
+					else if(event.action === 'active') {
+						appStore.setUserStatus({ status: '' });
+					}
+				});
+			};
+
 			onMounted(async () => {
                 await appStore.bootstrapApplication();
 
@@ -70,6 +91,8 @@
 				colibriEventBus.on('auth:logout', logoutUser);
 
 				maintenanceSubscription();
+
+				subscribeUserStatus();
 			});
 
 			const logoutUser = () => {
@@ -106,6 +129,7 @@
 			};
 		},
 		components: {
+			UserBlockedOverlay: UserBlockedOverlay,
 			MaintenanceOverlay: MaintenanceOverlay,
 			ApplicationMainLayout: ApplicationMainLayout,
 			PostEditorLayout: PostEditorLayout,
