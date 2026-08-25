@@ -43,9 +43,11 @@ class CheckMaintenance
         }
 
         // 网页端：渲染维护公告页（503），后台与下载链接不在本中间件内，不受影响
+        $until = ! empty($settings->until) ? \Illuminate\Support\Carbon::parse($settings->until)->format('Y-m-d H:i') : null;
+
         return response()->view('errors.maintenance', [
             'message' => $settings->message ?: '',
-            'until' => $settings->until?->format('Y-m-d H:i'),
+            'until' => $until,
         ], 503);
     }
 }
