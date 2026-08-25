@@ -6,7 +6,13 @@ import { useAuthStore } from '@M/store/auth/auth.store.js';
 const useAppStore = defineStore('mobile_app_store', {
     state: () => {
         return {
-            appData: null
+            appData: null,
+            // 全局维护模式（SPA 实时遮罩）：由公共频道 main.command 指令驱动
+            maintenance: {
+                on: false,
+                message: '',
+                until: ''
+            }
         };
     },
     actions: {
@@ -32,6 +38,11 @@ const useAppStore = defineStore('mobile_app_store', {
                     });
                 }
             });
+        },
+        setMaintenance: function(payload) {
+            this.maintenance.on = payload.on === true;
+            this.maintenance.message = payload.message ?? '';
+            this.maintenance.until = payload.until ?? '';
         }
     }
 });

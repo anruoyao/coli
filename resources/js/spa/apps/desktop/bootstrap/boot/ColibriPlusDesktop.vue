@@ -21,6 +21,8 @@
     </template>
 
     <NetworkStatusBar></NetworkStatusBar>
+
+    <MaintenanceOverlay v-if="appStore.maintenance && appStore.maintenance.on" :message="appStore.maintenance.message" :until="appStore.maintenance.until"></MaintenanceOverlay>
 </template>
 
 <script>
@@ -32,6 +34,11 @@
     
     import ApplicationMainLayout from '@D/layouts/ApplicationMainLayout.vue';
     import NetworkStatusBar from '@D/components/layout/parts/network/NetworkStatusBar.vue';
+    import MaintenanceOverlay from '@D/components/layout/parts/maintenance/MaintenanceOverlay.vue';
+
+    // 公共命令频道：维护模式等全局指令广播（与 App 端一致）
+    const PUBLIC_COMMAND_CHANNEL = 'App.Commands';
+    const MAINTENANCE_EVENT = '.main.command';
     
     export default defineComponent({
         setup: function(_, context) {
@@ -64,6 +71,30 @@
                 window.addEventListener('touchstart', handleUserInteraction);
             };
 
+            // 订阅公共命令频道：维护模式实时开/关（开维护即时盖遮罩，关维护即时恢复）
+            const maintenanceSubscription = () => {
+                if(!window.ColibriBRD) return;
+
+                ColibriBRD.channel(PUBLIC_COMMAND_CHANNEL).listen(MAINTENANCE_EVENT, function(event) {
+                    if(event && event.action === 'maintenance_on') {
+                        appStore.setMaintenance({
+                            on: true,
+                            message: event.message,
+                            until: event.until
+                        });
+                    }
+                    else if(event && event.action === 'maintenance_off') {
+                        appStore.setMaintenance({ on: false });
+                    }
+                });
+            };
+
+            const cancelMaintenanceSubscription = () => {
+                if(!window.ColibriBRD) return;
+
+                ColibriBRD.leave(PUBLIC_COMMAND_CHANNEL);
+            };
+
             onMounted(async () => {
                 await appStore.bootstrapApplication();
                 
@@ -72,14 +103,19 @@
                 }, 500);
 
                 setupInteractionListeners();
+
+                maintenanceSubscription();
             });
 
             onUnmounted(() => {
                 removeInteractionListeners();
+
+                cancelMaintenanceSubscription();
             });
 
             return {
                 appLoading: appLoading,
+                appStore: appStore,
                 isMainLayout: computed(() => {
                     return layoutType.value == Layouts.MAIN;
                 }),
@@ -98,6 +134,7 @@
             }
         },
         components: {
+            MaintenanceOverlay: MaintenanceOverlay,
             NetworkStatusBar: NetworkStatusBar,
             ApplicationMainLayout: ApplicationMainLayout,
             ApplicationStoriesLayout: defineAsyncComponent(() => {

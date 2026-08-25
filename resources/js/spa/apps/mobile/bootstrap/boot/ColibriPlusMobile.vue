@@ -15,6 +15,8 @@
 
 		<MessengerLayout v-if="isMessengerLayout"></MessengerLayout>
 	</template>
+
+	<MaintenanceOverlay v-if="appStore.maintenance && appStore.maintenance.on" :message="appStore.maintenance.message" :until="appStore.maintenance.until"></MaintenanceOverlay>
 </template>
 
 <script>
@@ -29,6 +31,11 @@
 	import PostEditorLayout from '@M/layouts/PostEditorLayout.vue';
 	import MessengerLayout from '@M/layouts/MessengerLayout.vue';
 	import FlatLayout from '@M/layouts/FlatLayout.vue';
+	import MaintenanceOverlay from '@M/components/layout/parts/maintenance/MaintenanceOverlay.vue';
+
+	// 公共命令频道：维护模式等全局指令广播（与 App 端一致）
+	const PUBLIC_COMMAND_CHANNEL = 'App.Commands';
+	const MAINTENANCE_EVENT = '.main.command';
 
 	export default defineComponent({
 		setup: function() {
@@ -37,12 +44,32 @@
 			const appStore = useAppStore();
 			const authStore = useAuthStore();
 
+			// 订阅公共命令频道：维护模式实时开/关
+			const maintenanceSubscription = () => {
+				if(!window.ColibriBRD) return;
+
+				ColibriBRD.channel(PUBLIC_COMMAND_CHANNEL).listen(MAINTENANCE_EVENT, function(event) {
+					if(event && event.action === 'maintenance_on') {
+						appStore.setMaintenance({
+							on: true,
+							message: event.message,
+							until: event.until
+						});
+					}
+					else if(event && event.action === 'maintenance_off') {
+						appStore.setMaintenance({ on: false });
+					}
+				});
+			};
+
 			onMounted(async () => {
                 await appStore.bootstrapApplication();
 
 				appLoading.value = false;
 
 				colibriEventBus.on('auth:logout', logoutUser);
+
+				maintenanceSubscription();
 			});
 
 			const logoutUser = () => {
@@ -63,6 +90,7 @@
 
 			return {
 				appLoading: appLoading,
+				appStore: appStore,
 				isMainLayout: computed(() => {
 					return layoutType.value == Layouts.MAIN;
 				}),
@@ -78,6 +106,7 @@
 			};
 		},
 		components: {
+			MaintenanceOverlay: MaintenanceOverlay,
 			ApplicationMainLayout: ApplicationMainLayout,
 			PostEditorLayout: PostEditorLayout,
 			MessengerLayout: MessengerLayout,
