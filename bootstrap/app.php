@@ -40,6 +40,14 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
 
             $middleware->redirectGuestsTo('auth/login');
 
+            // 维护模式：把 CheckMaintenance 加入中间件优先级，令其先于 Authenticate 执行，
+            // 保证未登录的页面/API 请求在维护时返回 503 维护响应而非被 401/302（Authenticate 优先）。
+            // 仅作用于同时挂载了维护中间件的路由（前端 api/web 组），后台与 Livewire 不涉及。
+            $middleware->prependToPriorityList(
+                \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
+                \App\Http\Middleware\CheckMaintenance::class,
+            );
+
             $middleware->alias([
                 'user.status' => App\Http\Middleware\UserStatusMiddleware::class,
                 'maintenance' => App\Http\Middleware\CheckMaintenance::class,
