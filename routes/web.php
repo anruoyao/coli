@@ -56,28 +56,18 @@ Route::prefix('switcher')->get('/device/{type}', function ($type) {
     return redirect()->back();
 })->name('device.switch')->whereIn('type', ['desktop', 'mobile']);
 
-Route::middleware(['user.status', 'auth:sanctum'])->group(function() {
-    Route::get('/', function () {
-        $deviceType = Cookie::get('device_type', 'desktop');
+// 前端 SPA shell / 公开 SEO 页统一处理：
+// - 已登录用户渲染桌面/mobile SPA shell（保持原行为，user.status 处理封禁/引导）；
+// - 未登录访客命中可公开收录路径时，由 SeoController 服务端输出 SEO HTML（meta + JSON-LD + 正文快照）；
+// - 未登录访客命中其余路径：重定向登录页（保持原行为）。
+Route::middleware(['user.status'])->group(function() {
+    Route::get('/', [App\Http\Controllers\SeoController::class, '__invoke'])->name('user.desktop.index');
 
-        if($deviceType == 'mobile') {
-            return view('mobile::index');
-        }
+    // Sitemap：/sitemap.xml（索引）+ /sitemap-{type}-{page}.xml（分片）
+    Route::get('sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap.index');
+    Route::get('sitemap-{file}', [App\Http\Controllers\SitemapController::class, 'chunk'])->name('sitemap.chunk')
+        ->where('file', '^[a-z]+-[0-9]+\.xml$');
 
-        else{
-            return view('desktop::index');
-        }
-    })->name('user.desktop.index');
-
-    Route::get('{any}', function (Request $request) {
-        $deviceType = Cookie::get('device_type', 'desktop');
-
-        if($deviceType == 'mobile') {
-            return view('mobile::index');
-        }
-
-        else{
-            return view('desktop::index');
-        }
-    })->where('any', '.*');
+    Route::get('{any}', [App\Http\Controllers\SeoController::class, '__invoke'])
+        ->where('any', '^(?!.*\.(?:js|css|ts|map|png|jpe?g|gif|svg|webp|ico|woff2?|eot|ttf|otf|mp4|webm|txt|json|xml|wasm|htm[l]?|pdf))$');
 });

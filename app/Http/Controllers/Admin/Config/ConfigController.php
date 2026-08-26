@@ -134,4 +134,9 @@ class ConfigController extends Controller
     {
         return view('admin::config.backup.index');
     }
+
+    public function sitemap()
+    {
+        return view('admin::config.sitemap.index');
+    }
 }

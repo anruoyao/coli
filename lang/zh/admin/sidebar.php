@@ -46,4 +46,5 @@ return [
     'maintenance_mode' => '维护模式（应急）',
     'custom_code' => '自定义代码注入',
     'pwa_settings' => 'PWA 设置',
+    'seo_sitemap' => 'Sitemap / SEO',
 ];

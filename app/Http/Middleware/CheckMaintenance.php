@@ -32,11 +32,14 @@ class CheckMaintenance
         }
 
         // 白名单：后台登录入口（admin/login 位于前端 web.php 内，必须可登录才能进后台关维护）、
-        // 文件下载（配合 App 强制更新）、版本检测（App 启动时区分「维护」与「无更新」）。
+        // 文件下载（配合 App 强制更新）、版本检测（App 启动时区分「维护」与「无更新」）、
+        // sitemap（维护期间搜索引擎仍可抓取已收录索引）。
         $adminPrefix = trim((string) config('app.admin_prefix'), '/');
         $isWhitelisted = ($adminPrefix !== '' && $request->is($adminPrefix.'/login'))
             || $request->is('file-downloads/*')
-            || $request->is('api/system/version/check');
+            || $request->is('api/system/version/check')
+            || $request->is('sitemap.xml')
+            || $request->is('sitemap-*');
 
         if ($isWhitelisted) {
             return $next($request);

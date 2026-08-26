@@ -61,6 +61,9 @@
                 <x-navbar.item href="{{ route('admin.config.maintenance') }}" icon="shield-02">
                     {{ __('admin/sidebar.maintenance_mode') }}
                 </x-navbar.item>
+                <x-navbar.item href="{{ route('admin.config.sitemap') }}" icon="search-01">
+                    {{ __('admin/sidebar.seo_sitemap') }}
+                </x-navbar.item>
             </x-navbar>
         </div>
         <div class="col-span-1">

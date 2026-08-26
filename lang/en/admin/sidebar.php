@@ -46,4 +46,5 @@ return [
     'maintenance_mode' => 'Maintenance (Emergency)',
     'custom_code' => 'Custom Code Injection',
     'pwa_settings' => 'PWA Settings',
+    'seo_sitemap' => 'Sitemap / SEO',
 ];
