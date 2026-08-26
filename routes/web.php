@@ -69,5 +69,5 @@ Route::middleware(['user.status'])->group(function() {
         ->where('file', '^[a-z]+-[0-9]+\.xml$');
 
     Route::get('{any}', [App\Http\Controllers\SeoController::class, '__invoke'])
-        ->where('any', '^(?!.*\.(?:js|css|ts|map|png|jpe?g|gif|svg|webp|ico|woff2?|eot|ttf|otf|mp4|webm|txt|json|xml|wasm|htm[l]?|pdf))$');
+        ->where('any', '^(?!.*\.(?:js|css|ts|map|png|jpe?g|gif|svg|webp|ico|woff2?|eot|ttf|otf|mp4|webm|txt|json|xml|wasm|ht?ml?|pdf)$).+$');
 });
