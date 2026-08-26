@@ -2,7 +2,7 @@
 
 <article>
     <div class="author">
-        <a href="{{ $post->user->profile_url }}">{{ $post->user->name }} (@{{ $post->user->username }})</a>
+        <a href="{{ $post->user->profile_url }}">{{ $post->user->name }} ({{ $post->user->username }})</a>
     </div>
     <div class="time">{{ $post->created_at?->getFormatted() }}</div>
     <p>{!! nl2br(e($post->content)) !!}</p>

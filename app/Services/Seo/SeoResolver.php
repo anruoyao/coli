@@ -67,7 +67,10 @@ class SeoResolver
             return null;
         }
 
-        $description = $user->bio ? $this->excerpt($user->bio) : __('seo.profile.description', ['name' => $user->name]);
+        $description = $user->bio ? $this->excerpt($user->bio) : __('seo.profile.description', [
+            'name' => $user->name,
+            'app' => config('app.name'),
+        ]);
 
         return new SeoMeta(
             title: $user->name,

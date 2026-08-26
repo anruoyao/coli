@@ -5,7 +5,7 @@
 @endif
 
 <h1>{{ $user->name }}</h1>
-<p class="meta-line">@{{ $user->username }}</p>
+<p class="meta-line">{{ $user->username }}</p>
 
 <div class="bio">{!! nl2br(e($user->bio ?: __('seo.profile.no_bio'))) !!}</div>
 
