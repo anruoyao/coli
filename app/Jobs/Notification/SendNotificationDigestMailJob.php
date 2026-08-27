@@ -4,6 +4,7 @@ namespace App\Jobs\Notification;
 
 use App\Models\User;
 use App\Models\NotificationBatch;
+use App\Mail\DigestMail;
 use App\Services\Notification\DigestPayloadBuilder;
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Facades\Mail;
@@ -11,7 +12,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Notifications\Messages\MailMessage;
 
 /**
  * 发送单个用户的聚合 Digest 邮件。
@@ -57,14 +57,10 @@ class SendNotificationDigestMailJob implements ShouldQueue
 
         Mail::to($user->routeNotificationFor('mail'))
             ->locale($user->language)
-            ->send(
-                (new MailMessage())
-                    ->subject($payload['subject'])
-                    ->view('emails.user.notifications.digest', [
-                        'user' => $user,
-                        'payload' => $payload,
-                    ])
-            );
+            ->send(new DigestMail($payload['subject'], [
+                'user' => $user,
+                'payload' => $payload,
+            ]));
 
         // 发送成功后清理已聚合的批次
         NotificationBatch::whereIn('id', $batches->pluck('id'))->delete();
