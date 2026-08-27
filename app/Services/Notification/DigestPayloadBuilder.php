@@ -161,19 +161,19 @@ class DigestPayloadBuilder
     {
         switch ($entityType) {
             case 'post':
-                $post = Post::withTrashed()->find($entityId);
+                $post = Post::find($entityId);
                 return $post && ! empty($post->content)
                     ? Str::limit(html_entity_decode($post->content), 42)
                     : $this->fallbackTitle('post');
 
             case 'comment':
-                $comment = Comment::withTrashed()->find($entityId);
+                $comment = Comment::find($entityId);
                 return $comment
                     ? ($this->isZh ? '对评论的互动' : 'Interaction on a comment') . '「' . Str::limit(html_entity_decode($comment->content), 30) . '」'
                     : $this->fallbackTitle('comment');
 
             case 'story':
-                $story = StoryFrame::withTrashed()->find($entityId);
+                $story = StoryFrame::find($entityId);
                 return $story ? Str::limit(html_entity_decode($story->caption ?? ''), 42) : $this->fallbackTitle('story');
 
             default:
