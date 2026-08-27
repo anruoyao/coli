@@ -18,7 +18,7 @@ return [
     'avatar' => 'assets/avatars/default-avatar.png',
     'cover' => 'assets/covers/default-cover.png',
     'verified' => false,
-    'authorize_users' => false,
+    'authorize_users' => true,
     'require' => [
         'last_name' => false,
         'password' => true

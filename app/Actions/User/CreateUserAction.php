@@ -63,17 +63,27 @@ class CreateUserAction
         // Create permit settings (Default all are set to: all)
         $userData->permitSettings()->create([]);
 
-        // Create email notification settings (Default all are set to: false)
-        UserNotificationSettings::create([
+        // Create email notification settings (Default all are set to: true)
+        $notificationDefaults = [
+            'direct_messages' => true,
+            'reactions' => true,
+            'comments' => true,
+            'shared_posts' => true,
+            'followers' => true,
+            'follow_request' => true,
+            'mentions' => true,
+        ];
+
+        UserNotificationSettings::create(array_merge([
             'user_id' => $userData->id,
             'type' => NotificationType::EMAIL
-        ]);
+        ], $notificationDefaults));
 
-        // Create push notification settings (Default all are set to: false)
-        UserNotificationSettings::create([
+        // Create push notification settings (Default all are set to: true)
+        UserNotificationSettings::create(array_merge([
             'user_id' => $userData->id,
             'type' => NotificationType::PUSH
-        ]);
+        ], $notificationDefaults));
 
         // Create security settings (Default all are set to: false)
         $userData->securitySettings()->create([
