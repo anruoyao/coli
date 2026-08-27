@@ -51,12 +51,13 @@ class PresenceService
 
         if (! $session) {
             $session = PresenceSession::query()->create(array_merge([
-                'user_id'        => $user->id,
-                'client_id'      => $clientId,
-                'platform'       => $platform,
-                'started_at'     => $now,
-                'last_seen_at'   => $now,
-                'is_background'  => $background,
+                'user_id'          => $user->id,
+                'client_id'        => $clientId,
+                'platform'         => $platform,
+                'platform_detail'  => $data['platform_detail'] ?? null,
+                'started_at'       => $now,
+                'last_seen_at'     => $now,
+                'is_background'    => $background,
             ], $geo));
         } else {
             $session->update(array_merge([
@@ -69,7 +70,8 @@ class PresenceService
         }
 
         // 用户级兜底（维持既有 isOnline() 语义，5 分钟节流）
-        if ($user->last_active < $now->subMinutes((int) config('user.online_interval_in_minutes', 5))) {
+        // 注意：不可对 $now 调用 subMinutes()（Carbon 原地修改），否则上方 ZADD score 会偏移
+        if ($user->last_active < now()->subMinutes((int) config('user.online_interval_in_minutes', 5))) {
             $user->last_active = $now;
             $user->saveQuietly();
         }
