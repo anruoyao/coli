@@ -7,6 +7,7 @@ use App\Models\StoryFrame;
 use App\Jobs\User\Story\ProcessStoryVideo;
 use App\Events\User\Story\StoryCreatedEvent;
 use App\Notifications\User\Mention\StoryMentionNotification;
+use App\Services\Notification\NotificationBatcher;
 
 class HandleStoryCreation
 {
@@ -31,6 +32,15 @@ class HandleStoryCreation
                 if(! ($userData->permitSettings?->mentions->allows($frameData->user, $userData) ?? true)) {
                     return;
                 }
+
+                // 聚合缓冲：故事提及并入 1h Digest 邮件
+                NotificationBatcher::add(
+                    $userData->id,
+                    $frameData->user_id,
+                    'story',
+                    $frameData->id,
+                    'story.mentioned'
+                );
 
                 $userData->notify(new StoryMentionNotification($frameData));
             });

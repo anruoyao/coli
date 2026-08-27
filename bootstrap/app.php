@@ -80,4 +80,7 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
 
         })->withExceptions(function (Exceptions $exceptions) {
 
+        })->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
+            // 聚合 Digest 邮件调度（错峰派发，cron 每分钟触发 schedule:run）
+            $schedule->command('notification:send-digest')->everyMinute()->withoutOverlapping();
         })->create();

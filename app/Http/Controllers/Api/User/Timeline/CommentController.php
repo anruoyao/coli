@@ -30,6 +30,7 @@ use App\Http\Resources\User\Timeline\CommentResource;
 use App\Http\Resources\User\Timeline\ReactionCollection;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Notifications\User\Post\PostCommentedNotification;
+use App\Services\Notification\NotificationBatcher;
 use App\Notifications\User\Post\CommentReactedNotification;
 use App\Notifications\User\Mention\CommentMentionNotification;
 
@@ -78,11 +79,30 @@ class CommentController extends Controller
         $postData->save();
 
         if(! $postData->is_owner && empty($parentId)) {
+            // 聚合缓冲：进入 1h Digest 邮件（评论内容取最新一条）
+            NotificationBatcher::add(
+                $postData->user_id,
+                me()->id,
+                'post',
+                $postData->id,
+                'post.commented',
+                ['content' => $commentContent]
+            );
+
             $postData->user->notify(new PostCommentedNotification($postData, $commentContent));
         }
 
         else {
             if(! empty($commentParentData) && ! $commentParentData->is_owner) {
+                NotificationBatcher::add(
+                    $commentParentData->user_id,
+                    me()->id,
+                    'comment',
+                    $commentParentData->id,
+                    'comment.mentioned',
+                    ['content' => $commentContent]
+                );
+
                 $commentParentData->user->notify(new CommentMentionNotification($commentParentData, $commentContent));
             }
         }
@@ -111,6 +131,17 @@ class CommentController extends Controller
                 $postData = $commentData->post;
         
                 (new DeleteCommentAction($commentData))->execute();
+
+                // 删除评论：从聚合缓冲与 App 未读通知中撤回对帖主的「新评论」通知
+                if (! empty($postData) && ! $postData->is_owner) {
+                    NotificationBatcher::revokeSocial(
+                        $postData->user,
+                        me()->id,
+                        'post',
+                        $postData->id,
+                        ['post.commented']
+                    );
+                }
 
                 $postData->comments_count = $postData->comments()->count();
                 $postData->save();
@@ -162,8 +193,28 @@ class CommentController extends Controller
                     ->setUnifiable(strtolower($reactionUnifiedId))
                     ->handleReaction();
 
-                if(! $commentData->is_owner && $isReactionAdded) {
-                    $commentData->user->notify(new CommentReactedNotification($commentData, strtolower($reactionUnifiedId)));
+                if(! $commentData->is_owner) {
+                    if ($isReactionAdded) {
+                        NotificationBatcher::add(
+                            $commentData->user_id,
+                            me()->id,
+                            'comment',
+                            $commentData->id,
+                            'comment.reacted',
+                            ['reaction' => strtolower($reactionUnifiedId)]
+                        );
+
+                        $commentData->user->notify(new CommentReactedNotification($commentData, strtolower($reactionUnifiedId)));
+                    }
+                    else {
+                        NotificationBatcher::revokeSocial(
+                            $commentData->user,
+                            me()->id,
+                            'comment',
+                            $commentData->id,
+                            ['comment.reacted']
+                        );
+                    }
                 }
 
                 return $this->responseSuccess([

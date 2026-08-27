@@ -10,6 +10,7 @@ use App\Events\User\Timeline\PostCreatedEvent;
 use App\Jobs\User\Timeline\ConvertAndCompressPostAudio;
 use App\Jobs\User\Timeline\ConvertAndCompressPostVideo;
 use App\Notifications\User\Mention\PostMentionNotification;
+use App\Services\Notification\NotificationBatcher;
 
 class HandlePostCreation
 {
@@ -47,6 +48,15 @@ class HandlePostCreation
                 if(! ($userData->permitSettings?->mentions->allows($postData->user, $userData) ?? true)) {
                     return;
                 }
+
+                // 聚合缓冲：提及并入 1h Digest 邮件
+                NotificationBatcher::add(
+                    $userData->id,
+                    $postData->user_id,
+                    'post',
+                    $postData->id,
+                    'post.mentioned'
+                );
 
                 $userData->notify(new PostMentionNotification($postData));
             });

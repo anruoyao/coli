@@ -9,10 +9,12 @@ use App\Notifications\Traits\HasUserActor;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Notifications\Channels\WebPushChannel;
+use App\Notifications\Channels\DeduplicatedDatabaseChannel;
+use App\Notifications\Contracts\DeduplicatableNotification;
 use App\Notifications\Traits\BaseNotification;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class CommentReactedNotification extends Notification implements ShouldQueue
+class CommentReactedNotification extends Notification implements ShouldQueue, DeduplicatableNotification
 {
     use Queueable,
         BaseNotification,
@@ -44,13 +46,7 @@ class CommentReactedNotification extends Notification implements ShouldQueue
 				array_push($channels, 'broadcast');
 			}
 
-			array_push($channels, 'database');
-		}
-
-		if($notifiable->emailNotificationSettings->reactions) {
-			if($this->isEmailEnabled()) {
-				array_push($channels, 'mail');
-			}
+			array_push($channels, DeduplicatedDatabaseChannel::class);
 		}
 
 		return $channels;

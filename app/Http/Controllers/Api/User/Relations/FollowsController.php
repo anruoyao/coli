@@ -23,6 +23,7 @@ use App\Notifications\User\Follows\FollowAcceptNotification;
 use App\Notifications\User\Follows\FollowRequestNotification;
 use App\Notifications\User\Follows\NewFollowerNotification;
 use App\Services\Relations\FollowService;
+use App\Services\Notification\NotificationBatcher;
 use App\Traits\Http\Api\SupportsApiResponses;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -43,15 +44,42 @@ class FollowsController extends Controller
             // Check if Me is Following or Follow Requested. Unfollow if true.
             if($followService->isFollowing() || $followService->followRequested()) {
                 $followService->unfollow();
+
+                // 取关：从聚合缓冲与 App 未读通知中撤回「新粉丝/关注请求」通知
+                NotificationBatcher::revokeSocial(
+                    $userData,
+                    me()->id,
+                    'follow',
+                    me()->id,
+                    ['user.followed', 'user.followed-requested']
+                );
             }
             else {
                 if($followService->canFollow()) {
                     $follow = $followService->follow();
 
                     if($follow->status->isRequested()) {
+                        // 聚合缓冲：进入 1h Digest 邮件（新关注请求）
+                        NotificationBatcher::add(
+                            $userData->id,
+                            me()->id,
+                            'follow',
+                            me()->id,
+                            'user.followed-requested'
+                        );
+
                         $userData->notify(new FollowRequestNotification());
                     }
                     else if($follow->status->isFollowing()) {
+                        // 聚合缓冲：进入 1h Digest 邮件（新粉丝）
+                        NotificationBatcher::add(
+                            $userData->id,
+                            me()->id,
+                            'follow',
+                            me()->id,
+                            'user.followed'
+                        );
+
                         $userData->notify(new NewFollowerNotification());
                     }
                 }

@@ -36,6 +36,7 @@ use App\Http\Resources\User\Timeline\Editor\DraftPostResource;
 use App\Traits\Http\Controllers\Api\User\Timeline\ValidatesPollData;
 use App\Traits\Http\Controllers\Api\User\Timeline\ValidatesPostData;
 use App\Traits\Http\Controllers\Api\User\Timeline\InteractsWithDraftPost;
+use App\Services\Notification\NotificationBatcher;
 
 class PostController extends Controller
 {
@@ -222,8 +223,30 @@ class PostController extends Controller
                 ->setUnifiable(strtolower($reactionUnifiedId))
                 ->handleReaction();
                 
-            if (! $postData->is_owner && $isReactionAdded) {
-                $postData->user->notify(new PostReactedNotification($postData, strtolower($reactionUnifiedId)));
+            if (! $postData->is_owner) {
+                if ($isReactionAdded) {
+                    // 聚合缓冲：进入 1h Digest 邮件
+                    NotificationBatcher::add(
+                        $postData->user_id,
+                        me()->id,
+                        'post',
+                        $postData->id,
+                        'post.reacted',
+                        ['reaction' => strtolower($reactionUnifiedId)]
+                    );
+
+                    $postData->user->notify(new PostReactedNotification($postData, strtolower($reactionUnifiedId)));
+                }
+                else {
+                    // 取消点赞：从聚合缓冲与 App 未读通知中实时撤回
+                    NotificationBatcher::revokeSocial(
+                        $postData->user,
+                        me()->id,
+                        'post',
+                        $postData->id,
+                        ['post.reacted']
+                    );
+                }
             }
 
             return $this->responseSuccess([
