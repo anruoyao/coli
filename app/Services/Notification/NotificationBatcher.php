@@ -34,6 +34,8 @@ class NotificationBatcher
                 'type' => $type,
             ],
             [
+                // 显式使用应用时区（UTC），避免依赖 MySQL 默认值导致与 PHP 时区偏移
+                'source_time' => now(),
                 'meta' => $meta ?: null,
             ]
         );
