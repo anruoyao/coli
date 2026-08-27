@@ -5,7 +5,6 @@ namespace App\Jobs\Notification;
 use App\Models\User;
 use App\Models\NotificationBatch;
 use App\Services\Notification\DigestPayloadBuilder;
-use Illuminate\Support\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Queue\SerializesModels;
@@ -15,10 +14,10 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Notifications\Messages\MailMessage;
 
 /**
- * 发送单个用户的 1 小时聚合 Digest 邮件。
+ * 发送单个用户的聚合 Digest 邮件。
  *
- * 读取窗口（windowEnd - windowMinutes ~ windowEnd）内该用户的全部聚合批次，
- * 按帖子/评论实体分组组装摘要，尊重用户的邮件通知类型开关，发送成功后删除批次。
+ * 处理调度命令选定的「已到期」聚合批次（按 ID），组装摘要邮件并发送，
+ * 成功后删除对应批次。批次 ID 由调度命令精确圈定，规避调度延迟导致的窗口错位。
  */
 class SendNotificationDigestMailJob implements ShouldQueue
 {
@@ -26,9 +25,10 @@ class SendNotificationDigestMailJob implements ShouldQueue
 
     public int $tries = 3;
 
+    /** @param array<int> $batchIds */
     public function __construct(
         public int $notifiableId,
-        public Carbon $windowEnd,
+        public array $batchIds,
     ) {
     }
 
@@ -40,15 +40,8 @@ class SendNotificationDigestMailJob implements ShouldQueue
             return;
         }
 
-        $windowMinutes = (int) config('notifications.digest.window_minutes', 60);
-        $windowStart = $this->windowEnd->copy()->subMinutes($windowMinutes);
-        $types = (array) config('notifications.digest.types', []);
-
         $batches = NotificationBatch::query()
-            ->where('notifiable_id', $user->id)
-            ->whereIn('type', $types)
-            ->where('source_time', '>=', $windowStart)
-            ->where('source_time', '<=', $this->windowEnd)
+            ->whereIn('id', $this->batchIds)
             ->orderByDesc('source_time')
             ->get();
 

@@ -40,13 +40,19 @@ class SendNotificationDigestCommand extends Command
         $windowEnd = now();
         $dueBoundary = $windowEnd->copy()->subMinutes($windowMinutes);
 
-        // 到期（source_time 超过窗口）且尚未认领的接收者，随机取一批（错峰削峰）
-        $candidates = NotificationBatch::query()
+        // 汇集已到期的批次（source_time 超过窗口），按接收者分组后随机取一部分用户（错峰削峰）。
+        // 直接传递批次 ID 给 Job，由 Job 精确处理，避免因调度/执行延迟导致窗口边界错位。
+        $dueBatches = NotificationBatch::query()
             ->whereIn('type', $types)
             ->where('source_time', '<=', $dueBoundary)
+            ->get(['id', 'notifiable_id']);
+
+        $idsByUser = $dueBatches
             ->groupBy('notifiable_id')
-            ->orderByRaw('MAX(source_time) DESC')
-            ->pluck('notifiable_id')
+            ->map(fn ($group) => $group->pluck('id')->all());
+
+        $candidates = $idsByUser
+            ->keys()
             ->shuffle()
             ->take($limit)
             ->all();
@@ -60,7 +66,7 @@ class SendNotificationDigestCommand extends Command
                 continue;
             }
 
-            SendNotificationDigestMailJob::dispatch($userId, $windowEnd)
+            SendNotificationDigestMailJob::dispatch($userId, $idsByUser[$userId])
                 ->delay(now()->addSeconds(rand(0, $spreadSeconds)));
 
             $dispatched++;
