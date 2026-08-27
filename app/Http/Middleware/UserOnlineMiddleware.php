@@ -33,19 +33,30 @@ class UserOnlineMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth_check()) {
-            $user = me();
+        // 中间件挂载于 web/api 组，执行时机在路由级 auth:sanctum 之前，
+        // 因此 auth_check()（默认 web guard）对 API 请求恒为 false。
+        // 显式兼容两套认证：web(session 默认 guard) + api(sanctum Bearer token)。
+        $user = $request->user() ?: $request->user('sanctum');
+
+        if ($user) {
+            $platform = $this->resolvePlatform($request);
 
             $interval = (int) config('user.online_interval_in_minutes');
             if ($user->last_active < now()->subMinutes($interval)) {
                 $user->last_active = now();
                 $user->save();
 
-                (new UpdateUserDeviceAction())->execute($user);
+                // 设备档案仅 web 端维护（App 平台明细由 presence_sessions 提供，避免污染 devices 表）
+                if ($platform === 'web') {
+                    try {
+                        (new UpdateUserDeviceAction())->execute($user);
+                    } catch (\Throwable $e) {
+                        // 设备档案采集失败不阻塞在线上报
+                    }
+                }
             }
 
             try {
-                $platform = $this->resolvePlatform($request);
                 $clientId = $request->header('X-Client-Id') ?: session()->getId();
 
                 app(PresenceService::class)->touch($user, [
