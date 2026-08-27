@@ -203,8 +203,8 @@ class DigestPayloadBuilder
         $n = $this->batches->pluck('actor_id')->unique()->count();
 
         return $this->isZh
-            ? "过去1小时内，{$n}位用户与你的内容进行了互动"
-            : "{$n} users interacted with your content in the past hour";
+            ? "过去3小时内，{$n}位用户与你的内容进行了互动"
+            : "{$n} users interacted with your content in the past 3 hours";
     }
 
     private function actorName(int $actorId): string

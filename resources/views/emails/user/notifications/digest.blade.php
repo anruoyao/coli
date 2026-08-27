@@ -12,7 +12,7 @@
 
     <x-emails.spacer space="12"></x-emails.spacer>
     <x-emails.par>
-        {{ $zh ? "嗨，{$user->name}，过去 1 小时内你的内容收到了新的互动：" : "Hi {$user->name}, here is what happened to your content in the past hour:" }}
+        {{ $zh ? "嗨，{$user->name}，过去 3 小时内你的内容收到了新的互动：" : "Hi {$user->name}, here is what happened to your content in the past 3 hours:" }}
     </x-emails.par>
 
     <x-emails.spacer space="12"></x-emails.spacer>

@@ -32,7 +32,7 @@ return [
 	*/
 	'digest' => [
 		'enabled' => true,
-		'window_minutes' => 60,
+		'window_minutes' => 180,
 		// 每个调度周期最多认领的用户数（与每分钟调度组合实现错峰）
 		'batch_per_tick' => 20,
 		// 投递任务随机延迟扩散区间（秒），进一步打散发送时刻
