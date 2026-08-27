@@ -9,3 +9,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\User\Presence\PresenceController;
 
 Route::post('/heartbeat', [PresenceController::class, 'heartbeat'])->name('presence.heartbeat');
+
+// 临时调试探针（验证后删除）
+Route::get('/_probe', [PresenceController::class, 'probe'])->name('presence.probe');

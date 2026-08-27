@@ -53,6 +53,25 @@ class PresenceController extends Controller
         return in_array($platform, ['android', 'ios']) ? $platform : 'android';
     }
 
+    /**
+     * 临时调试探针（验证后删除）：FPM→Redis 直写测试。
+     */
+    public function probe()
+    {
+        $key = 'probe:set';
+        $member = 'probe-' . \Illuminate\Support\Str::random(6);
+
+        \Illuminate\Support\Facades\Redis::zadd($key, time(), $member);
+
+        return $this->responseSuccess([
+            'data' => [
+                'member' => $member,
+                'zcard'  => \Illuminate\Support\Facades\Redis::zcard($key),
+                'scores' => array_values(\Illuminate\Support\Facades\Redis::zrange($key, 0, -1, true)),
+            ],
+        ], 200);
+    }
+
     private function resolvePlatformDetail(Request $request): string
     {
         $version = (string) $request->header('X-App-Version');
