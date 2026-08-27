@@ -3,7 +3,9 @@
 namespace App\Livewire\Admin\Presence;
 
 use App\Models\PresenceSession;
+use App\Models\User;
 use App\Services\User\PresenceService;
+use Illuminate\Support\Facades\Redis;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -42,6 +44,31 @@ class OnlineList extends Component
     public function updatedSearch()
     {
         $this->resetPage();
+    }
+
+    /**
+     * 在线踢下线（P1）：从在线列表移除会话（DB + Redis）+ 删除该用户全部 Sanctum token（App 强制下线）。
+     * 网页会话保留（Cookie），但用户不再计入在线；App 下一请求即 401 走全局登出。
+     */
+    public function kickout(int $sessionId)
+    {
+        $session = PresenceSession::query()->findOrFail($sessionId);
+
+        $userId   = $session->user_id;
+        $platform = $session->platform;
+        $member   = $userId . ':' . $session->client_id;
+
+        try {
+            Redis::zrem(PresenceService::redisKey($platform), $member);
+        } catch (\Throwable $e) {
+            // Redis 异常不阻断踢下线（DB 删除后自然不再计入在线）
+        }
+
+        $session->delete();
+
+        User::query()->whereKey($userId)->first()?->tokens()?->delete();
+
+        $this->dispatch('presence-user-kicked', userId: $userId);
     }
 
     public function render()

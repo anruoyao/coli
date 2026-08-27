@@ -30,6 +30,9 @@ Schedule::command('story:clear')->dailyAt('00:00');
 
 Schedule::command('chat:invite-clear')->weekly();
 
+// 在线量小时快照聚合（P1 数据分析：整点+5 分钟，避免边界竞态；重复执行同桶幂等覆盖）
+Schedule::command('presence:aggregate')->hourlyAt(5)->withoutOverlapping();
+
 Artisan::command('app:version', function () {
     $this->info(ColibriPlus::VERSION);
 });

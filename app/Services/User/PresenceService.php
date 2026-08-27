@@ -3,6 +3,7 @@
 namespace App\Services\User;
 
 use App\Models\PresenceSession;
+use App\Models\PresenceSnapshot;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
@@ -110,6 +111,68 @@ class PresenceService
     public static function redisKey(string $platform): string
     {
         return static::REDIS_NS . ':' . $platform;
+    }
+
+    /**
+     * 活跃/趋势统计（P1 数据分析）。
+     *
+     * - dau/wau/mau：基于 users.last_active 滚动窗口（24h / 7d / 30d 内有活跃请求的用户数）
+     * - todayPeak：今日快照桶的最大在线量
+     * - hourly：最近 24 小时快照序列（label=H:00，分平台）
+     * - daily：最近 7 天每日在线总量序列（sum + peak）
+     *
+     * 注意：均以应用时区（UTC）的 now() 为基准；快照由 presence:aggregate 每小时写入。
+     */
+    public function activityStats(): array
+    {
+        $now = now();
+
+        $dau = User::onboarded()->where('last_active', '>=', $now->copy()->subDay())->count();
+        $wau = User::onboarded()->where('last_active', '>=', $now->copy()->subDays(7))->count();
+        $mau = User::onboarded()->where('last_active', '>=', $now->copy()->subDays(30))->count();
+
+        $hourly = PresenceSnapshot::query()
+            ->where('window_start', '>=', $now->copy()->subHours(24))
+            ->orderBy('window_start')
+            ->get(['window_start', 'total_count', 'web_count', 'android_count', 'ios_count'])
+            ->map(fn ($s) => [
+                'label'   => $s->window_start->format('H:00'),
+                'total'   => (int) $s->total_count,
+                'web'     => (int) $s->web_count,
+                'android' => (int) $s->android_count,
+                'ios'     => (int) $s->ios_count,
+            ])
+            ->values()
+            ->all();
+
+        $daily = PresenceSnapshot::query()
+            ->where('window_start', '>=', $now->copy()->subDays(7))
+            ->orderBy('window_start')
+            ->get(['window_start', 'total_count'])
+            ->groupBy(fn ($s) => $s->window_start->toDateString())
+            ->map(function ($rows, $date) {
+                return [
+                    'label' => \Illuminate\Support\Carbon::parse($date)->format('m-d'),
+                    'date'  => $date,
+                    'total' => (int) $rows->sum('total_count'),
+                    'peak'  => (int) $rows->max('total_count'),
+                ];
+            })
+            ->values()
+            ->all();
+
+        $todayPeak = (int) PresenceSnapshot::query()
+            ->where('window_start', '>=', $now->copy()->startOfDay())
+            ->max('total_count');
+
+        return [
+            'dau'         => $dau,
+            'wau'         => $wau,
+            'mau'         => $mau,
+            'todayPeak'   => $todayPeak,
+            'hourly'      => $hourly,
+            'daily'       => $daily,
+        ];
     }
 
     protected function dbCounts(): array

@@ -71,4 +71,5 @@ class Table
     public const AUTHORSHIP_REQUESTS = 'authorship_requests';
     public const PINS = 'pins';
     public const PRESENCE_SESSIONS = 'presence_sessions';
+    public const PRESENCE_SNAPSHOTS = 'presence_snapshots';
 }

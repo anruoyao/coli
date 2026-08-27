@@ -93,13 +93,22 @@
                         {{ $session->last_seen_at?->diffForHumans() }}
                     </x-table.td>
                     <x-table.td>
-                        <a href="{{ route('admin.users.show', $session->user_id) }}"
-                           class="inline-flex items-center gap-1 text-brand-900 hover:underline text-par-s">
-                            {{ __('admin/presence.actions.view') }}
-                            <span class="size-icon-small shrink-0">
-                                <x-ui-icon name="arrow-up-right" type="line"></x-ui-icon>
-                            </span>
-                        </a>
+                        <div class="flex justify-end items-center gap-2">
+                            <a href="{{ route('admin.users.show', $session->user_id) }}"
+                               class="inline-flex items-center gap-1 text-brand-900 hover:underline text-par-s">
+                                {{ __('admin/presence.actions.view') }}
+                                <span class="size-icon-small shrink-0">
+                                    <x-ui-icon name="arrow-up-right" type="line"></x-ui-icon>
+                                </span>
+                            </a>
+                            <x-ui.buttons.icon
+                                iconName="log-out-04"
+                                iconType="line"
+                                :color="'danger'"
+                                wire:click="kickout({{ $session->id }})"
+                                wire:confirm="{{ __('admin/presence.prompts.kick.content') }}">
+                            </x-ui.buttons.icon>
+                        </div>
                     </x-table.td>
                 </x-table.tr>
             @empty
