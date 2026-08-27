@@ -9,6 +9,7 @@ use App\Support\Num;
 use App\Models\Product;
 use App\Models\JobListing;
 use App\Models\StoryFrame;
+use App\Services\User\PresenceService;
 use App\Http\Controllers\Controller;
 
 class DashController extends Controller
@@ -46,6 +47,9 @@ class DashController extends Controller
             return StoryFrame::active()->count();
         });
 
+        // 在线用户：Redis O(1) 实时计数（Redis 异常自动降级 DB），不做 60s 缓存
+        $online = app(PresenceService::class)->onlineCounts();
+
         return [
             'users' => Num::abbreviate($totalUsers),
             'publications' => Num::abbreviate($totalPublications),
@@ -53,6 +57,7 @@ class DashController extends Controller
             'jobs' => Num::abbreviate($totalJobs),
             'advertising' => Num::abbreviate($totalAdvertising),
             'stories' => Num::abbreviate($totalStories),
+            'online' => $online,
         ];
     }
 }

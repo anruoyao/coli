@@ -12,6 +12,8 @@ Route::view('/coming', 'apps.mpa.admin.coming.index')->name('admin.coming.index'
 
 Route::prefix('users')->group(base_path('routes/admin/users/web.php'));
 
+Route::prefix('presence')->group(base_path('routes/admin/presence/web.php'));
+
 Route::prefix('posts')->group(base_path('routes/admin/posts/web.php'));
 
 Route::prefix('ads')->group(base_path('routes/admin/ads/web.php'));

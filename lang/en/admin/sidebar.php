@@ -6,6 +6,7 @@ return [
     'dashboard' => 'Overview',
 	'chats_groups' => 'Chats & Groups',
 	'users' => 'All users',
+	'online_users' => 'Online users',
 	'general_settings' => 'General settings',
 	'marketplace' => 'Marketplace',
 	'categories' => 'Categories',

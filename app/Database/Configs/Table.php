@@ -70,4 +70,5 @@ class Table
     public const ARCHIVED_CHATS = 'archived_chats';
     public const AUTHORSHIP_REQUESTS = 'authorship_requests';
     public const PINS = 'pins';
+    public const PRESENCE_SESSIONS = 'presence_sessions';
 }

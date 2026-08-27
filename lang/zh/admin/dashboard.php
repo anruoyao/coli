@@ -27,5 +27,9 @@ return [
 			'title' => '故事',
 			'description' => '用户创建的故事，包括已过期和已计划的。',
 		],
+		'online' => [
+			'title' => '在线用户',
+			'description' => 'Web :web · Android :android · iOS :ios',
+		],
 	],
 ];

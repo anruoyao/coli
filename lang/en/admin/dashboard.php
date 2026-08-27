@@ -27,5 +27,9 @@ return [
 			'title' => 'Stories',
 			'description' => 'Stories created by users, including expired and scheduled ',
 		],
+		'online' => [
+			'title' => 'Online Users',
+			'description' => 'Web :web · Android :android · iOS :ios',
+		],
 	],
 ];

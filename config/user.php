@@ -13,6 +13,8 @@ return [
     */
 
     'online_interval_in_minutes' => 5,
+    // 在线状态节流：同一会话（user_id+client_id）last_seen_at 至少间隔多少秒才写一次
+    'presence_throttle_seconds' => 60,
     'gender' => 'male',
     'language' => 'zh',
     'avatar' => 'assets/avatars/default-avatar.png',

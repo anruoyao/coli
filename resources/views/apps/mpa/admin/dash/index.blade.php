@@ -8,6 +8,13 @@
     <x-page-title titleText=" {{ __('admin/dashboard.title') }}"></x-page-title>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a href="{{ route('admin.presence.index') }}">
+            <x-metric.card
+                title="{{ __('admin/dashboard.metrics.online.title') }}"
+                desc="{{ __('admin/dashboard.metrics.online.description', ['web' => $metrics['online']['web'], 'android' => $metrics['online']['android'], 'ios' => $metrics['online']['ios']]) }}"
+                value="{{ $metrics['online']['total'] }}"
+            iconName="wifi"/>
+        </a>
         <a href="{{ route('admin.users.index') }}">
             <x-metric.card
                 title="{{ __('admin/dashboard.metrics.users.title') }}"

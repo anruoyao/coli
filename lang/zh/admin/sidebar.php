@@ -6,6 +6,7 @@ return [
     'dashboard' => '概览',
 	'chats_groups' => '聊天与群组',
 	'users' => '全部用户',
+	'online_users' => '在线用户',
 	'general_settings' => '通用设置',
 	'marketplace' => '商城',
 	'categories' => '分类管理',

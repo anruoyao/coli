@@ -67,6 +67,9 @@ Route::prefix('translations')->middleware(['throttle:60,1'])->group(base_path('r
 
 Route::prefix('bootstrap')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/bootstrap.php'));
 
+// 在线心跳（App 前后台切换，P0 在线用户数）
+Route::prefix('presence')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/presence.php'));
+
 Route::prefix('settings')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/account_settings.php'));
 
 Route::prefix('auth')->middleware(['auth:sanctum', 'throttle:60,1'])->group(base_path('routes/api/user/auth.php'));

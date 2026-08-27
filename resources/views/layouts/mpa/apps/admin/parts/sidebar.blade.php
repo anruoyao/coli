@@ -40,6 +40,13 @@
                 :current="route_is('admin.users.*')"
             text="{{ __('admin/sidebar.users') }}"/>
 
+            <x-sidebar.navlist-item
+                href="{{ route('admin.presence.index') }}"
+                iconName="wifi"
+                iconType="solar"
+                :current="route_is('admin.presence.*')"
+            text="{{ __('admin/sidebar.online_users') }}"/>
+
             <x-sidebar.navlist-div/>
 
             <x-sidebar.navlist-item
