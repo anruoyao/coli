@@ -26,7 +26,7 @@
         <div class="flex items-center gap-2">
             <div class="w-64">
                 <x-form.text-input
-                    type="search"
+                    inputType="search"
                     name="search"
                     wire:model.live.debounce.500ms="search"
                     :placeholder="__('admin/presence.search_placeholder')">
