@@ -18,7 +18,7 @@ class DigestMail extends Mailable
 
     public function __construct(
         public string $subjectText,
-        public array $viewData,
+        public array $digestData,
     ) {
     }
 
@@ -31,7 +31,7 @@ class DigestMail extends Mailable
     {
         return new Content(
             view: 'emails.user.notifications.digest',
-            with: $this->viewData,
+            with: $this->digestData,
         );
     }
 }
