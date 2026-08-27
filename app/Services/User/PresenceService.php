@@ -4,6 +4,7 @@ namespace App\Services\User;
 
 use App\Models\PresenceSession;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 
@@ -141,7 +142,10 @@ class PresenceService
                 Redis::zremrangebyscore($key, 0, $windowMin);
             }
         } catch (\Throwable $e) {
-            // Redis 不可用：静默，计数走 DB 降级
+            // Redis 不可用：静默，计数走 DB 降级（临时打印真实原因便于排查）
+            Log::error('presence syncCounter failed: ' . $e->getMessage(), [
+                'key' => $key, 'member' => $member,
+            ]);
         }
     }
 
