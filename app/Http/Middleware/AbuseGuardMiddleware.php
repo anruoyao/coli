@@ -37,8 +37,9 @@ class AbuseGuardMiddleware
             return $next($request);
         }
 
-        // 管理员 / 审核角色豁免
-        if (in_array((string) $user->role, ['root', 'admin', 'moderator'], true)) {
+        // 管理员 / 审核角色豁免（role 为 UserRole backed enum，须取 ->value）
+        $role = $user->role instanceof \UnitEnum ? ($user->role->value ?? null) : $user->role;
+        if (in_array($role, ['root', 'admin', 'moderator'], true)) {
             return $next($request);
         }
 
