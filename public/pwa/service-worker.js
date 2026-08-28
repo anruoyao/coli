@@ -1,14 +1,33 @@
+// ColibriPlus PWA Service Worker
+//
+// 版本化缓存桶：每次发布新前端时递增 BUILD_VERSION，activate 阶段自动删除
+// 所有旧 colibri-static-* 桶。避免旧 JS bundle 被持续命中——例如未携带
+// X-App-Key 的历史版本导致 /api 一律 404、页面进入 bootstrap-error。
+//
+// 注意：浏览器需拉取到本文件（nginx 已对 /pwa/service-worker.js 设 no-cache）
+// 才会安装新 SW；存量用户首次仍由旧 SW 控制，属正常，下一次导航即切换。
+
+const BUILD_VERSION = '2026-08-28';
+const CACHE_NAME = 'colibri-static-' + BUILD_VERSION;
+
 self.addEventListener('install', (event) => {
-	console.log('Service worker installed');
+	console.log('Service worker installed', CACHE_NAME);
 	self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-	event.waitUntil(self.clients.claim());
-	console.log('Service worker activated');
+	event.waitUntil(
+		caches.keys().then((keys) =>
+			Promise.all(
+				keys
+					.filter((key) => key.startsWith('colibri-static-') && key !== CACHE_NAME)
+					.map((key) => caches.delete(key))
+			)
+		)
+	);
+	self.clients.claim();
+	console.log('Service worker activated', CACHE_NAME);
 });
-
-const CACHE_NAME = 'colibri-static-v1';
 
 self.addEventListener('fetch', (event) => {
 	const request = event.request;
@@ -39,7 +58,4 @@ self.addEventListener('fetch', (event) => {
 		);
 		return;
 	}
-
-	// 3) 其它（POST 等）：直连网络，不缓存。
-	event.respondWith(fetch(request));
 });
