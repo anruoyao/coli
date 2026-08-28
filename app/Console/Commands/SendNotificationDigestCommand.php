@@ -40,14 +40,20 @@ class SendNotificationDigestCommand extends Command
         $windowEnd = now();
         $dueBoundary = $windowEnd->copy()->subMinutes($windowMinutes);
 
-        // 汇集已到期的批次（source_time 超过窗口），按接收者分组后随机取一部分用户（错峰削峰）。
-        // 直接传递批次 ID 给 Job，由 Job 精确处理，避免因调度/执行延迟导致窗口边界错位。
-        $dueBatches = NotificationBatch::query()
+        // 1) 找出「至少一条批次已到期」的接收者（source_time 超过窗口），随机取一部分用户（错峰削峰）
+        $dueUserIds = NotificationBatch::query()
             ->whereIn('type', $types)
             ->where('source_time', '<=', $dueBoundary)
-            ->get(['id', 'notifiable_id']);
+            ->distinct()
+            ->pluck('notifiable_id');
 
-        $idsByUser = $dueBatches
+        // 2) 打包这些用户当前【全部】待发批次（含窗口内尚未到期的新增批次），
+        //    保证同一 3h 窗口内同一接收者的所有互动合并为一封邮件，
+        //    避免 A/B 分别在窗口内不同时刻触发却各自单独到期、拆成两封。
+        //    直接传递批次 ID 给 Job，由 Job 精确处理。
+        $idsByUser = NotificationBatch::query()
+            ->whereIn('notifiable_id', $dueUserIds)
+            ->get(['id', 'notifiable_id'])
             ->groupBy('notifiable_id')
             ->map(fn ($group) => $group->pluck('id')->all());
 
