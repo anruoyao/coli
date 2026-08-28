@@ -239,6 +239,25 @@ if (! function_exists('requests_log')) {
     }
 }
 
+if (! function_exists('prune_user_tokens')) {
+    /**
+     * 每账号活跃 token 数量治理：清理过期，超出上限删除最旧（防 token 无限生成）。
+     */
+    function prune_user_tokens(\App\Models\User $user, int $max): void
+    {
+        if ($max <= 0) {
+            return;
+        }
+
+        $user->tokens()->where('expires_at', '<', now())->delete();
+
+        $excess = $user->tokens()->count() - $max;
+        if ($excess > 0) {
+            $user->tokens()->orderBy('id')->take($excess)->get()->each->delete();
+        }
+    }
+}
+
 if (! function_exists('chat_log')) {
     function chat_log(string $message, array $context = []) {
         Log::channel('chat')->info($message, $context);

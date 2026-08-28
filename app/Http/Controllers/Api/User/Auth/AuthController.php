@@ -59,6 +59,15 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // 一次性/临时邮箱域名拦截（防批量注册机）
+        $emailDomain = mb_strtolower(mb_substr($email, mb_strpos($email, '@') + 1));
+        if (in_array($emailDomain, config('security.disposable_email_domains', []), true)) {
+            return $this->responseError([
+                'message' => __('auth.email_blocked'),
+                'errors'  => ['email' => [__('auth.email_blocked')]]
+            ], 422);
+        }
+
         $validator = Validator::make([
             'first_name' => $firstName,
             'last_name'  => $lastName,
@@ -90,6 +99,9 @@ class AuthController extends Controller
         ]))->execute();
 
         $deviceName = $request->get('device_name', 'app');
+
+        prune_user_tokens($user, (int) config('security.auth.max_tokens_per_account', 10));
+
         $token      = $user->createToken($deviceName)->plainTextToken;
 
         // 防御：若未填出生日期，则将生日隐私置为私密，避免「信息」页公开空生日/年龄（与网页轮一致）

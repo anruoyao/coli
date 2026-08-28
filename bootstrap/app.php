@@ -30,7 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
             Route::middleware(['web', 'restrict.ip', 'device.identifier', 'terminator'])->group(base_path('routes/social.php'));
             Route::middleware(['web', 'restrict.ip', 'device.identifier', 'terminator'])->group(base_path('routes/document.php'));
             Route::middleware(['web', 'restrict.ip', 'auth', 'user.status', 'device.identifier', 'terminator'])->prefix('business')->group(base_path('routes/business.php'));
-            Route::middleware(['api', 'maintenance', 'app.version', 'log.request', 'restrict.ip', 'device.identifier', 'terminator', 'user.status'])->prefix('api')->group(base_path('routes/api.php'));
+            Route::middleware(['api', 'app.key', 'maintenance', 'app.version', 'log.request', 'restrict.ip', 'device.identifier', 'terminator', 'user.status'])->prefix('api')->group(base_path('routes/api.php'));
             Route::withoutMiddleware()->group(base_path('routes/webhooks/payment_webhooks.php'));
             Route::withoutMiddleware()->group(base_path('routes/callbacks.php'));
 
@@ -60,6 +60,8 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
                 'api.key' => App\Http\Middleware\VerifyApiKey::class,
                 'admin' => App\Http\Middleware\AdminRoleMiddleware::class,
                 'log.request' => App\Http\Middleware\LogRequestMiddleware::class,
+                'abuse.guard' => App\Http\Middleware\AbuseGuardMiddleware::class,
+                'app.key' => App\Http\Middleware\VerifyAppKey::class,
             ]);
 
             $middleware->web(append: [

@@ -11,9 +11,7 @@ use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use App\Enums\Wallet\TransactionType;
 use App\Services\Wallet\WalletService;
-use App\Enums\Wallet\TransactionStatus;
 use Illuminate\Support\Facades\Validator;
-use App\Enums\Wallet\TransactionDirection;
 use App\Traits\Http\Api\SupportsApiResponses;
 use App\Services\Currency\Fiat\FiatCurrencyService;
 use App\Http\Resources\User\Wallet\TransactionCollection;
@@ -183,7 +181,8 @@ class WalletController extends Controller
         $request->validate([
             'amount' => ['required', 'numeric', XRule::join('min', config('wallet.transfer.min_amount')), XRule::join('max', config('wallet.transfer.max_amount'))],
             'wallet_number' => ['required', 'string', 'max:255'],
-            'message' => ['nullable', 'string', 'max:140']
+            'message' => ['nullable', 'string', 'max:140'],
+            'client_uuid' => ['nullable', 'string', 'max:64']
         ]);
 
         $walletNumber = $request->get('wallet_number');
@@ -202,58 +201,37 @@ class WalletController extends Controller
                 ], 403);
             }
 
-            if(me()->wallet->balance->canAfford($transferAmount)) {
-                $walletService = app(WalletService::class);
-                $walletService->setUserData(me())->subtractWalletBalance($transferAmount)->addWalletTransaction([
-                    'amount' => $transferAmount,
-                    'transaction_type' => TransactionType::TRANSFER,
-                    'status' => TransactionStatus::COMPLETED,
-                    'direction' => TransactionDirection::OUTGOING,
-                    'commission' => config('wallet.commission.transfer'),
-                    'currency' => me()->wallet->currency,
-                    'metadata' => [
-                        'wallet_number' => $walletData->wallet_number,
-                        'source' => [
-                            'name' => $walletData->user->name
-                        ]
-                    ]
-                ]);
+            $walletService = app(WalletService::class);
 
-                $transferAmount = ($transferAmount - ($transferAmount * config('wallet.commission.transfer') / 100));
-
-                $walletService->setUserData($walletData->user)->addWalletBalance($transferAmount)->addWalletTransaction([
-                    'amount' => $transferAmount,
-                    'transaction_type' => TransactionType::TRANSFER,
-                    'status' => TransactionStatus::COMPLETED,
-                    'direction' => TransactionDirection::INCOMING,
-                    'commission' => config('wallet.commission.transfer'),
-                    'currency' => me()->wallet->currency,
-                    'metadata' => [
-                        'wallet_number' => me()->wallet->wallet_number,
-                        'source' => [
-                            'name' => me()->name
-                        ],
-                        'message' => $request->get('message')
-                    ]
-                ]);
-
-                $walletData->user->notify(new PaymentReceivedNotification(Num::currency($transferAmount, me()->wallet->currency)));
-
-                return $this->responseSuccess([
-                    'data' => null
-                ]);
-            }
-
-            else {
+            try {
+                // 原子转账：事务 + 行锁 + 幂等键（client_uuid）防双花/防重放
+                $executed = $walletService->setUserData(me())->transferTo(
+                    receiver: $walletData->user,
+                    amount: (float) $transferAmount,
+                    currency: me()->wallet->currency,
+                    clientUuid: $request->get('client_uuid'),
+                    message: $request->get('message'),
+                );
+            } catch (\DomainException $e) {
                 return $this->responseValidationError([
-                    'message' => __('wallet.validation.transfer.amount.can_afford'),
+                    'message' => $e->getMessage(),
                     'errors' => [
-                        'amount' => [
-                            __('wallet.validation.transfer.amount.can_afford')
-                        ]
+                        'amount' => [$e->getMessage()]
                     ]
                 ]);
             }
+
+            // 命中幂等键（重复请求）直接返回成功，避免重复提示
+            if ($executed) {
+                $commission = (float) config('wallet.commission.transfer', 0);
+                $netAmount = (float) $transferAmount - ((float) $transferAmount * $commission / 100);
+
+                $walletData->user->notify(new PaymentReceivedNotification(Num::currency($netAmount, me()->wallet->currency)));
+            }
+
+            return $this->responseSuccess([
+                'data' => null
+            ]);
         }
         else {
             return $this->responseResourceNotFoundError('Wallet', $walletNumber);
