@@ -25,14 +25,28 @@ class FFMpegService
     {
 
         ini_set('memory_limit', '512M');
-        
-        $this->ffmpeg = FFMpeg::create([
+
+        $temporaryDirectory = config('ffmpeg.temporary_directory');
+
+        // ffmpeg 临时目录（如 /var/ffmpeg-tmp）是系统路径，全新部署后可能缺失；
+        // 缺失时自动创建，避免 ffmpeg 处理视频/音频时因目录不存在而失败。
+        if ($temporaryDirectory && ! is_dir($temporaryDirectory)) {
+            @mkdir($temporaryDirectory, 0775, true);
+        }
+
+        $ffmpegConfig = [
             'ffmpeg.binaries' => config('ffmpeg.ffmpeg_path'),
             'ffprobe.binaries' => config('ffmpeg.ffprobe_path'),
             'timeout' => config('ffmpeg.timeout'),
             'ffmpeg.threads' => config('ffmpeg.threads'),
-            'temporary_directory' => config('ffmpeg.temporary_directory')
-        ]);
+        ];
+
+        // 仅当临时目录实际存在且可写时才传入，否则交给 FFMpeg 库使用系统默认临时目录
+        if ($temporaryDirectory && is_dir($temporaryDirectory) && is_writable($temporaryDirectory)) {
+            $ffmpegConfig['temporary_directory'] = $temporaryDirectory;
+        }
+
+        $this->ffmpeg = FFMpeg::create($ffmpegConfig);
 
         $this->ffprobe = FFProbe::create([
             'ffprobe.binaries' => config('ffmpeg.ffprobe_path')

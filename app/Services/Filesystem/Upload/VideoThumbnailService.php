@@ -4,6 +4,7 @@ namespace App\Services\Filesystem\Upload;
 
 use Exception;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use FFMpeg\Coordinate\TimeCode;
 use App\Services\Filesystem\FFMpeg\FFMpegService;
 use App\Traits\Services\Filesystem\ThrowsFFMpegExceptions;
@@ -53,9 +54,15 @@ class VideoThumbnailService extends AbstractFFMpegService
             return retry($retries, function() use ($videoLocalPath) {
                 $tempThumbnailPath = storage_local_path($this->generateImageTemporaryFilePath('jpeg'));
 
-                if (! is_writable(dirname($tempThumbnailPath))) {
-                    $tempThumbnailDirname = dirname($tempThumbnailPath);
+                $tempThumbnailDirname = dirname($tempThumbnailPath);
 
+                // storage/app 整个被 .gitignore 忽略，全新部署后 tmp/images 目录不存在；
+                // 该目录是用文件路径直接写入的（非 Storage::putFile 自动创建），必须手动确保。
+                if (! is_dir($tempThumbnailDirname)) {
+                    Storage::disk('local')->makeDirectory('tmp/images');
+                }
+
+                if (! is_writable($tempThumbnailDirname)) {
                     $this->makeFFMpegException("FFMpeg temporary thumbnail directory is not writable: {$tempThumbnailDirname}");
                 }
 
