@@ -78,6 +78,9 @@
                 <x-navbar.item href="{{ route('admin.config.ffmpeg') }}" icon="camera-01">
                     {{ __('admin/sidebar.ffmpeg_settings') }}
                 </x-navbar.item>
+                <x-navbar.item href="{{ route('admin.config.upload') }}" icon="upload-04">
+                    {{ __('admin/sidebar.upload_settings') }}
+                </x-navbar.item>
             </x-navbar>
         </div>
         <div class="col-span-1">

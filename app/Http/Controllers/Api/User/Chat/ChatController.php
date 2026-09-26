@@ -366,6 +366,13 @@ class ChatController extends Controller
 
     public function sendMessage(Request $request)
     {
+        // 按媒体类型应用统一的后台上传大小限制（KB）
+        $mediaMax = match ($request->input('media_type')) {
+            'image' => config('upload.image.max'),
+            'audio' => config('upload.audio.max'),
+            default => config('upload.video.max'),
+        };
+
         $validator = Validator::make([
             'chat_id' => $request->get('chat_id'),
             'content' => $request->get('content'),
@@ -383,7 +390,7 @@ class ChatController extends Controller
             'media' => ['nullable', 'required_without:content', 'file',
                 XRule::join('mimes', config('chat.validation.message.media.mimes')),
                 XRule::join('mimetypes', config('chat.validation.message.media.mimetypes')),
-                XRule::join('max', config('chat.validation.message.media.max'))
+                XRule::join('max', $mediaMax)
             ],
         ]);
 

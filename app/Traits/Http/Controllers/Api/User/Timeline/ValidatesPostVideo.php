@@ -14,7 +14,7 @@ trait ValidatesPostVideo
                 'file',
                 XRule::join('mimes', config('post.validation.video.mimes')),
                 XRule::join('mimetypes', config('post.validation.video.mimetypes')),
-                XRule::join('max', config('post.validation.video.max'))
+                XRule::join('max', config('upload.video.max'))
             ]
         ]);
     

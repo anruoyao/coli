@@ -86,6 +86,7 @@
 	import { useAuthStore } from '@M/store/auth/auth.store.js';
 	import { PostTypeUtils, PostType } from '@/kernel/enums/post/post.type.js';
 	import { colibriSounds } from '@/kernel/services/sounds/index.js';
+	import { checkFileSize } from '@/kernel/services/upload-limits/index.js';
     import { useTimelineStore } from '@M/store/timeline/timeline.store.js';
 
 	import Toolbar from '@M/components/layout/Toolbar.vue';
@@ -150,7 +151,14 @@
                 await postEditorStore.fetchDraftPost();
             });
 
-			const uploadMedia = (mediaFile, type = 'image') => {
+			const uploadMedia = async (mediaFile, type = 'image') => {
+				// 本地预检测：超出后台配置的上传大小限制时立即提示，避免无谓上传
+				const sizeCheck = await checkFileSize(mediaFile, type);
+				if (! sizeCheck.ok) {
+					validatePost(sizeCheck.message);
+					return;
+				}
+
                 const formData = new FormData();
                 formData.append(type, mediaFile);
 

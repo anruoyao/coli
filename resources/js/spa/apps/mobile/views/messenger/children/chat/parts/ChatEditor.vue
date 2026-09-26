@@ -51,6 +51,7 @@
 	import { useInputHandlers } from '@/kernel/vue/composables/input/index.js';
 	import { colibriSounds } from '@/kernel/services/sounds/index.js';
 	import { colibriEventBus } from '@/kernel/events/bus/index.js';
+	import { checkFileSize } from '@/kernel/services/upload-limits/index.js';
 
 	import PrimaryIconButton from '@M/components/inter-ui/buttons/PrimaryIconButton.vue';
 	import ToastNotification from '@M/components/notifications/toast/ToastNotification.vue';
@@ -130,6 +131,14 @@
 
             const sendImage = async (event) => {
                 const file = event.target.files[0];
+
+                // 本地预检测：超出后台配置的图片大小限制时立即提示
+                const sizeCheck = await checkFileSize(file, 'image');
+                if (! sizeCheck.ok) {
+                    toastError(sizeCheck.message);
+                    return;
+                }
+
                 const extension = file.name.split('.').pop();
 
                 await chatStore.sendMediaMessage({
@@ -142,6 +151,13 @@
             const sendVideo = async (videoData) => {
                 state.videoRecorder.open = false;
 
+                // 本地预检测：超出后台配置的视频大小限制时立即提示
+                const sizeCheck = await checkFileSize(videoData.blob, 'video');
+                if (! sizeCheck.ok) {
+                    toastError(sizeCheck.message);
+                    return;
+                }
+
                 await chatStore.sendMediaMessage({
                     type: 'video',
                     file: videoData.blob,
@@ -152,6 +168,13 @@
 
             const sendAudio = async (audioData) => {
                 state.audioRecorder.open = false;
+
+                // 本地预检测：超出后台配置的音频大小限制时立即提示
+                const sizeCheck = await checkFileSize(audioData.blob, 'audio');
+                if (! sizeCheck.ok) {
+                    toastError(sizeCheck.message);
+                    return;
+                }
 
                 await chatStore.sendMediaMessage({
                     type: 'audio',

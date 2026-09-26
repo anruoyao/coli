@@ -32,6 +32,8 @@ Route::get('/wallet', [App\Http\Controllers\Admin\Config\ConfigController::class
 
 Route::get('/auth', [App\Http\Controllers\Admin\Config\ConfigController::class, 'auth'])->name('admin.config.auth');
 
+Route::get('/upload', [App\Http\Controllers\Admin\Config\ConfigController::class, 'upload'])->name('admin.config.upload');
+
 Route::get('/code-injection', [App\Http\Controllers\Admin\Config\ConfigController::class, 'codeInjection'])->name('admin.config.code-injection');
 
 Route::get('/backup', [App\Http\Controllers\Admin\Config\ConfigController::class, 'backup'])->name('admin.config.backup');

@@ -54,7 +54,7 @@ class TipController extends Controller
 
         if(empty($skip)) {
             $request->validate([
-                'image' => ['required', 'image', config('user.validation.avatar.mimes'), config('user.validation.avatar.max')]
+                'image' => ['required', 'image', config('user.validation.avatar.mimes'), 'max:' . config('upload.image.max')]
             ]);
 
             $avatarFilePath = $request->image->store('uploads/users/avatars', static_storage_disk());

@@ -15,6 +15,7 @@
 	import { defineComponent, ref, computed, reactive, onMounted, onUnmounted } from 'vue';
 	import { useRouter } from 'vue-router';
 	import { colibriEventBus } from '@/kernel/events/bus/index.js';
+	import { checkFileSize } from '@/kernel/services/upload-limits/index.js';
 
 	import { useStoriesEditorStore } from '@M/store/stories/editor.store.js';
 
@@ -29,6 +30,14 @@
 			const stroyMediaFileInput = ref(null);
 
 			const handleMediaUpload = async (file) => {
+				// 本地预检测：按文件 MIME 类型应用对应的上传大小限制
+				const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
+				const sizeCheck = await checkFileSize(file, mediaType);
+				if (! sizeCheck.ok) {
+					toastError(sizeCheck.message);
+					return;
+				}
+
 				try {
 					state.isUploading = true;
 					await storiesEditorStore.uploadMedia(file);

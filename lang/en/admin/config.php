@@ -12,6 +12,7 @@ return [
     'custom_code_settings' => 'Custom Code Injection',
     'backup_settings' => 'Backup Settings',
     'backup_history' => 'Backup History',
+    'upload_settings' => 'Upload Limits',
 	'tabs' => [
         'system' => 'System',
         'storage' => 'Storage & Media',
@@ -27,6 +28,12 @@ return [
         'provider_name' => 'Provider name',
         'provider_status' => 'Provider status. Turn On/Off.',
         'switch_status' => 'Switch status. Turn On/Off.',
+        'image_max_mb' => 'Image upload limit (MB)',
+        'video_max_mb' => 'Video upload limit (MB)',
+        'audio_max_mb' => 'Audio upload limit (MB)',
+        'gif_max_mb' => 'GIF upload limit (MB)',
+        'document_max_mb' => 'Document upload limit (MB)',
+        'upload_max_mb_helper' => 'Maximum file size in megabytes. Applied to all media uploads and returned to the app before upload.',
         'client_id' => 'Client ID',
         'client_secret' => 'Client Secret',
         'public_key' => 'Public key',
@@ -119,6 +126,26 @@ return [
         'link_accounts_enabled' => [
             'title' => 'Linking Accounts',
             'caption' => 'Defines if users can link their accounts to other accounts.',
+        ],
+        'image_max_mb' => [
+            'title' => 'Images',
+            'caption' => 'Maximum size for image uploads across posts, stories, chats and profile media.',
+        ],
+        'video_max_mb' => [
+            'title' => 'Videos',
+            'caption' => 'Maximum size for video uploads across posts, stories and chat messages.',
+        ],
+        'audio_max_mb' => [
+            'title' => 'Audio',
+            'caption' => 'Maximum size for audio uploads in posts and chat messages.',
+        ],
+        'gif_max_mb' => [
+            'title' => 'GIF',
+            'caption' => 'Maximum size for GIF uploads in posts.',
+        ],
+        'document_max_mb' => [
+            'title' => 'Documents',
+            'caption' => 'Maximum size for document uploads in posts.',
         ],
         'new_backup' => [
             'title' => 'New Backup',

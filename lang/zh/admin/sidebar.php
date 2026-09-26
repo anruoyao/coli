@@ -38,6 +38,7 @@ return [
     'email_testing' => '邮件 (SMTP) 测试',
     'ffmpeg_settings' => 'FFMPEG 设置',
     'ffmpeg_testing' => 'FFMPEG 测试',
+    'upload_settings' => '上传限制',
     'acquiring_settings' => '支付收款设置',
     'social_login' => '社交登录',
     'wallet_settings' => '钱包设置',

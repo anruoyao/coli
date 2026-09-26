@@ -148,7 +148,7 @@ class AccountSettingsController extends Controller
     public function updateAvatar(Request $request)
     {
         $request->validate([
-            'avatar' => ['required', 'image', config('user.validation.avatar.mimes'), config('user.validation.avatar.max')]
+            'avatar' => ['required', 'image', config('user.validation.avatar.mimes'), 'max:' . config('upload.image.max')]
         ]);
 
         $imageUploadService = app(ImageUploadService::class);
@@ -182,7 +182,7 @@ class AccountSettingsController extends Controller
     public function updateCover(Request $request)
     {
         $request->validate([
-            'cover' => ['required', 'image', config('user.validation.cover.mimes'), config('user.validation.cover.max')]
+            'cover' => ['required', 'image', config('user.validation.cover.mimes'), 'max:' . config('upload.image.max')]
         ]);
 
         $imageUploadService = app(ImageUploadService::class);

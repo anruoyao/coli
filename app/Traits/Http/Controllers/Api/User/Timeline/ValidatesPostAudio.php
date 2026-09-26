@@ -14,7 +14,7 @@ trait ValidatesPostAudio
                 'file',
                 XRule::join('mimes', config('post.validation.audio.mimes')),
                 XRule::join('mimetypes', config('post.validation.audio.mimetypes')),
-                XRule::join('max', config('post.validation.audio.max'))
+                XRule::join('max', config('upload.audio.max'))
             ]
         ]);
     

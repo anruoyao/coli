@@ -14,7 +14,7 @@ trait ValidatesPostDocument
                 'file',
                 XRule::join('mimes', config('post.validation.document.mimes')),
                 XRule::join('mimetypes', config('post.validation.document.mimetypes')),
-                XRule::join('max', config('post.validation.document.max'))
+                XRule::join('max', config('upload.document.max'))
             ]
         ]);
     

@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Settings\{AppSettings, FFMPegSettings, MailSettings, GoogleLoginSettings, BrandSettings, AuthSettings, CodeSettings, WalletSettings};
+use App\Settings\{AppSettings, FFMPegSettings, MailSettings, GoogleLoginSettings, BrandSettings, AuthSettings, CodeSettings, WalletSettings, UploadSettings};
 use App\Settings\Acquiring\{PaypalSettings, StripeSettings, YooKassaSettings, RobokassaSettings};
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
@@ -32,6 +32,7 @@ class SettingsServiceProvider extends ServiceProvider
             $this->mergeAuthSettings();
             $this->mergeCodeSettings();
             $this->mergeBrandSettings();
+            $this->mergeUploadSettings();
         } catch (\Throwable $th) {
             //
         }
@@ -237,6 +238,25 @@ class SettingsServiceProvider extends ServiceProvider
             'code.footer_code' => $codeSettings->footer_code,
             'code.header_code_enabled' => $codeSettings->header_code_enabled,
             'code.footer_code_enabled' => $codeSettings->footer_code_enabled,
+        ]);
+    }
+
+    private function mergeUploadSettings(): void
+    {
+        $uploadSettings = app(UploadSettings::class);
+
+        config([
+            'upload.image.max_mb' => $uploadSettings->image_max_mb,
+            'upload.video.max_mb' => $uploadSettings->video_max_mb,
+            'upload.audio.max_mb' => $uploadSettings->audio_max_mb,
+            'upload.gif.max_mb' => $uploadSettings->gif_max_mb,
+            'upload.document.max_mb' => $uploadSettings->document_max_mb,
+            // KB 值：Laravel max 校验规则单位为 KB，客户端限制接口也返回 KB，避免单位偏差
+            'upload.image.max' => $uploadSettings->image_max_mb * 1024,
+            'upload.video.max' => $uploadSettings->video_max_mb * 1024,
+            'upload.audio.max' => $uploadSettings->audio_max_mb * 1024,
+            'upload.gif.max' => $uploadSettings->gif_max_mb * 1024,
+            'upload.document.max' => $uploadSettings->document_max_mb * 1024,
         ]);
     }
 

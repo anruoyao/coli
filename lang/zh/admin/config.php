@@ -12,6 +12,7 @@ return [
     'custom_code_settings' => '自定义代码注入',
     'backup_settings' => '备份设置',
     'backup_history' => '备份历史',
+    'upload_settings' => '上传限制',
 	'tabs' => [
         'system' => '系统',
         'storage' => '存储与媒体',
@@ -27,6 +28,12 @@ return [
         'provider_name' => '提供商名称',
         'provider_status' => '提供商状态。开启/关闭。',
         'switch_status' => '切换状态。开启/关闭。',
+        'image_max_mb' => '图片上传限制（MB）',
+        'video_max_mb' => '视频上传限制（MB）',
+        'audio_max_mb' => '音频上传限制（MB）',
+        'gif_max_mb' => 'GIF 上传限制（MB）',
+        'document_max_mb' => '文档上传限制（MB）',
+        'upload_max_mb_helper' => '最大文件大小（兆字节）。适用于所有媒体上传，并在上传前返回给客户端。',
         'client_id' => '客户端 ID',
         'client_secret' => '客户端密钥',
         'public_key' => '公钥',
@@ -119,6 +126,26 @@ return [
         'link_accounts_enabled' => [
             'title' => '关联账号',
             'caption' => '定义用户是否可以将其账号关联到其他账号。',
+        ],
+        'image_max_mb' => [
+            'title' => '图片',
+            'caption' => '帖子、故事、聊天和个人资料媒体中图片上传的最大大小。',
+        ],
+        'video_max_mb' => [
+            'title' => '视频',
+            'caption' => '帖子、故事和聊天消息中视频上传的最大大小。',
+        ],
+        'audio_max_mb' => [
+            'title' => '音频',
+            'caption' => '帖子和聊天消息中音频上传的最大大小。',
+        ],
+        'gif_max_mb' => [
+            'title' => 'GIF',
+            'caption' => '帖子中 GIF 上传的最大大小。',
+        ],
+        'document_max_mb' => [
+            'title' => '文档',
+            'caption' => '帖子中文档上传的最大大小。',
         ],
         'new_backup' => [
             'title' => '新建备份',

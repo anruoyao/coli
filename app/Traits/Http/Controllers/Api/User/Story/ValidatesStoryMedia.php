@@ -17,7 +17,7 @@ trait ValidatesStoryMedia
                 'image',
                 XRule::join('mimes', config('story.validation.image.mimes')),
                 XRule::join('mimetypes', config('story.validation.image.mimetypes')),
-                XRule::join('max', config('story.validation.image.max'))
+                XRule::join('max', config('upload.image.max'))
             ]
         ]);
     
@@ -35,7 +35,7 @@ trait ValidatesStoryMedia
                 'file',
                 XRule::join('mimes', config('story.validation.video.mimes')),
                 XRule::join('mimetypes', config('story.validation.video.mimetypes')),
-                XRule::join('max', config('story.validation.video.max'))
+                XRule::join('max', config('upload.video.max'))
             ]
         ]);
     

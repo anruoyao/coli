@@ -14,7 +14,7 @@ trait ValidatesPostImage
                 'image',
                 XRule::join('mimes', config('post.validation.image.mimes')),
                 XRule::join('mimetypes', config('post.validation.image.mimetypes')),
-                XRule::join('max', config('post.validation.image.max'))
+                XRule::join('max', config('upload.image.max'))
             ]
         ]);
     

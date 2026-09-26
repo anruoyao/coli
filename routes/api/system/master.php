@@ -19,3 +19,6 @@ Route::middleware(['api.key'])->post('/verification/user/verify', [App\Http\Cont
 
 // App 版本检测（客户端启动时调用，无需鉴权）
 Route::get('/version/check', [App\Http\Controllers\Api\System\VersionController::class, 'check']);
+
+// 媒体上传大小限制（客户端上传前拉取，用于本地预检测，无需鉴权）
+Route::get('/upload/limits', [App\Http\Controllers\Api\System\UploadLimitsController::class, 'limits']);
