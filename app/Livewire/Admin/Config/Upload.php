@@ -26,11 +26,13 @@ class Upload extends Component
     public function submitForm()
     {
         $this->validate([
-            'formData.image_max_mb' => ['required', 'integer', 'min:1', 'max:8192'],
-            'formData.video_max_mb' => ['required', 'integer', 'min:1', 'max:8192'],
-            'formData.audio_max_mb' => ['required', 'integer', 'min:1', 'max:8192'],
-            'formData.gif_max_mb' => ['required', 'integer', 'min:1', 'max:8192'],
-            'formData.document_max_mb' => ['required', 'integer', 'min:1', 'max:8192'],
+            // 上限 700MB：与服务器上传硬限制（nginx/PHP 均为 700M）保持一致，
+            // 避免后台配置超出后本地检测与服务器实际拦截出现偏差。
+            'formData.image_max_mb' => ['required', 'integer', 'min:1', 'max:700'],
+            'formData.video_max_mb' => ['required', 'integer', 'min:1', 'max:700'],
+            'formData.audio_max_mb' => ['required', 'integer', 'min:1', 'max:700'],
+            'formData.gif_max_mb' => ['required', 'integer', 'min:1', 'max:700'],
+            'formData.document_max_mb' => ['required', 'integer', 'min:1', 'max:700'],
         ], attributes: [
             'formData.image_max_mb' => __('admin/config.form.image_max_mb'),
             'formData.video_max_mb' => __('admin/config.form.video_max_mb'),

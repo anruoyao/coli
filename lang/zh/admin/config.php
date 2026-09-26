@@ -33,7 +33,7 @@ return [
         'audio_max_mb' => '音频上传限制（MB）',
         'gif_max_mb' => 'GIF 上传限制（MB）',
         'document_max_mb' => '文档上传限制（MB）',
-        'upload_max_mb_helper' => '最大文件大小（兆字节）。适用于所有媒体上传，并在上传前返回给客户端。',
+        'upload_max_mb_helper' => '最大文件大小（兆字节）。适用于所有媒体上传，并在上传前返回给客户端。请勿超过服务器上传硬限制（当前 700MB）。',
         'client_id' => '客户端 ID',
         'client_secret' => '客户端密钥',
         'public_key' => '公钥',

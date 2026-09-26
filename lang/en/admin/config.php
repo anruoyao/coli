@@ -33,7 +33,7 @@ return [
         'audio_max_mb' => 'Audio upload limit (MB)',
         'gif_max_mb' => 'GIF upload limit (MB)',
         'document_max_mb' => 'Document upload limit (MB)',
-        'upload_max_mb_helper' => 'Maximum file size in megabytes. Applied to all media uploads and returned to the app before upload.',
+        'upload_max_mb_helper' => 'Maximum file size in megabytes. Applied to all media uploads and returned to the app before upload. Do not exceed the server upload hard limit (currently 700MB).',
         'client_id' => 'Client ID',
         'client_secret' => 'Client Secret',
         'public_key' => 'Public key',
