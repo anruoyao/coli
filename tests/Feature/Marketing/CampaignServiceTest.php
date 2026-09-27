@@ -199,7 +199,10 @@ class CampaignServiceTest extends TestCase
     {
         $user = $this->makeUser();
 
-        $campaign = $this->campaign(['in_app_enabled' => false]);
+        $campaign = $this->campaign([
+            'in_app_enabled' => false,
+            'status' => MarketingCampaign::STATUS_SENDING, // dispatchTick 仅处理 sending
+        ]);
 
         $recipient = MarketingCampaignRecipient::create([
             'campaign_id' => $campaign->id,
@@ -229,7 +232,10 @@ class CampaignServiceTest extends TestCase
     {
         $user = $this->makeUser();
 
-        $campaign = $this->campaign(['in_app_enabled' => false]);
+        $campaign = $this->campaign([
+            'in_app_enabled' => false,
+            'status' => MarketingCampaign::STATUS_SENDING,
+        ]);
 
         $recipient = MarketingCampaignRecipient::create([
             'campaign_id' => $campaign->id,
