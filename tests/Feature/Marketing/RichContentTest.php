@@ -127,6 +127,58 @@ class RichContentTest extends TestCase
         $this->assertNull($snapshots[0]['cover_url']);
     }
 
+    public function test_snapshots_fall_back_to_video_thumbnail_and_gif_source(): void
+    {
+        $author = $this->makeUser();
+
+        // 视频帖：已处理 + 有缩略图 → 封面用缩略图（海报帧）
+        $videoPost = $this->makePost($author->id);
+        Media::create([
+            'mediaable_id' => $videoPost->id,
+            'mediaable_type' => Post::class,
+            'source_path' => "posts/{$videoPost->id}/video.mp4",
+            'thumbnail_path' => "posts/{$videoPost->id}/video_thumb.jpg",
+            'type' => MediaType::VIDEO,
+            'status' => MediaStatus::PROCESSED,
+            'disk' => 'public',
+            'thumbnail_disk' => 'public',
+            'size' => '2048',
+            'thumbnail_size' => '',
+        ]);
+
+        // 无缩略图视频：不可入选（<img> 无法展示视频文件）
+        $videoNoThumbPost = $this->makePost($author->id);
+        Media::create([
+            'mediaable_id' => $videoNoThumbPost->id,
+            'mediaable_type' => Post::class,
+            'source_path' => "posts/{$videoNoThumbPost->id}/video2.mp4",
+            'type' => MediaType::VIDEO,
+            'status' => MediaStatus::PROCESSED,
+            'disk' => 'public',
+            'size' => '2048',
+            'thumbnail_size' => '',
+        ]);
+
+        // GIF 帖：动图源文件直接作为封面
+        $gifPost = $this->makePost($author->id);
+        Media::create([
+            'mediaable_id' => $gifPost->id,
+            'mediaable_type' => Post::class,
+            'source_path' => "posts/{$gifPost->id}/anim.gif",
+            'type' => MediaType::GIF,
+            'status' => MediaStatus::PROCESSED,
+            'disk' => 'public',
+            'size' => '4096',
+            'thumbnail_size' => '',
+        ]);
+
+        $snapshots = app(CampaignService::class)->buildPostSnapshots([$videoPost->id, $videoNoThumbPost->id, $gifPost->id]);
+
+        $this->assertStringContainsString("posts/{$videoPost->id}/video_thumb.jpg", $snapshots[0]['cover_url']);
+        $this->assertNull($snapshots[1]['cover_url']);
+        $this->assertStringContainsString("posts/{$gifPost->id}/anim.gif", $snapshots[2]['cover_url']);
+    }
+
     public function test_email_carries_rich_fields_and_renders_into_html(): void
     {
         $user = $this->makeUser(['language' => 'en']);

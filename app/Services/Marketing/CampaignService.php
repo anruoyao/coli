@@ -262,8 +262,12 @@ class CampaignService
 
     protected function buildPostSnapshot(Post $post): array
     {
+        // 封面选取：图片优先 → GIF 动图源文件 → 视频缩略图（海报帧）。
+        // 视频文件本身不能作为 <img> 展示，必须带缩略图才可入选。
         $cover = $post->media
-            ->first(fn ($media) => $media->type->isImage() && $media->status->isProcessed());
+            ->first(fn ($media) => $media->type->isImage() && $media->status->isProcessed())
+            ?: $post->media->first(fn ($media) => $media->type->isGif() && $media->status->isProcessed())
+            ?: $post->media->first(fn ($media) => $media->type->isVideo() && $media->status->isProcessed() && ! empty($media->thumbnail_path));
 
         $reactionsCount = $post->reactions()->count();
         $commentsCount = (int) ($post->comments_count ?: $post->comments()->count());
