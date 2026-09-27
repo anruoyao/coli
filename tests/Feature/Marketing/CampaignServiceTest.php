@@ -208,8 +208,12 @@ class CampaignServiceTest extends TestCase
             'in_app_status' => MarketingCampaignRecipient::INAP_SKIPPED,
         ]);
 
-        // 把认领时间回拨到阈值之外，模拟 Job 丢失后长期无进展
-        $campaign->recipients()->update(['updated_at' => now()->subMinutes(120)]);
+        // 把认领时间回拨到阈值之外，模拟 Job 丢失后长期无进展。
+        // 注意：不能用 $campaign->recipients()->update() —— 关联 update 会强制覆写
+        // updated_at 为当前时间（自动 touch），必须走 DB 门面绕过 touch。
+        Illuminate\Support\Facades\DB::table('marketing_campaign_recipients')
+            ->where('campaign_id', $campaign->id)
+            ->update(['updated_at' => now()->subMinutes(120)]);
 
         Queue::fake();
         app(CampaignService::class)->dispatchTick($campaign->fresh());
