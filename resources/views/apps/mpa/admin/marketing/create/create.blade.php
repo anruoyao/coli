@@ -40,14 +40,21 @@
 
         <x-accordion.form title="{{ __('admin/marketing.form.channels') }}" :open="true">
             <div class="space-y-6">
-                <x-form.switcher
-                    :labelText="__('admin/marketing.form.email_enabled')"
-                    name="email_enabled" value="1" {{ old('email_enabled', true) ? 'checked' : '' }}>
-                </x-form.switcher>
-                <x-form.switcher
-                    :labelText="__('admin/marketing.form.in_app_enabled')"
-                    name="in_app_enabled" value="1" {{ old('in_app_enabled', true) ? 'checked' : '' }}>
-                </x-form.switcher>
+                <div class="flex items-center leading-none select-none">
+                    <label class="inline-flex items-center cursor-pointer leading-none">
+                        <input type="checkbox" name="email_enabled" value="1" class="sr-only peer" {{ old('email_enabled', true) ? 'checked' : '' }}>
+                        <div class="relative w-10 h-5 bg-[#787880]/20 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-[20px] rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:shadow-lg after:border-bord-card after:rounded-full after:size-4 after:transition-all peer-checked:bg-green-900"></div>
+                        <span class="ml-3 text-lab-sc text-par-m">{{ __('admin/marketing.form.email_enabled') }}</span>
+                    </label>
+                </div>
+
+                <div class="flex items-center leading-none select-none">
+                    <label class="inline-flex items-center cursor-pointer leading-none">
+                        <input type="checkbox" name="in_app_enabled" value="1" class="sr-only peer" {{ old('in_app_enabled', true) ? 'checked' : '' }}>
+                        <div class="relative w-10 h-5 bg-[#787880]/20 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-[20px] rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:shadow-lg after:border-bord-card after:rounded-full after:size-4 after:transition-all peer-checked:bg-green-900"></div>
+                        <span class="ml-3 text-lab-sc text-par-m">{{ __('admin/marketing.form.in_app_enabled') }}</span>
+                    </label>
+                </div>
 
                 @if($errors->has('channels'))
                     <div>
