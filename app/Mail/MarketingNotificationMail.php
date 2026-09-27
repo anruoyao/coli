@@ -17,14 +17,20 @@ class MarketingNotificationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public string $mailLocale = 'en';
+
+    public string $appName = '';
+
     public function __construct(
         public string $subjectText,
         public string $campaignTitle,
         public string $campaignContent,
         public ?string $destinationUrl = null,
-        public string $locale = 'en',
-        public string $appName = '',
+        string $locale = 'en',
+        string $appName = '',
     ) {
+        // 注意：不能声明 $locale（与父类 Mailable::$locale 冲突），改用 $mailLocale
+        $this->mailLocale = $locale;
         $this->appName = $appName !== '' ? $appName : (string) config('app.name');
     }
 
@@ -41,7 +47,7 @@ class MarketingNotificationMail extends Mailable
                 'campaignTitle' => $this->campaignTitle,
                 'campaignContent' => $this->campaignContent,
                 'destinationUrl' => $this->destinationUrl,
-                'locale' => $this->locale,
+                'locale' => $this->mailLocale,
                 'appName' => $this->appName,
             ],
         );
