@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Enums\User\UserType;
 use App\Models\MarketingCampaignRecipient;
 use Tests\TestCase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use App\Models\MarketingCampaign;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -211,7 +212,7 @@ class CampaignServiceTest extends TestCase
         // 把认领时间回拨到阈值之外，模拟 Job 丢失后长期无进展。
         // 注意：不能用 $campaign->recipients()->update() —— 关联 update 会强制覆写
         // updated_at 为当前时间（自动 touch），必须走 DB 门面绕过 touch。
-        Illuminate\Support\Facades\DB::table('marketing_campaign_recipients')
+        DB::table('marketing_campaign_recipients')
             ->where('campaign_id', $campaign->id)
             ->update(['updated_at' => now()->subMinutes(120)]);
 
