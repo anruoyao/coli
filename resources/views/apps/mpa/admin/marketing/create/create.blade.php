@@ -42,11 +42,11 @@
             <div class="space-y-6">
                 <x-form.switcher
                     :labelText="__('admin/marketing.form.email_enabled')"
-                    name="email_enabled" value="1" @checked(old('email_enabled', true))>
+                    name="email_enabled" value="1" {{ old('email_enabled', true) ? 'checked' : '' }}>
                 </x-form.switcher>
                 <x-form.switcher
                     :labelText="__('admin/marketing.form.in_app_enabled')"
-                    name="in_app_enabled" value="1" @checked(old('in_app_enabled', true))>
+                    name="in_app_enabled" value="1" {{ old('in_app_enabled', true) ? 'checked' : '' }}>
                 </x-form.switcher>
 
                 @if($errors->has('channels'))
@@ -82,9 +82,9 @@
                             name="target_type"
                             id="target_type"
                             class="block w-full bg-input-pr outline-hidden text-par-m text-lab-pr px-4 h-12 rounded-xl border-2 border-transparent hover:border-brand-900 smoothing">
-                            <option value="all" @selected(old('target_type') === 'all')>{{ __('admin/marketing.targets.all') }}</option>
-                            <option value="manual" @selected(old('target_type') === 'manual')>{{ __('admin/marketing.targets.manual') }}</option>
-                            <option value="type" @selected(old('target_type') === 'type')>{{ __('admin/marketing.targets.type') }}</option>
+                            <option value="all" {{ old('target_type') === 'all' ? 'selected' : '' }}>{{ __('admin/marketing.targets.all') }}</option>
+                            <option value="manual" {{ old('target_type') === 'manual' ? 'selected' : '' }}>{{ __('admin/marketing.targets.manual') }}</option>
+                            <option value="type" {{ old('target_type') === 'type' ? 'selected' : '' }}>{{ __('admin/marketing.targets.type') }}</option>
                         </select>
                     </div>
                     @error('target_type')
@@ -114,8 +114,8 @@
                             id="target_user_type"
                             class="block w-full bg-input-pr outline-hidden text-par-m text-lab-pr px-4 h-12 rounded-xl border-2 border-transparent hover:border-brand-900 smoothing">
                             <option value="">{{ __('admin/marketing.form.target_user_type_none') }}</option>
-                            <option value="author" @selected(old('target_user_type') === 'author')>{{ __('admin/marketing.targets.type_author') }}</option>
-                            <option value="reader" @selected(old('target_user_type') === 'reader')>{{ __('admin/marketing.targets.type_reader') }}</option>
+                            <option value="author" {{ old('target_user_type') === 'author' ? 'selected' : '' }}>{{ __('admin/marketing.targets.type_author') }}</option>
+                            <option value="reader" {{ old('target_user_type') === 'reader' ? 'selected' : '' }}>{{ __('admin/marketing.targets.type_reader') }}</option>
                         </select>
                     </div>
                     @error('target_user_type')
