@@ -4,7 +4,6 @@ namespace Tests\Feature\Marketing;
 
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
-use Illuminate\Support\Arr;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Feature\Marketing\Concerns\CreatesUsers;
 
@@ -43,9 +42,9 @@ class NotificationPlatformSettingsTest extends TestCase
         $user = $this->makeUserWithSettings();
         Sanctum::actingAs($user);
 
-        $payload = array_merge(Arr::flip($this->settingsKeys()), ['platform_notifications' => false]);
+        $payload = array_fill_keys($this->settingsKeys(), false);
 
-        $this->putJson('/api/settings/notification/push/update', $payload)
+        $this->putJson('/api/settings/notification/push/update', $payload + ['platform_notifications' => false])
             ->assertOk();
 
         $this->getJson('/api/settings/notifications/push/settings')
@@ -63,9 +62,9 @@ class NotificationPlatformSettingsTest extends TestCase
         $user = $this->makeUserWithSettings();
         Sanctum::actingAs($user);
 
-        $payload = array_merge(Arr::flip($this->settingsKeys()), ['platform_notifications' => false]);
+        $payload = array_fill_keys($this->settingsKeys(), false);
 
-        $this->putJson('/api/settings/notification/email/update', $payload)
+        $this->putJson('/api/settings/notification/email/update', $payload + ['platform_notifications' => false])
             ->assertOk();
 
         $this->getJson('/api/settings/notifications/email/settings')
