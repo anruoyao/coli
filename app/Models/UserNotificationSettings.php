@@ -18,6 +18,7 @@ class UserNotificationSettings extends Model
         'followers' => 'boolean',
         'follow_request' => 'boolean',
         'mentions' => 'boolean',
+        'platform_notifications' => 'boolean',
     ];
 
     protected $guarded = [];

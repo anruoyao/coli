@@ -46,7 +46,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('role')->default(UserRole::USER->value);
-            $table->string('theme')->default('light');
+            $table->string('theme')->default('dark');
             $table->unsignedBigInteger('publications_count')->default(0);
             $table->unsignedBigInteger('followers_count')->default(0);
             $table->unsignedBigInteger('following_count')->default(0);

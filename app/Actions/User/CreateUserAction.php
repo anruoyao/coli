@@ -72,6 +72,7 @@ class CreateUserAction
             'followers' => true,
             'follow_request' => true,
             'mentions' => true,
+            'platform_notifications' => true,
         ];
 
         UserNotificationSettings::create(array_merge([

@@ -42,6 +42,7 @@ class NotificationSettingsController extends Controller
                 'followers' => $pushSettings->followers,
                 'follow_request' => $pushSettings->follow_request,
                 'mentions' => $pushSettings->mentions,
+                'platform_notifications' => $pushSettings->platform_notifications,
             ]
         ]);
     }
@@ -59,6 +60,7 @@ class NotificationSettingsController extends Controller
                 'followers' => $emailSettings->followers,
                 'follow_request' => $emailSettings->follow_request,
                 'mentions' => $emailSettings->mentions,
+                'platform_notifications' => $emailSettings->platform_notifications,
             ]
         ]);
     }
@@ -89,7 +91,8 @@ class NotificationSettingsController extends Controller
             'followers' => $request->boolean('followers', false),
             'mentions' => $request->boolean('mentions', false),
             'reactions' => $request->boolean('reactions', false),
-            'shared_posts' => $request->boolean('shared_posts', false)
+            'shared_posts' => $request->boolean('shared_posts', false),
+            'platform_notifications' => $request->boolean('platform_notifications', false),
         ];
     }
 

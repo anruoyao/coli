@@ -85,4 +85,6 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
         })->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
             // 聚合 Digest 邮件调度（错峰派发，cron 每分钟触发 schedule:run）
             $schedule->command('notification:send-digest')->everyMinute()->withoutOverlapping();
+            // 营销活动分片派发（邮件受智能限速约束，每分钟错峰派发）
+            $schedule->command('marketing:send')->everyMinute()->withoutOverlapping();
         })->create();

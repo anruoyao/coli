@@ -35,6 +35,9 @@ class Notifications
 	public const ACCOUNT_LINKED = 'important.account-linked';
 	public const WALLET_DEPOSIT = 'important.wallet-deposit';
 	public const PAYMENT_RECEIVED = 'important.payment-received';
+
+	// Marketing / platform notifications
+	public const MARKETING_PLATFORM = 'marketing.platform';
 	
 	public static function importantTypes(): array
 	{

@@ -44,7 +44,6 @@ class Wallet extends Component
             $walletService->setWalletBalance($newBalance);
         }
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.user.wallet_balance_success', ['amount' => $newBalance])))->get())
-            ->route('admin.users.wallet', $this->userData->id);
+        return redirect()->route('admin.users.wallet', $this->userData->id)->with('flashMessage', (new Flash(content: __('admin/flash.user.wallet_balance_success', ['amount' => $newBalance])))->get());
     }
 }

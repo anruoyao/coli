@@ -49,3 +49,5 @@ Route::prefix('pages')->group(base_path('routes/admin/pages/web.php'));
 Route::prefix('chats')->group(base_path('routes/admin/chats/web.php'));
 
 Route::prefix('cashouts')->group(base_path('routes/admin/cashouts/web.php'));
+
+Route::prefix('marketing')->group(base_path('routes/admin/marketing/web.php'));

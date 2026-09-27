@@ -54,10 +54,9 @@ class Maintenance extends Component
         // 广播给所有在线 App（公共命令频道）
         event(new MaintenanceChangedEvent($enabled, $settings->message, $until?->toIso8601String()));
 
-        return redirect()->with('flashMessage', (new Flash(content: $enabled
+        return redirect()->route('admin.config.maintenance')->with('flashMessage', (new Flash(content: $enabled
             ? __('admin/maintenance.flash.enabled')
-            : __('admin/maintenance.flash.disabled')))->get())
-            ->route('admin.config.maintenance');
+            : __('admin/maintenance.flash.disabled')))->get());
     }
 
     public function render()

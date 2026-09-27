@@ -63,7 +63,6 @@ class Stripe extends Component
         $stripeSettings->stripe_payment_method_types = $this->formData['payment_method_types'];
         $stripeSettings->save();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get())
-            ->route('admin.acquiring.edit', $stripeSettings->getDriver());
+        return redirect()->route('admin.acquiring.edit', $stripeSettings->getDriver())->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }
 }

@@ -75,8 +75,7 @@ class Wallet extends Component
         $walletSettings->cashout_methods = $this->formData['cashout_methods'];
         $walletSettings->save();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get())
-            ->route('admin.config.wallet');
+        return redirect()->route('admin.config.wallet')->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }
 
     public function render()

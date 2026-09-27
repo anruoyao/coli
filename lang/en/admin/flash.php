@@ -43,6 +43,11 @@ return [
 	'email_testing' => [
 		'send_success' => 'Test email sent successfully!',
 	],
+	'marketing' => [
+		'created' => 'Campaign created. Ready to send.',
+		'started' => 'Campaign started. Recipients will be processed by the scheduler.',
+		'cancelled' => 'Campaign cancelled.',
+	],
 	'report' => [
 		'deleted_success' => 'Report deleted successfully!',
 		'ignored_success' => 'Report is marked as ignored successfully!',

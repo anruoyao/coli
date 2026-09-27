@@ -7,6 +7,20 @@
     <div v-if="! state.isLoading" class="block">
         <div class="mb-4 px-4">
             <h6 class="text-par-m text-lab-sc font-medium">
+                {{ $t('settings.forms.notif_settings.platform') }}
+            </h6>
+        </div>
+        <div class="mb-4">
+            <SectionToggle
+                v-model.lazy="formData.platform_notifications"
+                v-bind:captionText="$t('settings.forms.notif_settings.platform_notifications_helper')"
+            v-bind:titleText="$t('settings.forms.notif_settings.platform_notifications')"></SectionToggle>
+        </div>
+        <div class="mb-3">
+            <Border height="h-2" opacity="opacity-50"></Border>
+        </div>
+        <div class="mb-4 px-4">
+            <h6 class="text-par-m text-lab-sc font-medium">
                 {{ $t('settings.forms.notif_settings.messages') }}
             </h6>
         </div>

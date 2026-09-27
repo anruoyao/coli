@@ -34,5 +34,8 @@ return [
 	'wallet' => [
 		'deposit_success' => 'Your deposit has been successfully completed',
 		'payment_received' => 'has transferred you payment. +:amount',
+	],
+	'marketing' => [
+		'platform_notice' => 'Platform notice: :title',
 	]
 ];

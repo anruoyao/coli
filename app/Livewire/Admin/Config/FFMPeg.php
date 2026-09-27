@@ -72,6 +72,6 @@ class FFMPeg extends Component
 
         $ffmpegSettings->save();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get())->route('admin.config.ffmpeg');
+        return redirect()->route('admin.config.ffmpeg')->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }
 }

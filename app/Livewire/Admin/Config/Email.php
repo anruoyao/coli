@@ -69,7 +69,7 @@ class Email extends Component
         $mailSettings->local_domain = $this->formData['local_domain'];
         $mailSettings->save();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get())->route('admin.config.email');
+        return redirect()->route('admin.config.email')->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }
 
     public function render()

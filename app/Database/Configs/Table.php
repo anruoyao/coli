@@ -72,4 +72,6 @@ class Table
     public const PINS = 'pins';
     public const PRESENCE_SESSIONS = 'presence_sessions';
     public const PRESENCE_SNAPSHOTS = 'presence_snapshots';
+    public const MARKETING_CAMPAIGNS = 'marketing_campaigns';
+    public const MARKETING_CAMPAIGN_RECIPIENTS = 'marketing_campaign_recipients';
 }

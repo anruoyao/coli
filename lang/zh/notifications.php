@@ -34,5 +34,8 @@ return [
 	'wallet' => [
 		'deposit_success' => '您的充值已成功完成',
 		'payment_received' => '向您转账了 :amount',
+	],
+	'marketing' => [
+		'platform_notice' => '平台通知：:title',
 	]
 ];

@@ -65,8 +65,7 @@ class PWA extends Component
         $this->setManifestContent($this->formData['manifest_content']);
         $this->setServiceWorkerContent($this->formData['service_worker_content']);
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get())
-            ->route('admin.config.mobile-apps', ['tab' => 'pwa']);
+        return redirect()->route('admin.config.mobile-apps', ['tab' => 'pwa'])->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }
 
     private function getServiceWorkerContent()

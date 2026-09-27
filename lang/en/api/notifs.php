@@ -11,6 +11,7 @@ return [
 	],
 	'notifications_sound' => 'Notifications sound',
 	'no_notifications' => 'No notifications yet',
+	'view_details' => 'View details',
 	'date_sections' => [
 		'today' => 'Today',
 		'yesterday' => 'Yesterday',

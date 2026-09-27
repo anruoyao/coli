@@ -59,7 +59,6 @@ class Paypal extends Component
         $paypalSettings->paypal_mode = $this->formData['mode'];
         $paypalSettings->save();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get())
-            ->route('admin.acquiring.edit', $paypalSettings->getDriver());
+        return redirect()->route('admin.acquiring.edit', $paypalSettings->getDriver())->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }
 }

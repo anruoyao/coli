@@ -28,6 +28,20 @@ return [
         'key' => env('RESEND_KEY'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | FCM（Firebase Cloud Messaging）— App 端系统推送（预留）
+    |--------------------------------------------------------------------------
+    | App 的项目推送目前以「站内通知」为主。若未来要下发系统级推送，
+    | 在此配置 FIREBASE_SERVER_KEY，并在营销配置中开启 MARKETING_FCM_ENABLED，
+    | 即可通过 MarketingFcmSender 按主题下发（data 载荷含 title/body，与 App 端
+    | FirebaseNotificationManager 约定一致）。未配置时所有 FCM 调用自动跳过。
+    */
+    'fcm' => [
+        'server_key' => env('FIREBASE_SERVER_KEY'),
+        'topic' => env('FIREBASE_TOPIC', 'chatter'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

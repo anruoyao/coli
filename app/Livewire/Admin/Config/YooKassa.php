@@ -53,8 +53,7 @@ class YooKassa extends Component
         $ykSettings->yk_currency = $this->formData['currency'];
         $ykSettings->save();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get())
-            ->route('admin.acquiring.edit', $ykSettings->getDriver());
+        return redirect()->route('admin.acquiring.edit', $ykSettings->getDriver())->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }
 
     public function render()

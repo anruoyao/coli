@@ -40,8 +40,7 @@ class GoogleLogin extends Component
         $googleLoginSettings->client_secret = $this->formData['client_secret'];
         $googleLoginSettings->save();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get())
-            ->route('admin.config.social-login');
+        return redirect()->route('admin.config.social-login')->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }
 
     public function render()

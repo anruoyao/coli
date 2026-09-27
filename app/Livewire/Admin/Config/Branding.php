@@ -116,8 +116,7 @@ class Branding extends Component
         $brandSettings->videos_watermark_enabled = $this->formData['videos_watermark_enabled'];
         $brandSettings->save();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get())
-            ->route('admin.config.branding');
+        return redirect()->route('admin.config.branding')->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }
 
     public function render()

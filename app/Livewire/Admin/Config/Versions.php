@@ -121,8 +121,7 @@ class Versions extends Component
             $message = __('admin/version.flash.created');
         }
 
-        return redirect()->with('flashMessage', (new Flash(content: $message))->get())
-            ->route('admin.config.versions');
+        return redirect()->route('admin.config.versions')->with('flashMessage', (new Flash(content: $message))->get());
     }
 
     public function toggleForced(int $id)
@@ -156,16 +155,14 @@ class Versions extends Component
         $appSettings->min_supported_version_ios = trim($this->minVersionData['ios'] ?? '');
         $appSettings->save();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/version.flash.min_supported_saved')))->get())
-            ->route('admin.config.versions');
+        return redirect()->route('admin.config.versions')->with('flashMessage', (new Flash(content: __('admin/version.flash.min_supported_saved')))->get());
     }
 
     public function delete(int $id)
     {
         AppVersion::query()->findOrFail($id)->delete();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/version.flash.deleted')))->get())
-            ->route('admin.config.versions');
+        return redirect()->route('admin.config.versions')->with('flashMessage', (new Flash(content: __('admin/version.flash.deleted')))->get());
     }
 
     public function render()

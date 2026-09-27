@@ -62,7 +62,6 @@ class RoboKassa extends Component
         $rkSettings->rk_currency = $this->formData['currency'];
         $rkSettings->save();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get())
-            ->route('admin.acquiring.edit', $rkSettings->getDriver());
+        return redirect()->route('admin.acquiring.edit', $rkSettings->getDriver())->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }
 }

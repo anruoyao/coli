@@ -42,8 +42,7 @@ class CodeInjection extends Component
         $codeSettings->footer_code_enabled = $this->formData['footer_code_enabled'];
         $codeSettings->save();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get())
-            ->route('admin.config.code-injection');
+        return redirect()->route('admin.config.code-injection')->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }
 
     public function render()

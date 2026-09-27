@@ -37,8 +37,7 @@ class Mobile extends Component
 
         $appSettings->save();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get())
-            ->route('admin.config.mobile-apps');
+        return redirect()->route('admin.config.mobile-apps')->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }
 
     public function render()

@@ -113,8 +113,7 @@ class Sitemap extends Component
         $service->warm();
         $service->applyRobots();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/sitemap.flash.saved')))->get())
-            ->route('admin.config.sitemap');
+        return redirect()->route('admin.config.sitemap')->with('flashMessage', (new Flash(content: __('admin/sitemap.flash.saved')))->get());
     }
 
     public function regenerate()

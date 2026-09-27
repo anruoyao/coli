@@ -43,6 +43,11 @@ return [
 	'email_testing' => [
 		'send_success' => '测试邮件发送成功！',
 	],
+	'marketing' => [
+		'created' => '活动已创建，可开始发送。',
+		'started' => '活动已启动，收件人将由调度任务逐分钟处理。',
+		'cancelled' => '活动已取消。',
+	],
 	'report' => [
 		'deleted_success' => '举报删除成功！',
 		'ignored_success' => '举报已成功标记为已忽略！',

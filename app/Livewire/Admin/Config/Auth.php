@@ -48,7 +48,7 @@ class Auth extends Component
         $authSettings->link_accounts_enabled = $this->formData['link_accounts_enabled'];
         $authSettings->save();
 
-        return redirect()->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get())->route('admin.config.auth');
+        return redirect()->route('admin.config.auth')->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }
 
     public function render()

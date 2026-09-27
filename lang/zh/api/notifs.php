@@ -11,6 +11,7 @@ return [
 	],
 	'notifications_sound' => '通知音效',
 	'no_notifications' => '暂无通知',
+	'view_details' => '查看详情',
 	'date_sections' => [
 		'today' => '今天',
 		'yesterday' => '昨天',
