@@ -84,6 +84,9 @@ class RichContentTest extends TestCase
             'status' => MediaStatus::PROCESSED,
             'disk' => 'public',
             'thumbnail_disk' => 'public',
+            // MediaCreatedEvent 监听器（存储统计）要求字节数字段，缺失会触发类型错误
+            'size' => '1024',
+            'thumbnail_size' => '',
         ]);
     }
 
