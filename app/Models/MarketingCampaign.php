@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Database\Configs\Table;
+use App\Support\Casts\ModelTimestampCast;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -28,6 +29,9 @@ class MarketingCampaign extends Model
         'in_app_recipient_count' => 'integer',
         'in_app_sent_count' => 'integer',
         'created_by' => 'integer',
+        // 与项目其它模型一致：时间字段经 ModelTimestampCast 转为 DateFormatter（getFormatted() 等）
+        'created_at' => ModelTimestampCast::class,
+        'updated_at' => ModelTimestampCast::class,
     ];
 
     protected $guarded = [];

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Database\Configs\Table;
+use App\Support\Casts\ModelTimestampCast;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -26,6 +27,8 @@ class MarketingCampaignRecipient extends Model
 
     protected $casts = [
         'sent_at' => 'datetime',
+        'created_at' => ModelTimestampCast::class,
+        'updated_at' => ModelTimestampCast::class,
     ];
 
     protected $guarded = [];
