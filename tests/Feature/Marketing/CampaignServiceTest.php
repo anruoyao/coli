@@ -4,6 +4,7 @@ namespace Tests\Feature\Marketing;
 
 use App\Models\User;
 use App\Enums\User\UserType;
+use App\Models\MarketingCampaignRecipient;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Queue;
 use App\Models\MarketingCampaign;
