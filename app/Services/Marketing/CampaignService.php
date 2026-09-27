@@ -232,6 +232,10 @@ class CampaignService
             return 0;
         }
 
+        // 自愈：回收卡在 queued 超过阈值的收件人（Job 被队列丢失/worker 中断等场景），
+        // 回收后同 tick 内按 pending 正常认领重派
+        $this->reclaimStaleQueued($campaign);
+
         $dispatched = 0;
 
         if ($campaign->email_enabled && config('notifications.marketing.email.enabled', false)) {
@@ -245,6 +249,52 @@ class CampaignService
         $this->finalizeIfDone($campaign);
 
         return $dispatched;
+    }
+
+    /**
+     * 回收「假在途」收件人：状态为 queued 但超过 stale_queued_minutes 分钟
+     * 仍无进展的，视为 Job 已丢失（worker 中断 / Redis 异常 / 进程被杀），
+     * 重置回 pending 由本轮 dispatchTick 重新认领派发。
+     *
+     * 阈值需大于 Job 最长合法重试周期（限流退避 ~50 分钟），避免对仍在途的
+     * Job 造成重复发送；默认 60 分钟，可用 MARKETING_STALE_QUEUED_MINUTES 调整。
+     */
+    protected function reclaimStaleQueued(MarketingCampaign $campaign): int
+    {
+        $minutes = (int) config('notifications.marketing.dispatch.stale_queued_minutes', 60);
+
+        if ($minutes <= 0) {
+            return 0;
+        }
+
+        $cutoff = now()->subMinutes($minutes);
+
+        $reclaimed = $campaign->recipients()
+            ->where('email_status', MarketingCampaignRecipient::EMAIL_QUEUED)
+            ->where('updated_at', '<', $cutoff)
+            ->update([
+                'email_status' => MarketingCampaignRecipient::EMAIL_PENDING,
+                'email_error' => 'reclaimed_stale',
+                'updated_at' => now(),
+            ]);
+
+        $reclaimed += $campaign->recipients()
+            ->where('in_app_status', MarketingCampaignRecipient::INAP_QUEUED)
+            ->where('updated_at', '<', $cutoff)
+            ->update([
+                'in_app_status' => MarketingCampaignRecipient::INAP_PENDING,
+                'in_app_error' => 'reclaimed_stale',
+                'updated_at' => now(),
+            ]);
+
+        if ($reclaimed > 0) {
+            \Illuminate\Support\Facades\Log::warning('Marketing recipients reclaimed as stale', [
+                'campaign_id' => $campaign->id,
+                'reclaimed' => $reclaimed,
+            ]);
+        }
+
+        return $reclaimed;
     }
 
     protected function dispatchEmailRecipients(MarketingCampaign $campaign): int

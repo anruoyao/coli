@@ -192,4 +192,54 @@ class CampaignServiceTest extends TestCase
 
         $this->assertSame(MarketingCampaign::STATUS_CANCELLED, $campaign->fresh()->status);
     }
+
+    public function test_dispatch_tick_reclaims_stale_queued_recipient(): void
+    {
+        $user = $this->makeUser();
+
+        $campaign = $this->campaign(['in_app_enabled' => false]);
+
+        $recipient = MarketingCampaignRecipient::create([
+            'campaign_id' => $campaign->id,
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'email_status' => MarketingCampaignRecipient::EMAIL_QUEUED,
+            'in_app_status' => MarketingCampaignRecipient::INAP_SKIPPED,
+        ]);
+
+        // 把认领时间回拨到阈值之外，模拟 Job 丢失后长期无进展
+        $campaign->recipients()->update(['updated_at' => now()->subMinutes(120)]);
+
+        Queue::fake();
+        app(CampaignService::class)->dispatchTick($campaign->fresh());
+
+        // 回收（pending）后同 tick 被重新认领（queued）并派发新 Job
+        $this->assertSame('queued', $recipient->fresh()->email_status);
+        $this->assertSame('reclaimed_stale', $recipient->fresh()->email_error);
+        Queue::assertPushed(SendMarketingEmailJob::class, 1);
+    }
+
+    public function test_dispatch_tick_does_not_reclaim_fresh_queued_recipient(): void
+    {
+        $user = $this->makeUser();
+
+        $campaign = $this->campaign(['in_app_enabled' => false]);
+
+        $recipient = MarketingCampaignRecipient::create([
+            'campaign_id' => $campaign->id,
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'email_status' => MarketingCampaignRecipient::EMAIL_QUEUED,
+            'in_app_status' => MarketingCampaignRecipient::INAP_SKIPPED,
+            'updated_at' => now(), // 刚认领，仍在合法在途窗口内
+        ]);
+
+        Queue::fake();
+        app(CampaignService::class)->dispatchTick($campaign->fresh());
+
+        // 不回收、不重复派发
+        $this->assertSame('queued', $recipient->fresh()->email_status);
+        $this->assertNull($recipient->fresh()->email_error);
+        Queue::assertNotPushed(SendMarketingEmailJob::class);
+    }
 }

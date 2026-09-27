@@ -93,8 +93,10 @@ return [
 		'dispatch' => [
 			// 每个调度周期（每分钟）每个活动最多派发的 Job 数（粗粒度削峰，配合限速器精确控速）
 			'per_tick' => (int) env('MARKETING_DISPATCH_PER_TICK', 50),
-			// 站内通知每 tick 派发上限（无需限速，仅防瞬时洪峰）
+			// 站内通知每 tick 派发上限（无需限流，仅防瞬时洪峰）
 			'in_app_per_tick' => (int) env('MARKETING_INAPP_PER_TICK', 200),
+			// queued 状态超过该分钟数仍无进展即判定为 Job 丢失，自动回收重派（0 = 关闭自愈）
+			'stale_queued_minutes' => (int) env('MARKETING_STALE_QUEUED_MINUTES', 60),
 		],
 		// 权限控制：开启后仅 root 管理员可创建/发送营销活动
 		'send_root_only' => env('MARKETING_CAMPAIGN_SEND_ROOT_ONLY', false),
