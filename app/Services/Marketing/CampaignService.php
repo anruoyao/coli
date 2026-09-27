@@ -3,9 +3,12 @@
 namespace App\Services\Marketing;
 
 use App\Models\User;
+use App\Models\Post;
 use App\Enums\User\UserType;
 use App\Models\MarketingCampaign;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use App\Models\MarketingCampaignRecipient;
 use App\Jobs\Marketing\SendMarketingEmailJob;
 use App\Jobs\Marketing\SendMarketingInAppNotificationJob;
@@ -224,6 +227,61 @@ class CampaignService
     }
 
     // ------------------------------------------------------------------
+    // 关联帖子快照
+    // ------------------------------------------------------------------
+    /**
+     * 构建活动关联帖子的展示快照（发送时定格，写入通知 data / 邮件数据）。
+     *
+     * - 仅保留仍在展示状态（active）的帖子，被删/隐藏的自动过滤；
+     * - 保持创建时的顺序，最多取 MAX_POSTS 个；
+     * - excerpt/封面/作者/统计均在此时定格，后续帖子编辑不影响已发通知。
+     */
+    public function buildPostSnapshots(?array $postIds): array
+    {
+        $postIds = collect($postIds ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->take(MarketingCampaign::MAX_POSTS)
+            ->values();
+
+        if ($postIds->isEmpty()) {
+            return [];
+        }
+
+        $posts = Post::query()
+            ->active()
+            ->with(['user:id,first_name,last_name,username,avatar', 'media'])
+            ->whereIn('id', $postIds->all())
+            ->get()
+            ->sortBy(fn (Post $post) => array_search($post->id, $postIds->all(), true))
+            ->values();
+
+        return $posts->map(fn (Post $post) => $this->buildPostSnapshot($post))->all();
+    }
+
+    protected function buildPostSnapshot(Post $post): array
+    {
+        $cover = $post->media
+            ->first(fn ($media) => $media->type->isImage() && $media->status->isProcessed());
+
+        $reactionsCount = $post->reactions()->count();
+        $commentsCount = (int) ($post->comments_count ?: $post->comments()->count());
+
+        return [
+            'id' => $post->id,
+            'hash_id' => $post->hashid,
+            'url' => $post->url,
+            'excerpt' => Str::limit(trim((string) $post->content), 80),
+            'cover_url' => $cover?->thumbnail_url ?: $cover?->source_url,
+            'author_name' => $post->user?->name,
+            'author_avatar' => $post->user?->avatar_url,
+            'reactions_count' => $reactionsCount,
+            'comments_count' => $commentsCount,
+        ];
+    }
+
+    // ------------------------------------------------------------------
     // 分分片派发（供调度命令与手动启动调用）
     // ------------------------------------------------------------------
     public function dispatchTick(MarketingCampaign $campaign): int
@@ -321,8 +379,11 @@ class CampaignService
 
         $campaign->recipients()->whereIn('id', $ids)->update(['email_status' => MarketingCampaignRecipient::EMAIL_QUEUED]);
 
+        // 帖子快照对同一活动恒定（发送时定格），每批构建一次随 Job 传递，避免每收件人重复查询
+        $postSnapshots = $this->buildPostSnapshots($campaign->post_ids);
+
         foreach ($ids as $recipientId) {
-            SendMarketingEmailJob::dispatch($campaign->id, $recipientId);
+            SendMarketingEmailJob::dispatch($campaign->id, $recipientId, $postSnapshots);
         }
 
         return $ids->count();
@@ -344,8 +405,11 @@ class CampaignService
 
         $campaign->recipients()->whereIn('id', $ids)->update(['in_app_status' => MarketingCampaignRecipient::INAP_QUEUED]);
 
+        // 同邮件通道：每批构建一次帖子快照随 Job 传递
+        $postSnapshots = $this->buildPostSnapshots($campaign->post_ids);
+
         foreach ($ids as $recipientId) {
-            SendMarketingInAppNotificationJob::dispatch($campaign->id, $recipientId);
+            SendMarketingInAppNotificationJob::dispatch($campaign->id, $recipientId, $postSnapshots);
         }
 
         return $ids->count();

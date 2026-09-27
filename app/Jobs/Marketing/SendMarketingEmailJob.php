@@ -38,6 +38,7 @@ class SendMarketingEmailJob implements ShouldQueue
     public function __construct(
         public int $campaignId,
         public int $recipientId,
+        public array $posts = [],
     ) {
     }
 
@@ -104,6 +105,13 @@ class SendMarketingEmailJob implements ShouldQueue
                     campaignContent: $campaign->content,
                     destinationUrl: $campaign->landing_url,
                     locale: $locale,
+                    imageUrl: $campaign->image_url,
+                    style: [
+                        'title_size' => $campaign->title_size,
+                        'title_weight' => $campaign->title_weight,
+                    ],
+                    // 优先使用派发时传入的快照（同批 Job 复用一次查询）；空数组时兜底现算（兼容存量载荷）
+                    posts: $this->posts ?: app(\App\Services\Marketing\CampaignService::class)->buildPostSnapshots($campaign->post_ids),
                 ));
 
             $rateLimiter->recordSuccess();

@@ -54,6 +54,10 @@ class CampaignController extends Controller
             'subject' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string', 'max:10000'],
             'landing_url' => ['nullable', 'url', 'max:255'],
+            'image_url' => ['nullable', 'url', 'max:500'],
+            'title_size' => ['nullable', 'in:' . implode(',', MarketingCampaign::TITLE_SIZES)],
+            'title_weight' => ['nullable', 'in:' . implode(',', MarketingCampaign::TITLE_WEIGHTS)],
+            'post_ids' => ['nullable', 'string', 'max:5000'],
             'email_enabled' => ['nullable', 'boolean'],
             'in_app_enabled' => ['nullable', 'boolean'],
             'target_type' => ['required', 'in:all,manual,type'],
@@ -95,6 +99,10 @@ class CampaignController extends Controller
                 'subject' => $request->input('subject'),
                 'content' => $request->input('content'),
                 'landing_url' => $request->input('landing_url') ?: null,
+                'image_url' => $request->input('image_url') ?: null,
+                'title_size' => $request->input('title_size') ?: MarketingCampaign::TITLE_SIZES[1],
+                'title_weight' => $request->input('title_weight') ?: MarketingCampaign::TITLE_WEIGHTS[2],
+                'post_ids' => $this->parsePostIds($request),
                 'email_enabled' => $request->boolean('email_enabled'),
                 'in_app_enabled' => $request->boolean('in_app_enabled'),
                 'target_type' => $request->input('target_type'),
@@ -172,6 +180,41 @@ class CampaignController extends Controller
         $identifiers = array_values(array_unique(array_filter(array_map('trim', $identifiers))));
 
         return $identifiers ?: null;
+    }
+
+    /**
+     * 关联帖子列表：每行（或逗号分隔）一条，支持数字 ID、帖子 URL 或 hashid。
+     * URL 提取 /publication/{hashid} 段后 decode_id 还原为数字 ID，上限 MAX_POSTS。
+     */
+    protected function parsePostIds(Request $request): ?array
+    {
+        $raw = trim((string) $request->input('post_ids'));
+
+        if ($raw === '') {
+            return null;
+        }
+
+        $ids = collect(preg_split('/[\r\n,]+/', $raw))
+            ->map(fn (string $line) => trim($line))
+            ->filter()
+            ->map(function (string $line) {
+                if (ctype_digit($line)) {
+                    return (int) $line;
+                }
+
+                if (preg_match('~publication/([A-Za-z0-9]+)~', $line, $matches)) {
+                    return decode_id($matches[1]);
+                }
+
+                return decode_id($line);
+            })
+            ->filter(fn ($id) => $id !== null && $id > 0)
+            ->unique()
+            ->take(MarketingCampaign::MAX_POSTS)
+            ->values()
+            ->all();
+
+        return $ids ?: null;
     }
 
     /**

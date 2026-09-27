@@ -18,12 +18,22 @@ class MarketingCampaign extends Model
     public const TARGET_MANUAL = 'manual';
     public const TARGET_TYPE = 'type';
 
+    // 标题字号档位
+    public const TITLE_SIZES = ['sm', 'md', 'lg'];
+
+    // 标题字重档位
+    public const TITLE_WEIGHTS = ['normal', 'medium', 'semibold', 'bold'];
+
+    // 通知/邮件内最多展示的关联帖子数
+    public const MAX_POSTS = 3;
+
     public $table = Table::MARKETING_CAMPAIGNS;
 
     protected $casts = [
         'email_enabled' => 'boolean',
         'in_app_enabled' => 'boolean',
         'target_user_ids' => 'array',
+        'post_ids' => 'array',
         'email_recipient_count' => 'integer',
         'email_sent_count' => 'integer',
         'in_app_recipient_count' => 'integer',

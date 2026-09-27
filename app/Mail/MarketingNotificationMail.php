@@ -21,6 +21,12 @@ class MarketingNotificationMail extends Mailable
 
     public string $appName = '';
 
+    public ?string $imageUrl = null;
+
+    public array $style = [];
+
+    public array $posts = [];
+
     public function __construct(
         public string $subjectText,
         public string $campaignTitle,
@@ -28,10 +34,16 @@ class MarketingNotificationMail extends Mailable
         public ?string $destinationUrl = null,
         string $locale = 'en',
         string $appName = '',
+        ?string $imageUrl = null,
+        array $style = [],
+        array $posts = [],
     ) {
         // 注意：不能声明 $locale（与父类 Mailable::$locale 冲突），改用 $mailLocale
         $this->mailLocale = $locale;
         $this->appName = $appName !== '' ? $appName : (string) config('app.name');
+        $this->imageUrl = $imageUrl;
+        $this->style = $style;
+        $this->posts = $posts;
     }
 
     public function envelope(): Envelope
@@ -49,6 +61,9 @@ class MarketingNotificationMail extends Mailable
                 'destinationUrl' => $this->destinationUrl,
                 'locale' => $this->mailLocale,
                 'appName' => $this->appName,
+                'imageUrl' => $this->imageUrl,
+                'style' => $this->style,
+                'posts' => $this->posts,
             ],
         );
     }

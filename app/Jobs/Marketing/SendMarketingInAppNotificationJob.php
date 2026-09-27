@@ -30,6 +30,7 @@ class SendMarketingInAppNotificationJob implements ShouldQueue
     public function __construct(
         public int $campaignId,
         public int $recipientId,
+        public array $posts = [],
     ) {
     }
 
@@ -71,6 +72,12 @@ class SendMarketingInAppNotificationJob implements ShouldQueue
                 campaignTitle: $campaign->title,
                 campaignContent: $campaign->content,
                 destinationUrl: $campaign->landing_url,
+                imageUrl: $campaign->image_url,
+                style: [
+                    'title_size' => $campaign->title_size,
+                    'title_weight' => $campaign->title_weight,
+                ],
+                posts: $this->posts ?: app(\App\Services\Marketing\CampaignService::class)->buildPostSnapshots($campaign->post_ids),
             ));
 
             // App 系统级推送（预留；内部按配置与凭据自行决定是否发送）

@@ -57,6 +57,42 @@
                     </div>
                 </div>
 
+                @if($campaign->image_url || $campaign->title_size !== 'md' || $campaign->title_weight !== 'semibold' || $campaign->post_ids)
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <h4 class="text-par-m text-lab-sc mb-1">{{ __('admin/marketing.form.image_url') }}</h4>
+                            @if($campaign->image_url)
+                                <img src="{{ $campaign->image_url }}" alt="" class="mt-2 max-h-28 rounded-xl object-cover">
+                            @else
+                                <p class="text-par-m text-lab-pr">-</p>
+                            @endif
+                        </div>
+                        <div>
+                            <h4 class="text-par-m text-lab-sc mb-1">{{ __('admin/marketing.form.title_style') }}</h4>
+                            <p class="text-par-m text-lab-pr">
+                                {{ __('admin/marketing.title_sizes.' . $campaign->title_size) }}
+                                /
+                                {{ __('admin/marketing.title_weights.' . $campaign->title_weight) }}
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="text-par-m text-lab-sc mb-1">{{ __('admin/marketing.form.post_ids') }}</h4>
+                            @if($campaign->post_ids)
+                                <div class="flex flex-col gap-1">
+                                    @foreach($campaign->post_ids as $postId)
+                                        <a href="{{ url('publication/' . encode_id((int) $postId)) }}" target="_blank" rel="noopener"
+                                           class="text-par-m text-brand-900 break-all">
+                                            #{{ encode_id((int) $postId) }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @else
+                                <p class="text-par-m text-lab-pr">-</p>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+
                 <h4 class="text-par-m text-lab-sc mb-1">{{ __('admin/marketing.form.content') }}</h4>
                 <p class="text-par-m text-lab-pr whitespace-pre-line">{{ $campaign->content }}</p>
             </div>

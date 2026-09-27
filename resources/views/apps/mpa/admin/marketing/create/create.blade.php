@@ -38,6 +38,70 @@
             </div>
         </x-accordion.form>
 
+        <x-accordion.form title="{{ __('admin/marketing.form.rich') }}" :open="false">
+            <div class="space-y-6">
+                <x-form.text-input
+                    :labelText="__('admin/marketing.form.image_url')"
+                    name="image_url"
+                    :value="old('image_url')"
+                    :errorKey="'image_url'"
+                    placeholder="{{ __('admin/marketing.placeholders.image_url') }}">
+                    <x-slot:feedbackInfo>
+                        {{ __('admin/marketing.form.image_url_helper') }}
+                    </x-slot:feedbackInfo>
+                </x-form.text-input>
+
+                <div>
+                    <x-form.label>{{ __('admin/marketing.form.title_size') }}</x-form.label>
+                    <div class="relative">
+                        <select
+                            name="title_size"
+                            id="title_size"
+                            class="block w-full bg-input-pr outline-hidden text-par-m text-lab-pr px-4 h-12 rounded-xl border-2 border-transparent hover:border-brand-900 smoothing">
+                            <option value="sm" {{ old('title_size') === 'sm' ? 'selected' : '' }}>{{ __('admin/marketing.title_sizes.sm') }}</option>
+                            <option value="md" {{ old('title_size', 'md') === 'md' ? 'selected' : '' }}>{{ __('admin/marketing.title_sizes.md') }}</option>
+                            <option value="lg" {{ old('title_size') === 'lg' ? 'selected' : '' }}>{{ __('admin/marketing.title_sizes.lg') }}</option>
+                        </select>
+                    </div>
+                    @error('title_size')
+                        <div class="mt-2"><x-form.valerr>{{ $message }}</x-form.valerr></div>
+                    @enderror
+                </div>
+
+                <div>
+                    <x-form.label>{{ __('admin/marketing.form.title_weight') }}</x-form.label>
+                    <div class="relative">
+                        <select
+                            name="title_weight"
+                            id="title_weight"
+                            class="block w-full bg-input-pr outline-hidden text-par-m text-lab-pr px-4 h-12 rounded-xl border-2 border-transparent hover:border-brand-900 smoothing">
+                            <option value="normal" {{ old('title_weight') === 'normal' ? 'selected' : '' }}>{{ __('admin/marketing.title_weights.normal') }}</option>
+                            <option value="medium" {{ old('title_weight') === 'medium' ? 'selected' : '' }}>{{ __('admin/marketing.title_weights.medium') }}</option>
+                            <option value="semibold" {{ old('title_weight', 'semibold') === 'semibold' ? 'selected' : '' }}>{{ __('admin/marketing.title_weights.semibold') }}</option>
+                            <option value="bold" {{ old('title_weight') === 'bold' ? 'selected' : '' }}>{{ __('admin/marketing.title_weights.bold') }}</option>
+                        </select>
+                    </div>
+                    @error('title_weight')
+                        <div class="mt-2"><x-form.valerr>{{ $message }}</x-form.valerr></div>
+                    @enderror
+                </div>
+
+                <div>
+                    <x-form.text-input
+                        :labelText="__('admin/marketing.form.post_ids')"
+                        name="post_ids"
+                        :as-text="true"
+                        :value="old('post_ids')"
+                        :errorKey="'post_ids'"
+                        placeholder="{{ __('admin/marketing.placeholders.post_ids') }}">
+                        <x-slot:feedbackInfo>
+                            {{ __('admin/marketing.form.post_ids_helper') }}
+                        </x-slot:feedbackInfo>
+                    </x-form.text-input>
+                </div>
+            </div>
+        </x-accordion.form>
+
         <x-accordion.form title="{{ __('admin/marketing.form.channels') }}" :open="true">
             <div class="space-y-6">
                 <div class="flex items-center leading-none select-none">

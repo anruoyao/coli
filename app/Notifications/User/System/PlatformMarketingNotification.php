@@ -28,6 +28,9 @@ class PlatformMarketingNotification extends Notification implements ShouldQueue
         public string $campaignTitle,
         public string $campaignContent,
         public ?string $destinationUrl = null,
+        public ?string $imageUrl = null,
+        public array $style = [],
+        public array $posts = [],
     ) {
     }
 
@@ -73,12 +76,18 @@ class PlatformMarketingNotification extends Notification implements ShouldQueue
                 'title' => $this->campaignTitle,
                 'content' => $this->campaignContent,
                 'destination_url' => $this->destinationUrl,
+                'image_url' => $this->imageUrl,
+                'style' => $this->style,
+                'posts' => $this->posts,
             ],
             'actor' => $this->systemActorData(),
             'metadata' => [
                 'is_viewable' => false,
                 'marketing' => true,
                 'destination_url' => $this->destinationUrl,
+                'image_url' => $this->imageUrl,
+                'style' => $this->style,
+                'posts' => $this->posts,
             ],
         ];
     }

@@ -14,8 +14,11 @@
             </div>
             <div class="flex-1 ml-2 leading-none">
                 <template v-if="isMarketing">
+                    <div v-if="marketingBannerUrl" class="block mb-2 overflow-hidden rounded-lg">
+                        <img v-bind:src="marketingBannerUrl" alt="Banner" class="w-full max-h-44 object-cover smoothing">
+                    </div>
                     <div class="block">
-                        <span class="font-medium text-par-n text-lab-pr mr-1">
+                        <span v-bind:class="[marketingTitleSize, marketingTitleWeight]" class="text-lab-pr mr-1 leading-tight inline-block">
                             {{ notificationData.entity.title }}
                         </span>
                     </div>
@@ -25,6 +28,20 @@
                     <p v-if="notificationData.entity.content" class="text-par-s text-lab-sc whitespace-pre-line block mt-1 leading-4">
                         {{ notificationData.entity.content }}
                     </p>
+                    <div v-if="marketingPosts.length" class="mt-2 space-y-1.5">
+                        <div v-for="post in marketingPosts" v-bind:key="post.hash_id" v-on:click="handlePostRouting(post)"
+                             class="flex items-center gap-2 bg-filled rounded-lg p-1.5 cursor-pointer hover:bg-fill-fv smoothing">
+                            <div v-if="post.cover_url" class="shrink-0 size-10 rounded-md overflow-hidden">
+                                <img v-bind:src="post.cover_url" alt="" class="size-full object-cover">
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-par-s font-medium text-lab-pr leading-4 truncate">{{ post.excerpt }}</p>
+                                <p class="text-par-s text-lab-sc mt-0.5 truncate">
+                                    {{ post.author_name }} · {{ post.reactions_count }} {{ $t('notifs.marketing_reactions') }} · {{ post.comments_count }} {{ $t('notifs.marketing_comments') }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                     <div v-if="notificationData.metadata.destination_url" class="block mt-2">
                         <a v-bind:href="notificationData.metadata.destination_url" target="_blank" rel="noopener"
                            class="text-par-s font-medium text-brand-900 hover:text-lab-pr">
@@ -156,6 +173,36 @@
 
                     return false;
                 }),
+                marketingBannerUrl: computed(() => {
+                    return metadata.value.image_url || '';
+                }),
+                marketingTitleSize: computed(() => {
+                    const sizeMap = { sm: 'text-par-s', md: 'text-par-n', lg: 'text-par-m' };
+                    const style = metadata.value.style || {};
+
+                    return sizeMap[style.title_size] || 'text-par-n';
+                }),
+                marketingTitleWeight: computed(() => {
+                    const weightMap = { normal: 'font-normal', medium: 'font-medium', semibold: 'font-semibold', bold: 'font-bold' };
+                    const style = metadata.value.style || {};
+
+                    return weightMap[style.title_weight] || 'font-semibold';
+                }),
+                marketingPosts: computed(() => {
+                    const posts = metadata.value.posts;
+
+                    return Array.isArray(posts) ? posts : [];
+                }),
+                handlePostRouting: (post) => {
+                    if(post && post.hash_id) {
+                        context.emit('route', {
+                            name: 'publication_index',
+                            params: {
+                                hash_id: post.hash_id
+                            }
+                        });
+                    }
+                },
                 isReaction: computed(() => {
                     if(['post.reacted', 'comment.reacted'].includes(props.notificationData.type)) {
                         return true;
