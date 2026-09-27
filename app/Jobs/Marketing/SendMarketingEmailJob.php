@@ -74,30 +74,36 @@ class SendMarketingEmailJob implements ShouldQueue
 
         $user = $recipient->user;
 
-        if (! $user || ! $user->email) {
+        $to = (string) ($recipient->email ?: ($user->email ?? ''));
+
+        if ($to === '') {
             $this->mark($recipient, MarketingCampaignRecipient::EMAIL_SKIPPED, 'no_email');
 
             return;
         }
 
-        // 发送时刻二次校验用户「平台通知」（邮件通道）开关
-        $settings = $user->emailNotificationSettings;
+        // 发送时刻二次校验用户「平台通知」（邮件通道）开关。
+        // 注意：原始邮箱收件人（无账号）跳过开关校验——管理员显式指定的外部邮箱即明确授权；
+        // 有账号但缺失设置行时按默认开启处理（与产品「默认开启」决策一致）。
+        $settings = $user ? $user->emailNotificationSettings : null;
 
-        if (! $settings || ! $settings->platform_notifications) {
+        if ($user && $settings && ! $settings->platform_notifications) {
             $this->mark($recipient, MarketingCampaignRecipient::EMAIL_SKIPPED, 'opt_out');
 
             return;
         }
 
+        $locale = $user ? (string) ($user->language ?: 'en') : 'en';
+
         try {
-            Mail::to($user->email)
-                ->locale((string) ($user->language ?: 'en'))
+            Mail::to($to)
+                ->locale($locale)
                 ->send(new MarketingNotificationMail(
                     subjectText: $campaign->subject,
                     campaignTitle: $campaign->title,
                     campaignContent: $campaign->content,
                     destinationUrl: $campaign->landing_url,
-                    locale: (string) ($user->language ?: 'en'),
+                    locale: $locale,
                 ));
 
             $rateLimiter->recordSuccess();

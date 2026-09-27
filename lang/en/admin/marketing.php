@@ -54,7 +54,7 @@ return [
         'in_app_enabled' => 'Send in-app notification',
         'target_type' => 'Target audience',
         'target_user_ids' => 'Manual users',
-        'target_user_ids_helper' => 'One username or numeric user ID per line (or comma separated). Used when the target is "Manual user list".',
+        'target_user_ids_helper' => 'One entry per line (or comma separated): a username, a numeric user ID, or a full email address. Emails without a matching account are sent to that address directly; accounts without an email opt-in also follow it.',
         'target_user_type' => 'User type',
         'target_user_type_none' => 'Select a user type',
     ],

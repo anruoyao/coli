@@ -32,36 +32,53 @@ class CampaignService
     // ------------------------------------------------------------------
     // 目标圈定
     // ------------------------------------------------------------------
-    public function resolveTargetUserIds(MarketingCampaign $campaign): array
+    /**
+     * 解析活动目标，返回收件人候选列表：
+     *  ['user_id' => ?int, 'email' => ?string]
+     *
+     * - all：全部用户（user_id + email）
+     * - type：按用户类型筛选用户
+     * - manual：逐条识别 —— 数字 → 用户ID；合法邮箱 → 匹配用户邮箱，无账号时作为
+     *   「原始邮箱收件人」（user_id=null，仅走邮件通道）；其它 → 按用户名识别。
+     */
+    public function resolveTargets(MarketingCampaign $campaign): array
     {
-        $userIds = match ($campaign->target_type) {
-            MarketingCampaign::TARGET_MANUAL => $this->resolveManualUserIds($campaign),
-            MarketingCampaign::TARGET_TYPE => $this->resolveTypeUserIds($campaign),
-            default => User::query()->pluck('id')->all(),
+        $targets = match ($campaign->target_type) {
+            MarketingCampaign::TARGET_MANUAL => $this->resolveManualTargets($campaign),
+            MarketingCampaign::TARGET_TYPE => $this->resolveTypeTargets($campaign),
+            default => $this->resolveAllTargets(),
         };
 
-        return array_values(array_unique(array_map('intval', $userIds)));
+        // 去重（同一用户或同一邮箱只保留一条）
+        $seen = [];
+        $unique = [];
+
+        foreach ($targets as $target) {
+            $key = $target['user_id'] !== null ? 'u'.$target['user_id'] : 'e'.$target['email'];
+
+            if (isset($seen[$key])) {
+                continue;
+            }
+
+            $seen[$key] = true;
+            $unique[] = $target;
+        }
+
+        return $unique;
     }
 
-    protected function resolveManualUserIds(MarketingCampaign $campaign): array
+    protected function resolveAllTargets(): array
     {
-        $identifiers = (array) ($campaign->target_user_ids ?? []);
-
-        $usernames = collect($identifiers)->filter(fn ($id) => $id !== null && ! ctype_digit((string) $id));
-
-        $byUsername = User::query()
-            ->whereIn('username', $usernames->all())
-            ->pluck('id')
+        return User::query()
+            ->get(['id', 'email'])
+            ->map(fn (User $user) => [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ])
             ->all();
-
-        $byId = collect($identifiers)->filter(fn ($id) => $id !== null && ctype_digit((string) $id));
-
-        $directIds = $byId->map(fn ($id) => (int) $id)->all();
-
-        return array_merge($byUsername, $directIds);
     }
 
-    protected function resolveTypeUserIds(MarketingCampaign $campaign): array
+    protected function resolveTypeTargets(MarketingCampaign $campaign): array
     {
         $type = $campaign->target_user_type;
 
@@ -69,7 +86,54 @@ class CampaignService
             return [];
         }
 
-        return User::query()->where('type', $type)->pluck('id')->all();
+        return User::query()
+            ->where('type', $type)
+            ->get(['id', 'email'])
+            ->map(fn (User $user) => [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ])
+            ->all();
+    }
+
+    protected function resolveManualTargets(MarketingCampaign $campaign): array
+    {
+        $targets = [];
+
+        foreach ((array) ($campaign->target_user_ids ?? []) as $identifier) {
+            $identifier = trim((string) $identifier);
+
+            if ($identifier === '') {
+                continue;
+            }
+
+            if (ctype_digit($identifier)) {
+                $targets[] = [
+                    'user_id' => (int) $identifier,
+                    'email' => User::whereKey((int) $identifier)->value('email'),
+                ];
+
+                continue;
+            }
+
+            if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+                $user = User::where('email', $identifier)->first(['id', 'email']);
+
+                $targets[] = $user
+                    ? ['user_id' => $user->id, 'email' => $user->email]
+                    : ['user_id' => null, 'email' => $identifier]; // 原始邮箱收件人
+
+                continue;
+            }
+
+            $user = User::where('username', $identifier)->first(['id', 'email']);
+
+            if ($user) {
+                $targets[] = ['user_id' => $user->id, 'email' => $user->email];
+            }
+        }
+
+        return $targets;
     }
 
     // ------------------------------------------------------------------
@@ -85,28 +149,28 @@ class CampaignService
             return 0;
         }
 
-        $userIds = $this->resolveTargetUserIds($campaign);
+        $targets = $this->resolveTargets($campaign);
 
         $created = 0;
 
-        DB::transaction(function () use ($campaign, $userIds, &$created) {
-            $users = User::query()->whereIn('id', $userIds)->get(['id', 'email']);
-
-            foreach ($users as $user) {
-                $hasEmail = filled($user->email);
+        DB::transaction(function () use ($campaign, $targets, &$created) {
+            foreach ($targets as $target) {
+                $userId = $target['user_id'];
+                $email = $target['email'];
+                $hasEmail = filled($email);
 
                 MarketingCampaignRecipient::query()->insertOrIgnore([
                     'campaign_id' => $campaign->id,
-                    'user_id' => $user->id,
-                    'email' => $user->email,
+                    'user_id' => $userId,
+                    'email' => $email,
                     'email_status' => $campaign->email_enabled && $hasEmail
                         ? MarketingCampaignRecipient::EMAIL_PENDING
                         : MarketingCampaignRecipient::EMAIL_SKIPPED,
                     'email_error' => $campaign->email_enabled && ! $hasEmail ? 'no_email' : null,
-                    'in_app_status' => $campaign->in_app_enabled
+                    'in_app_status' => $campaign->in_app_enabled && $userId !== null
                         ? MarketingCampaignRecipient::INAP_PENDING
                         : MarketingCampaignRecipient::INAP_SKIPPED,
-                    'in_app_error' => $campaign->in_app_enabled ? null : 'channel_disabled',
+                    'in_app_error' => $campaign->in_app_enabled && $userId === null ? 'no_user' : null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -120,7 +184,7 @@ class CampaignService
                 ? $campaign->recipients()->whereNotNull('email')->count()
                 : 0,
             'in_app_recipient_count' => $campaign->in_app_enabled
-                ? $campaign->recipients()->count()
+                ? $campaign->recipients()->whereNotNull('user_id')->count()
                 : 0,
         ]);
 
@@ -136,12 +200,14 @@ class CampaignService
             return;
         }
 
+        // 注意顺序：收件人快照必须在状态切换为 sending 之前生成
+        // （buildRecipients 仅允许 draft/cancelled 状态写入）
+        $this->buildRecipients($campaign);
+
         $campaign->update([
             'status' => MarketingCampaign::STATUS_SENDING,
             'started_at' => now(),
         ]);
-
-        $this->buildRecipients($campaign);
 
         if ($dispatchImmediately) {
             $this->dispatchTick($campaign);

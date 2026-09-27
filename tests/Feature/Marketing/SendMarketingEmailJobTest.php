@@ -76,6 +76,38 @@ class SendMarketingEmailJobTest extends TestCase
         $this->assertSame(1, $campaign->fresh()->email_sent_count);
     }
 
+    public function test_sends_to_raw_email_recipient_without_account(): void
+    {
+        $campaign = $this->campaign();
+
+        // 无 user（user_id=null）的原始邮箱收件人：直接发往该地址，不校验任何用户开关
+        $recipient = MarketingCampaignRecipient::create([
+            'campaign_id' => $campaign->id,
+            'user_id' => null,
+            'email' => 'marketingtest@example.com',
+            'email_status' => MarketingCampaignRecipient::EMAIL_QUEUED,
+            'in_app_status' => MarketingCampaignRecipient::INAP_SKIPPED,
+        ]);
+
+        (new SendMarketingEmailJob($campaign->id, $recipient->id))->handle();
+
+        Mail::assertSent(MarketingNotificationMail::class, fn (MarketingNotificationMail $mail) => $mail->hasTo('marketingtest@example.com'));
+        $this->assertSame(MarketingCampaignRecipient::EMAIL_SENT, $recipient->fresh()->email_status);
+    }
+
+    public function test_user_without_email_settings_row_is_default_opted_in(): void
+    {
+        $user = $this->makeUser(); // 无邮件设置行 → 按「默认开启」处理
+
+        $campaign = $this->campaign();
+        $recipient = $this->recipient($campaign, $user->id, $user->email);
+
+        (new SendMarketingEmailJob($campaign->id, $recipient->id))->handle();
+
+        Mail::assertSent(MarketingNotificationMail::class, fn (MarketingNotificationMail $mail) => $mail->hasTo($user->email));
+        $this->assertSame(MarketingCampaignRecipient::EMAIL_SENT, $recipient->fresh()->email_status);
+    }
+
     public function test_skips_opted_out_user_without_sending(): void
     {
         $user = $this->makeUser();

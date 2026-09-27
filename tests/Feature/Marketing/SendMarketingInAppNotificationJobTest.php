@@ -94,16 +94,16 @@ class SendMarketingInAppNotificationJobTest extends TestCase
         $this->assertDatabaseCount('notifications', 0);
     }
 
-    public function test_user_without_push_settings_is_skipped(): void
+    public function test_user_without_push_settings_is_default_opted_in(): void
     {
-        $user = $this->makeUser(); // 无任何通知设置记录
+        $user = $this->makeUser(); // 无任何通知设置记录 → 按「默认开启」处理
 
         $campaign = $this->campaign();
         $recipient = $this->recipient($campaign, $user->id);
 
         (new SendMarketingInAppNotificationJob($campaign->id, $recipient->id))->handle();
 
-        $this->assertSame(MarketingCampaignRecipient::INAP_SKIPPED, $recipient->fresh()->in_app_status);
-        $this->assertDatabaseCount('notifications', 0);
+        $this->assertSame(MarketingCampaignRecipient::INAP_SENT, $recipient->fresh()->in_app_status);
+        $this->assertDatabaseCount('notifications', 1);
     }
 }

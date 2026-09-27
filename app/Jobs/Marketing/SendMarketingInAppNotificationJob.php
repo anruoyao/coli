@@ -56,10 +56,11 @@ class SendMarketingInAppNotificationJob implements ShouldQueue
             return;
         }
 
-        // 发送时刻校验用户「平台通知」推送开关
+        // 发送时刻校验用户「平台通知」推送开关。
+        // 缺失设置行时按默认开启处理（与产品「默认开启」决策一致）。
         $settings = $user->pushNotificationSettings;
 
-        if (! $settings || ! $settings->platform_notifications) {
+        if ($settings && ! $settings->platform_notifications) {
             $this->mark($recipient, MarketingCampaignRecipient::INAP_SKIPPED, 'opt_out');
 
             return;

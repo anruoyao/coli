@@ -86,6 +86,48 @@ class CampaignServiceTest extends TestCase
         $this->assertNotContains($other->id, $recipientIds->all());
     }
 
+    public function test_manual_target_supports_raw_email_without_account(): void
+    {
+        $campaign = $this->campaign([
+            'target_type' => MarketingCampaign::TARGET_MANUAL,
+            'target_user_ids' => ['marketingtest@example.com'],
+        ]);
+
+        $service = app(CampaignService::class);
+        Queue::fake();
+        $service->start($campaign);
+
+        $recipient = $campaign->recipients()->first();
+
+        $this->assertNotNull($recipient);
+        $this->assertNull($recipient->user_id);
+        $this->assertSame('marketingtest@example.com', $recipient->email);
+        // 原始邮箱收件人：仅走邮件通道，站内通道跳过
+        $this->assertSame('pending', $recipient->email_status);
+        $this->assertSame('skipped', $recipient->in_app_status);
+        $this->assertSame(1, $campaign->fresh()->email_recipient_count);
+        $this->assertSame(0, $campaign->fresh()->in_app_recipient_count);
+    }
+
+    public function test_manual_target_email_resolves_to_existing_user(): void
+    {
+        $user = $this->makeUser(); // email 形如 tester_xxx@example.com
+
+        $campaign = $this->campaign([
+            'target_type' => MarketingCampaign::TARGET_MANUAL,
+            'target_user_ids' => [$user->email],
+        ]);
+
+        $service = app(CampaignService::class);
+        Queue::fake();
+        $service->start($campaign);
+
+        $recipient = $campaign->recipients()->first();
+
+        $this->assertSame($user->id, $recipient->user_id);
+        $this->assertSame($user->email, $recipient->email);
+    }
+
     public function test_type_target_filters_by_user_type(): void
     {
         $author = $this->makeUser(['type' => UserType::AUTHOR->value]);

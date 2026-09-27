@@ -54,7 +54,7 @@ return [
         'in_app_enabled' => '发送站内通知',
         'target_type' => '目标群体',
         'target_user_ids' => '手动用户列表',
-        'target_user_ids_helper' => '每行一个用户名或数字用户ID（也支持逗号分隔）。当目标为「手动用户列表」时必填。',
+        'target_user_ids_helper' => '每行一个（也支持逗号分隔）：用户名、数字用户ID 或完整邮箱地址。无对应账号的邮箱会直接发往该地址；无账号的邮箱仅走邮件通道。',
         'target_user_type' => '用户类型',
         'target_user_type_none' => '请选择用户类型',
     ],
