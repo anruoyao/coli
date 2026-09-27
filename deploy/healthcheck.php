@@ -25,7 +25,7 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
-use Illuminate\View\ViewErrorBag;
+use Illuminate\Support\ViewErrorBag;
 
 function check(string $name, callable $fn): void
 {
