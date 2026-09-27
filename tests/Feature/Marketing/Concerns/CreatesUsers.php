@@ -25,6 +25,8 @@ trait CreatesUsers
             'password' => bcrypt('secret-password'),
             'language' => 'zh',
             'type' => UserType::READER->value,
+            // users.tips 为非空 JSON 列（严格模式 MySQL 无默认值），必须显式提供
+            'tips' => [],
         ], $overrides));
 
         return $user;

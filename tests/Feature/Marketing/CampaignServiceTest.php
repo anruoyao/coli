@@ -102,8 +102,9 @@ class CampaignServiceTest extends TestCase
         $this->assertNotNull($recipient);
         $this->assertNull($recipient->user_id);
         $this->assertSame('marketingtest@example.com', $recipient->email);
-        // 原始邮箱收件人：仅走邮件通道，站内通道跳过
-        $this->assertSame('pending', $recipient->email_status);
+        // 原始邮箱收件人：仅走邮件通道，站内通道跳过；
+        // 邮件通道在 start() 后立即被认领派发（email_status=queued，Job 由 Queue::fake 捕获）
+        $this->assertSame('queued', $recipient->email_status);
         $this->assertSame('skipped', $recipient->in_app_status);
         $this->assertSame(1, $campaign->fresh()->email_recipient_count);
         $this->assertSame(0, $campaign->fresh()->in_app_recipient_count);
