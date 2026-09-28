@@ -10,6 +10,7 @@
 namespace App\Http\Controllers\Api\System;
 
 use App\Models\AppVersion;
+use App\Settings\MaintenanceSettings;
 use App\Traits\Http\Api\SupportsApiResponses;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -40,6 +41,16 @@ class VersionController extends Controller
         $currentCode = $validated['code'];
         $platform = $validated['platform'];
 
+        // 维护状态探测：本接口在 CheckMaintenance 白名单内（维护中仍返回 200），
+        // 是 App 区分「维护中 / 已恢复」的唯一探针，必须随响应带回维护信息。
+        $maintenanceSettings = app(MaintenanceSettings::class);
+        $maintenance = $maintenanceSettings->enabled ? [
+            'message' => $maintenanceSettings->message !== '' ? $maintenanceSettings->message : null,
+            'until' => ! empty($maintenanceSettings->until)
+                ? \Illuminate\Support\Carbon::parse($maintenanceSettings->until)->toIso8601String()
+                : null,
+        ] : null;
+
         $versions = AppVersion::query()
             ->active()
             ->where('platform', $platform)
@@ -59,6 +70,7 @@ class VersionController extends Controller
                     'has_update' => false,
                     'forced' => false,
                     'latest' => null,
+                    'maintenance' => $maintenance,
                 ],
             ]);
         }
@@ -77,6 +89,7 @@ class VersionController extends Controller
                     'is_forced' => $latest->is_forced,
                     'released_at' => $latest->released_at?->toIso8601String(),
                 ],
+                'maintenance' => $maintenance,
             ],
         ]);
     }
