@@ -17,6 +17,7 @@ namespace App\Http\Controllers\Api\User\Explore;
 
 use App\Models\Post;
 use App\Models\User;
+use App\Enums\Post\PostStatus;
 use Illuminate\Http\Request;
 use App\Database\Configs\Table;
 use App\Http\Controllers\Controller;
@@ -95,7 +96,12 @@ class ExploreController extends Controller
             ->orderBy('views_count', 'desc')
             ->orderBy('quotes_count', 'desc');
 
+        // 与关注时间线一致：把自己的视频处理中帖子并入推荐流（前端显示“处理中”提示）
+        $processingPosts = $this->me->posts()->where('status', PostStatus::PROCESSING_VIDEO)->get();
+
         $timelinePosts = $feedORMQuery->simplePaginateManual(config('post.paginate_per'), $this->filter['page']);
+
+        $timelinePosts = $processingPosts->merge($timelinePosts);
 
         return $this->responseSuccess([
             'data' => TimelineCollection::make($timelinePosts)
