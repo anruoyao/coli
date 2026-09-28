@@ -71,5 +71,8 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('register', fn (Request $request) => Limit::perHour((int) config('security.auth.register_max_per_ip', 10))->by($request->ip()));
 
         RateLimiter::for('forgot', fn (Request $request) => Limit::perHour((int) config('security.auth.forgot_max_per_ip', 5))->by($request->ip()));
+
+        // App 注册邮箱验证码：防邮件轰炸（邮箱维度冷却见 RegistrationVerificationService）
+        RateLimiter::for('verification-code', fn (Request $request) => Limit::perHour((int) config('security.auth.verification_code_max_per_ip', 10))->by($request->ip()));
     }
 }

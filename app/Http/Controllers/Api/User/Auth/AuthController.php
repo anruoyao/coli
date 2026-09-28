@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\User\Auth\ResetPasswordMail;
 use App\Models\EmailConfirmation;
 use App\Models\User;
+use App\Services\Auth\RegistrationVerificationService;
 use App\Services\Blacklist\BlacklistService;
 use App\Traits\Http\Api\SupportsApiResponses;
 use Illuminate\Http\Request;
@@ -33,7 +34,10 @@ class AuthController extends Controller
     /**
      * App 注册：直接创建 ACTIVE 用户并返回 Sanctum token（即注册即登录）。
      *
-     * @param Request $request body: first_name, last_name(可选), username, email, password, password_confirmation(可选), language(可选), device_name(可选)
+     * 当后台开启注册邮箱验证（features.reg_verification.enabled）时，
+     * 必须先调用 /auth/email-code/send 获取验证码，并在 body 中携带 email_code。
+     *
+     * @param Request $request body: first_name, last_name(可选), username, email, password, email_code(开启验证时必填), language(可选), device_name(可选)
      */
     public function register(Request $request)
     {
@@ -84,6 +88,27 @@ class AuthController extends Controller
 
         if ($validator->fails()) {
             $this->throwValidationError($validator);
+        }
+
+        // 邮箱验证码：后台开启时强制校验（与网页「注册验证」开关共用 features.reg_verification.enabled）
+        if (config('features.reg_verification.enabled')) {
+            $emailCode = trim((string) $request->get('email_code', ''));
+
+            if (! preg_match('/^\d{6}$/', $emailCode)) {
+                return $this->responseError([
+                    'message' => __('auth.verification_code_required'),
+                    'errors' => ['email_code' => [__('auth.verification_code_required')]],
+                ], 422);
+            }
+
+            $verifyStatus = app(RegistrationVerificationService::class)->verifyAndConsume($email, $emailCode);
+
+            if ($verifyStatus !== RegistrationVerificationService::STATUS_OK) {
+                return $this->responseError([
+                    'message' => __("auth.verification_code_{$verifyStatus}"),
+                    'errors' => ['email_code' => [__("auth.verification_code_{$verifyStatus}")]],
+                ], 422);
+            }
         }
 
         // 复用 CreateUserAction 保证与网页注册一致的关联数据（钱包/隐私/通知设置等）

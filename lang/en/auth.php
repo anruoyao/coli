@@ -35,6 +35,13 @@ return [
     'login_disabled' => 'Login is currently disabled. Please try again later.',
     'email_send_failed' => 'Failed to send the email. Please try again later or check the email settings.',
     'invalid_reset_token' => 'The reset link is invalid or has expired. Please request a new one.',
+    'verification_disabled' => 'Email verification is currently disabled.',
+    'verification_code_required' => 'Please enter the 6-digit verification code sent to your email.',
+    'verification_code_not_found' => 'No valid verification code found. Please request a new one.',
+    'verification_code_expired' => 'The verification code has expired. Please request a new one.',
+    'verification_code_invalid' => 'The verification code is incorrect. Please check and try again.',
+    'verification_code_too_many_attempts' => 'Too many incorrect attempts. Please request a new verification code.',
+    'verification_code_resent_wait' => 'Please wait :seconds seconds before requesting another code.',
     'login_to_cp' => [
         'title' => 'Admin Panel',
         'caption' => 'Enter your admin login and password.',

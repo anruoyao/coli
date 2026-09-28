@@ -35,6 +35,13 @@ return [
     'login_disabled' => '登录功能当前已禁用，请稍后再试。',
     'email_send_failed' => '邮件发送失败，请稍后重试或检查邮箱设置。',
     'invalid_reset_token' => '重置链接无效或已过期，请重新发起找回密码。',
+    'verification_disabled' => '邮箱验证当前未开启。',
+    'verification_code_required' => '请输入发送到邮箱的 6 位验证码。',
+    'verification_code_not_found' => '未找到有效的验证码，请重新获取。',
+    'verification_code_expired' => '验证码已过期，请重新获取。',
+    'verification_code_invalid' => '验证码不正确，请检查后重试。',
+    'verification_code_too_many_attempts' => '错误次数过多，请重新获取验证码。',
+    'verification_code_resent_wait' => '请在 :seconds 秒后再重新获取验证码。',
     'login_to_cp' => [
         'title' => '管理后台',
         'caption' => '输入您的管理员账号和密码。',

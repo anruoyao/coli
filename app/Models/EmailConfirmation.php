@@ -9,8 +9,14 @@ use App\Models\Traits\Base\SupportsHashIds;
 class EmailConfirmation extends Model
 {
     use SupportsHashIds;
-    
-    public $fillable = ['email', 'token'];
+
+    public $fillable = ['email', 'token', 'code', 'expires_at', 'attempts', 'last_sent_at'];
 
     public $table = Table::EMAIL_CONF;
+
+    protected $casts = [
+        'expires_at' => 'datetime',
+        'last_sent_at' => 'datetime',
+        'attempts' => 'integer',
+    ];
 }

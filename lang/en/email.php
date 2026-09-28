@@ -15,6 +15,11 @@ return [
             'sub_title' => 'This is your email confirmation code:',
             'description' => 'Please enter the code below to confirm the email address change.',
             'ignore_email' => 'If you did not request to change your account email, you can safely ignore this email. Your account will remain secure.',
+        ],
+        'registration' => [
+            'sub_title' => 'Welcome to :app_name! This is your registration verification code:',
+            'description' => 'Please enter the 6-digit code below to complete your registration. The code is valid for :minutes minutes.',
+            'ignore_email' => 'If you did not create an account, you can safely ignore this email.',
         ]
     ],
     'actions' => [

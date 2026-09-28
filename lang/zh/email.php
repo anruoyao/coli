@@ -15,6 +15,11 @@ return [
             'sub_title' => '这是您的邮箱验证码：',
             'description' => '请输入以下验证码以确认邮箱地址更改。',
             'ignore_email' => '如果您没有请求更改账号邮箱，请放心忽略此邮件。您的账号仍将保持安全。',
+        ],
+        'registration' => [
+            'sub_title' => '欢迎注册 :app_name！这是您的注册邮箱验证码：',
+            'description' => '请输入下方 6 位验证码完成注册，验证码 :minutes 分钟内有效。',
+            'ignore_email' => '如果这不是您本人的注册操作，请忽略此邮件。',
         ]
     ],
     'actions' => [

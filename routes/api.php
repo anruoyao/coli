@@ -67,9 +67,16 @@ Route::post('/sanctum/token', function (Request $request) {
 })->middleware('throttle:login');
 
 Route::prefix('auth')->middleware(['throttle:60,60'])->group(function () {
+    // App 注册功能开关（客户端注册前检测是否需要邮箱验证码）
+    Route::get('/config', [App\Http\Controllers\Api\User\Auth\EmailVerificationController::class, 'config']);
+
     Route::post('/register', [App\Http\Controllers\Api\User\Auth\AuthController::class, 'register'])->middleware('throttle:register');
     Route::post('/forgot-password', [App\Http\Controllers\Api\User\Auth\AuthController::class, 'forgotPassword'])->middleware('throttle:forgot');
     Route::post('/reset-password', [App\Http\Controllers\Api\User\Auth\AuthController::class, 'resetPassword'])->middleware('throttle:10,60');
+
+    // App 注册邮箱验证码（发送 / 重发）
+    Route::post('/email-code/send', [App\Http\Controllers\Api\User\Auth\EmailVerificationController::class, 'sendCode'])->middleware('throttle:verification-code');
+    Route::post('/email-code/resend', [App\Http\Controllers\Api\User\Auth\EmailVerificationController::class, 'resendCode'])->middleware('throttle:verification-code');
 });
 
 // App 私有频道 socket 认证（替代网页的 session 版 /broadcasting/auth）

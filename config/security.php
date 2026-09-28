@@ -28,6 +28,12 @@ return [
         'register_max_per_ip' => env('SECURITY_REGISTER_MAX_PER_IP', 10),                       // 每 IP 每小时
         'forgot_max_per_ip' => env('SECURITY_FORGOT_MAX_PER_IP', 5),                            // 每 IP 每小时
         'max_tokens_per_account' => env('SECURITY_MAX_TOKENS_PER_ACCOUNT', 10),                 // 每账号活跃 token 上限
+
+        // App 注册邮箱验证码
+        'verification_code_expires_minutes' => env('SECURITY_VERIFICATION_CODE_EXPIRES_MIN', 10),  // 验证码有效期（分钟）
+        'verification_code_resend_cooldown' => env('SECURITY_VERIFICATION_CODE_RESEND_COOLDOWN', 60), // 重发冷却（秒）
+        'verification_code_max_attempts' => env('SECURITY_VERIFICATION_CODE_MAX_ATTEMPTS', 5),    // 单码最大错误尝试次数
+        'verification_code_max_per_ip' => env('SECURITY_VERIFICATION_CODE_MAX_PER_IP', 10),       // 发码接口每 IP 每小时
     ],
 
     // 一次性邮箱域名黑名单（注册拦截）
