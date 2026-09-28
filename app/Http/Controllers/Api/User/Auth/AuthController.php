@@ -219,7 +219,10 @@ class AuthController extends Controller
     }
 
     /**
-     * App 登出：注销当前访问令牌（token 版，替代网页 session 登出）。
+     * 登出：兼容网页 (session) 与 App (Sanctum token) 两种认证方式。
+     *
+     * 网页 SPA 通过 session cookie 认证，此时 currentAccessToken() 为 null，
+     * 必须销毁 web 会话；App 通过 Bearer token 认证，删除当前令牌即可。
      *
      * @param Request $request
      */
@@ -227,8 +230,17 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        if ($user) {
-            $user->currentAccessToken()?->delete();
+        // App 登出：删除当前访问令牌
+        if ($user && $user->currentAccessToken()) {
+            $user->currentAccessToken()->delete();
+        }
+
+        // 网页登出：销毁 session（SPA 走 statefulApi + session cookie 认证）
+        if (auth()->guard('web')->check()) {
+            auth()->guard('web')->logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
         }
 
         return $this->responseSuccess([
