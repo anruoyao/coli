@@ -229,10 +229,11 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $user = $request->user();
+        $accessToken = $user?->currentAccessToken();
 
-        // App 登出：删除当前访问令牌
-        if ($user && $user->currentAccessToken()) {
-            $user->currentAccessToken()->delete();
+        // App 登出：删除当前访问令牌（session 认证时是 TransientToken，无 delete 方法）
+        if ($accessToken instanceof \Laravel\Sanctum\PersonalAccessToken) {
+            $accessToken->delete();
         }
 
         // 网页登出：销毁 session（SPA 走 statefulApi + session cookie 认证）
