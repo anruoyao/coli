@@ -20,6 +20,7 @@ use App\Models\User;
 use App\Services\Auth\RegistrationVerificationService;
 use App\Services\Blacklist\BlacklistService;
 use App\Traits\Http\Api\SupportsApiResponses;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -112,16 +113,31 @@ class AuthController extends Controller
         }
 
         // 复用 CreateUserAction 保证与网页注册一致的关联数据（钱包/隐私/通知设置等）
-        $user = (new CreateUserAction([
-            'username'         => $username,
-            'first_name'       => $firstName,
-            'last_name'        => $lastName,
-            'email'            => $email,
-            'password'         => $password,
-            'status'           => UserStatus::ACTIVE,
-            'email_verified_at'=> now(),
-            'language'         => $request->get('language', config('user.language')),
-        ]))->execute();
+        try {
+            $user = (new CreateUserAction([
+                'username'         => $username,
+                'first_name'       => $firstName,
+                'last_name'        => $lastName,
+                'email'            => $email,
+                'password'         => $password,
+                'status'           => UserStatus::ACTIVE,
+                'email_verified_at'=> now(),
+                'language'         => $request->get('language', config('user.language')),
+            ]))->execute();
+        } catch (QueryException $e) {
+            // users 唯一索引兜底：应用层 Rule::unique 与 INSERT 之间存在竞态窗口
+            // （双击提交/并发注册），撞上 1062 时转成字段级 422 而非 500
+            if (intval($e->errorInfo[1] ?? 0) === 1062) {
+                $conflictField = str_contains($e->getMessage(), 'users_email') ? 'email' : 'username';
+
+                return $this->responseError([
+                    'message' => __('auth.registration_conflict'),
+                    'errors' => [$conflictField => [__('auth.registration_conflict')]],
+                ], 422);
+            }
+
+            throw $e;
+        }
 
         $deviceName = $request->get('device_name', 'app');
 

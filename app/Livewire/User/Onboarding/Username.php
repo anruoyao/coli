@@ -66,6 +66,13 @@ class Username extends OnboardingBase
             'status' => UserStatus::ACTIVE
         ]);
 
+        // 密码变更后必须重新登录：session 里存的 password_hash_web 还是
+        // confirm-signup 时的旧哈希（bcrypt('')），Sanctum 的 AuthenticateSession
+        // 中间件会在下一个 stateful API 请求比对哈希，不一致即强制登出并清空
+        // session → SPA bootstrap 401 → 用户被甩到 bootstrap-error 页。
+        // relogin 同时刷新 remember cookie（recaller 里同样嵌着旧哈希）。
+        auth()->guard('web')->login($user, true);
+
         $this->makeFollowList();
 
         event(new UserSignupCompletedEvent(me()));

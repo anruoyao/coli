@@ -32,6 +32,7 @@ return [
     'already_linked_account_error' => 'This account is already linked to your current :app_name account.',
     'master_account_error' => 'Please use your :app_name master account to link other accounts.',
     'registration_disabled' => 'Registration is currently disabled. Please try again later.',
+    'registration_conflict' => 'This email or username has just been registered by someone else. Please try again or use a different one.',
     'login_disabled' => 'Login is currently disabled. Please try again later.',
     'email_send_failed' => 'Failed to send the email. Please try again later or check the email settings.',
     'invalid_reset_token' => 'The reset link is invalid or has expired. Please request a new one.',

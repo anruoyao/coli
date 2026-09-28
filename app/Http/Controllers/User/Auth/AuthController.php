@@ -20,6 +20,7 @@ use App\Events\User\Auth\UserLoggedInEvent;
 use App\Http\Controllers\Controller;
 use App\Models\EmailConfirmation;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -101,7 +102,19 @@ class AuthController extends Controller
             'username' => $tempUsername
         ];
 
-        $newUser = (new CreateUserAction($insertData))->execute();
+        try {
+            $newUser = (new CreateUserAction($insertData))->execute();
+        } catch (QueryException $e) {
+            // users 唯一索引兜底：确认链接被重放/页面重试并发撞上 1062 时，
+            // 说明该邮箱已有账号 —— 消费掉 token 并引导登录，而非 500 引发继续重试
+            if (intval($e->errorInfo[1] ?? 0) === 1062) {
+                $confirmationData->delete();
+
+                return redirect()->route('user.auth.index');
+            }
+
+            throw $e;
+        }
 
         Auth::guard('web')->login($newUser, true);
 
