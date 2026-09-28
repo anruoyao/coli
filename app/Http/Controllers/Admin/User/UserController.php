@@ -140,8 +140,13 @@ class UserController extends Controller
     }
 
     /**
-     * 封禁用户：status=blocked + 原因，删除该用户全部 Sanctum token（强制下线），
-     * 并通过 Reverb 私有频道推送 main.command(banned) 让在线 App 秒级进入封禁页。
+     * 封禁用户：status=blocked + 原因，并通过 Reverb 私有频道推送 main.command(blocked)
+     * 让在线 App 秒级进入封禁页。
+     *
+     * 注意：保留 Sanctum token 不删除 —— 全局 user.status 中间件会拦截该用户所有
+     * API 请求并返回 403 + X-User-Status 头，App 据此展示封禁页且不自动登出
+     * （刷新/重启都不会退回登录页）；解封后原 token 直接恢复可用，App 收到
+     * main.command(active) 实时回到主界面。
      */
     public function block(Request $request, int $userId)
     {
@@ -157,9 +162,6 @@ class UserController extends Controller
             'status' => UserStatus::BLOCKED,
             'status_reason' => $reason ?: null,
         ]);
-
-        // 清除全部会话 token，强制已登录设备失效
-        $userData->tokens()->delete();
 
         event(new UserStatusChangedEvent($userData, UserStatus::BLOCKED, $reason));
 
