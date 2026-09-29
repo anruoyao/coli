@@ -5,3 +5,79 @@
 @import "../../themes/dark/colors.css" layer(theme);
 
 @import "../../componented/theme.css" layer(theme);
+
+/* ===== Quill 富文本编辑器（snow 主题）暗色适配 ===== */
+/* 基础布局样式来自 quill.snow.css（布局中先于本文件加载），此处只覆盖颜色 */
+.ql-toolbar.ql-snow,
+.ql-container.ql-snow {
+	border-color: var(--color-bord-pr);
+}
+
+.ql-snow .ql-stroke,
+.ql-snow .ql-stroke-miter {
+	stroke: var(--color-lab-pr3);
+}
+
+.ql-snow .ql-fill,
+.ql-snow .ql-stroke.ql-fill {
+	fill: var(--color-lab-pr3);
+}
+
+.ql-snow .ql-picker {
+	color: var(--color-lab-pr3);
+}
+
+.ql-editor {
+	color: var(--color-lab-pr2);
+}
+
+.ql-editor.ql-blank::before {
+	color: var(--color-lab-qt);
+	font-style: normal;
+}
+
+.ql-snow .ql-picker.ql-expanded .ql-picker-label {
+	color: var(--color-lab-sc);
+}
+
+.ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-fill {
+	fill: var(--color-lab-sc);
+}
+
+.ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-stroke {
+	stroke: var(--color-lab-sc);
+}
+
+.ql-snow .ql-picker-options {
+	background-color: var(--color-bg-sc);
+	border-color: var(--color-bord-pr);
+}
+
+.ql-snow .ql-editor blockquote {
+	border-left-color: var(--color-edge-tr);
+}
+
+.ql-snow .ql-editor code,
+.ql-snow .ql-editor .ql-code-block-container {
+	background-color: var(--color-input-pr);
+	color: var(--color-lab-pr2);
+}
+
+/* 链接编辑浮层（ql-tooltip） */
+.ql-snow .ql-tooltip {
+	background-color: var(--color-bg-sc);
+	border-color: var(--color-bord-pr);
+	box-shadow: none;
+	color: var(--color-lab-pr2);
+}
+
+.ql-snow .ql-tooltip input[type=text] {
+	background-color: var(--color-input-pr);
+	border-color: var(--color-bord-pr);
+	color: var(--color-lab-pr2);
+}
+
+.ql-snow .ql-tooltip a.ql-action,
+.ql-snow .ql-tooltip a.ql-remove {
+	color: var(--color-brand-900);
+}

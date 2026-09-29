@@ -18,6 +18,8 @@
         ])
 
         @if(theme_name() == 'dark')
+            {{-- Quill snow 基础样式必须先于暗色覆盖样式加载，否则编辑器工具栏无样式 --}}
+            @vite('resources/css/mpa/rich.editor.css')
             <link rel="stylesheet" href="{{ asset('build/assets/admin-main-dark.css') }}?v={{ $buildNumber }}">
         @else
             @vite('resources/css/admin/main.css')
