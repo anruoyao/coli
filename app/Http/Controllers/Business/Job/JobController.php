@@ -73,7 +73,8 @@ class JobController extends Controller
     
         if(empty($jobData)) {
             me()->jobListings()->create([
-                'status' => JobStatus::DRAFT
+                'status' => JobStatus::DRAFT,
+                'currency' => config('app.default_currency'),
             ]);
 
             return me()->jobListings()->where('status', JobStatus::DRAFT)->first();

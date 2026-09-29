@@ -83,7 +83,8 @@ class MarketController extends Controller
     
         if(empty($productData)) {
             me()->products()->create([
-                'status' => ProductStatus::DRAFT
+                'status' => ProductStatus::DRAFT,
+                'currency' => config('app.default_currency'),
             ]);
 
             return me()->products()->where('status', ProductStatus::DRAFT)->first();
