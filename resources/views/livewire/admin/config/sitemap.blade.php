@@ -234,22 +234,23 @@
                 size="sm"
                 variant="outline"
                 type="button"
-                btnText="{{ __('admin/sitemap.actions.ping_google') }}"
-                wire:click="pingGoogle">
+                btnText="{{ __('admin/sitemap.actions.ping_bing') }}"
+                wire:click="pingBing">
             </x-ui.buttons.pill>
 
             <x-ui.buttons.pill
                 size="sm"
                 variant="outline"
                 type="button"
-                btnText="{{ __('admin/sitemap.actions.ping_bing') }}"
-                wire:click="pingBing">
+                btnText="{{ __('admin/sitemap.actions.ping_google') }}"
+                wire:click="pingGoogle">
             </x-ui.buttons.pill>
         </div>
 
         <div class="mt-4 space-y-1 text-par-s text-lab-sc">
-            <p>{{ __('admin/sitemap.actions.google_pinged') }}: {{ $stats['settings_google_pinged'] ?? '—' }}</p>
             <p>{{ __('admin/sitemap.actions.bing_pinged') }}: {{ $stats['settings_bing_pinged'] ?? '—' }}</p>
+            <p>{{ __('admin/sitemap.actions.indexnow_hint') }}</p>
+            <p>{{ __('admin/sitemap.actions.google_hint') }} <a href="https://search.google.com/search-console/" target="_blank" rel="noopener" class="underline text-brand-900">Google Search Console</a></p>
         </div>
     </div>
 </div>

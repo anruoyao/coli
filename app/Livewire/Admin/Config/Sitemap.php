@@ -125,23 +125,30 @@ class Sitemap extends Component
         ]);
     }
 
+    /**
+     * Google 已于 2023-06 停用无认证 sitemap ping 接口（google.com/ping 返回 404），
+     * 目前只能在 Google Search Console 手动提交一次 sitemap，之后 Google 会自动重抓。
+     */
     public function pingGoogle()
     {
-        $this->ping('google');
+        $this->actionMessage = __('admin/sitemap.flash.google_manual', [
+            'url' => app(SitemapService::class)->indexUrl(),
+        ]);
     }
 
+    /**
+     * Bing 旧 ping（bing.com/ping）已 410 下线、Sitemap 提交 API 也已移除，
+     * 官方主推 IndexNow：推送 sitemap 收录的 URL 给 Bing / Yandex 等。
+     */
     public function pingBing()
     {
-        $this->ping('bing');
-    }
+        $result = app(SitemapService::class)->pushUrlsToIndexNow();
 
-    protected function ping(string $engine)
-    {
-        $success = app(SitemapService::class)->ping($engine);
-
-        $this->actionMessage = $success
-            ? __('admin/sitemap.flash.ping_success', ['engine' => __("admin/sitemap.engines.{$engine}")])
-            : __('admin/sitemap.flash.ping_failed', ['engine' => __("admin/sitemap.engines.{$engine}")]);
+        $this->actionMessage = $result['ok']
+            ? __('admin/sitemap.flash.indexnow_success', ['count' => $result['submitted']])
+            : __('admin/sitemap.flash.indexnow_failed', [
+                'status' => $result['status'] > 0 ? $result['status'] : '—',
+            ]);
     }
 
     public function render()
@@ -151,7 +158,6 @@ class Sitemap extends Component
 
         return view('livewire.admin.config.sitemap', [
             'stats' => $service->statistics() + [
-                'settings_google_pinged' => $this->formatPingedAt($settings->google_last_pinged_at),
                 'settings_bing_pinged' => $this->formatPingedAt($settings->bing_last_pinged_at),
             ],
             'robotsContent' => $service->currentRobotsContent(),

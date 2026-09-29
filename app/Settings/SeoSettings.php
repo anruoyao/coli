@@ -64,6 +64,9 @@ class SeoSettings extends Settings
     public ?string $google_last_pinged_at;
     public ?string $bing_last_pinged_at;
 
+    // ----- IndexNow 密钥（Bing / Yandex 等主动推送的域名所有权凭证，首次使用自动生成）-----
+    public ?string $indexnow_key = null;
+
     public static function group(): string
     {
         return 'seo';

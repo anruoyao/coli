@@ -22,7 +22,7 @@ return [
         'exclusion' => '排除规则',
         'robots' => 'robots.txt',
         'actions' => '维护操作',
-        'actions_helper' => '立即重新生成 Sitemap，或向搜索引擎推送通知新 Sitemap 已就绪。',
+        'actions_helper' => '立即重新生成 Sitemap；Bing / Yandex 等可通过 IndexNow 主动推送收录 URL；Google 已停用自动推送接口，需在 Search Console 手动提交一次。',
     ],
 
     'form' => [
@@ -57,21 +57,18 @@ return [
 
     'actions' => [
         'regenerate' => '立即重新生成',
-        'ping_google' => '推送 Google',
-        'ping_bing' => '推送 Bing',
-        'google_pinged' => 'Google 最近推送',
-        'bing_pinged' => 'Bing 最近推送',
-    ],
-
-    'engines' => [
-        'google' => 'Google',
-        'bing' => 'Bing',
+        'ping_bing' => '推送 Bing / Yandex（IndexNow）',
+        'ping_google' => 'Google 提交指引',
+        'bing_pinged' => 'IndexNow 最近推送',
+        'indexnow_hint' => 'IndexNow 免注册，点击后立即把当前 Sitemap 收录的 URL 主动提交给 Bing、Yandex 等搜索引擎（首次推送引擎会自动校验站点密钥文件）。',
+        'google_hint' => 'Google 自 2023 年起关闭了 sitemap 自动推送接口，请在 Search Console 的 Sitemap 页面手动提交一次（之后会自动重新抓取）：',
     ],
 
     'flash' => [
         'saved' => 'Sitemap 设置已保存：缓存已重建，robots.txt 已更新。',
         'regenerated' => 'Sitemap 已重新生成，共收录 :count 条 URL。',
-        'ping_success' => '已成功通知 :engine。',
-        'ping_failed' => '通知 :engine 失败，请稍后重试。',
+        'indexnow_success' => 'IndexNow 已接收本次提交，共推送 :count 条 URL，Bing / Yandex 将尽快抓取。',
+        'indexnow_failed' => 'IndexNow 推送失败（接口返回 HTTP :status），请稍后重试。',
+        'google_manual' => 'Google 不支持自动推送：请打开 Google Search Console → 选择站点 → Sitemap → 提交 :url（仅需一次，之后 Google 会定期自动重新抓取）。',
     ],
 ];

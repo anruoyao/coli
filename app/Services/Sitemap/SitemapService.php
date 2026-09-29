@@ -450,36 +450,119 @@ class SitemapService
     }
 
     /**
-     * 推送 sitemap 给搜索引擎，返回是否成功。
+     * IndexNow 密钥（32 位十六进制）。首次使用自动生成并持久化，
+     * 搜索引擎推送时会回源 GET /{key}.txt 校验域名所有权。
      */
-    public function ping(string $engine): bool
+    public function indexNowKey(): string
     {
-        $base = match ($engine) {
-            'google' => 'https://www.google.com/ping?sitemap=',
-            'bing' => 'https://www.bing.com/ping?sitemap=',
-            default => null,
-        };
+        $key = trim((string) $this->settings->indexnow_key);
 
-        if ($base === null || ! $this->enabled()) {
-            return false;
+        if ($key === '') {
+            $key = bin2hex(random_bytes(16));
+
+            $this->settings->indexnow_key = $key;
+            $this->settings->save();
         }
 
-        try {
-            $client = new \GuzzleHttp\Client(['timeout' => 15]);
-            $response = $client->get($base.urlencode($this->indexUrl()));
+        return $key;
+    }
 
-            $property = $engine === 'google' ? 'google_last_pinged_at' : 'bing_last_pinged_at';
-            if ($response->getStatusCode() < 400) {
-                $this->settings->{$property} = now()->toIso8601String();
-                $this->settings->save();
+    public function indexNowKeyLocation(): string
+    {
+        return url('/'.$this->indexNowKey().'.txt');
+    }
 
-                return true;
+    public function indexNowKeyFileContent(): string
+    {
+        return $this->indexNowKey();
+    }
+
+    /**
+     * 通过 IndexNow 主动推送 sitemap 收录的 URL（Bing / Yandex / Seznam 等支持）。
+     *
+     * 背景：Google 于 2023-06 关闭无认证 sitemap ping（google.com/ping 返回 404），
+     * Bing 的 ping 接口也已下线（410 Gone）。IndexNow 是当前唯一免注册的主动推送通道。
+     *
+     * 返回 ['ok' => bool, 'status' => int, 'submitted' => int]
+     * 200 = 已接收；202 = 已接收、待密钥文件校验；其余为失败。
+     */
+    public function pushUrlsToIndexNow(int $max = 10000): array
+    {
+        if (! $this->enabled()) {
+            return ['ok' => false, 'status' => 0, 'submitted' => 0];
+        }
+
+        // 确保 sitemap 缓存存在（与公开端点一致的懒生成策略）
+        if (! Cache::has(self::CACHE_INDEX)) {
+            $this->warm();
+        }
+
+        $urls = $this->collectAllUrls($max);
+
+        if (empty($urls)) {
+            return ['ok' => false, 'status' => 0, 'submitted' => 0];
+        }
+
+        $payload = [
+            'host' => (string) parse_url(url('/'), PHP_URL_HOST),
+            'key' => $this->indexNowKey(),
+            'keyLocation' => $this->indexNowKeyLocation(),
+            'urlList' => $urls,
+        ];
+
+        // 优先通用入口，失败时回退 Bing 直连入口
+        $endpoints = [
+            'https://api.indexnow.org/indexnow',
+            'https://www.bing.com/indexnow',
+        ];
+
+        $lastStatus = 0;
+
+        foreach ($endpoints as $endpoint) {
+            try {
+                $response = (new \GuzzleHttp\Client(['timeout' => 20]))->post($endpoint, [
+                    'json' => $payload,
+                    'http_errors' => false,
+                ]);
+
+                $lastStatus = $response->getStatusCode();
+
+                if (in_array($lastStatus, [200, 202], true)) {
+                    $this->settings->bing_last_pinged_at = now()->toIso8601String();
+                    $this->settings->save();
+
+                    return ['ok' => true, 'status' => $lastStatus, 'submitted' => count($urls)];
+                }
+            } catch (\Throwable $th) {
+                $lastStatus = 0;
             }
-        } catch (\Throwable $th) {
-            //
         }
 
-        return false;
+        return ['ok' => false, 'status' => $lastStatus, 'submitted' => count($urls)];
+    }
+
+    /**
+     * 汇总所有已启用类型的收录 URL（去重、限量），供 IndexNow 推送。
+     */
+    protected function collectAllUrls(int $max): array
+    {
+        $urls = [];
+
+        foreach (self::TYPES as $type) {
+            if (! $this->shouldInclude($type)) {
+                continue;
+            }
+
+            foreach ($this->collectUrls($type) as $entry) {
+                $urls[] = $entry['loc'];
+
+                if (count($urls) >= $max) {
+                    break 2;
+                }
+            }
+        }
+
+        return array_values(array_unique($urls));
     }
 
     public function typeLabels(): array

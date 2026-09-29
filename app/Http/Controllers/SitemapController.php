@@ -66,6 +66,22 @@ class SitemapController extends Controller
         return $this->xmlResponse($content);
     }
 
+    /**
+     * IndexNow 域名所有权校验文件：GET /{32位hex密钥}.txt
+     * 搜索引擎在收到 IndexNow 推送后回源此地址，正文须等于密钥本身。
+     */
+    public function indexNowKey(string $key)
+    {
+        if (! preg_match('/^[a-f0-9]{32}$/', $key) || ! hash_equals($this->service->indexNowKey(), $key)) {
+            abort(404);
+        }
+
+        return response($this->service->indexNowKeyFileContent(), 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
+    }
+
     protected function xmlResponse(string $content)
     {
         return response($content, 200, [

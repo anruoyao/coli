@@ -68,6 +68,10 @@ Route::middleware(['user.status'])->group(function() {
     Route::get('sitemap-{file}', [App\Http\Controllers\SitemapController::class, 'chunk'])->name('sitemap.chunk')
         ->where('file', '^[a-z]+-[0-9]+\.xml$');
 
+    // IndexNow 密钥校验文件（Bing / Yandex 等推送时回源验证域名所有权）
+    Route::get('{indexnowKey}.txt', [App\Http\Controllers\SitemapController::class, 'indexNowKey'])
+        ->where('indexnowKey', '^[a-f0-9]{32}$');
+
     Route::get('{any}', [App\Http\Controllers\SeoController::class, '__invoke'])
         ->where('any', '^(?!.*\.(?:js|css|ts|map|png|jpe?g|gif|svg|webp|ico|woff2?|eot|ttf|otf|mp4|webm|txt|json|xml|wasm|ht?ml?|pdf)$).+$');
 });

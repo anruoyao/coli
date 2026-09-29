@@ -22,7 +22,7 @@ return [
         'exclusion' => 'Exclusion Rules',
         'robots' => 'robots.txt',
         'actions' => 'Maintenance Actions',
-        'actions_helper' => 'Regenerate the sitemap immediately, or ping search engines to notify them of the new sitemap.',
+        'actions_helper' => 'Regenerate the sitemap immediately; push indexed URLs to Bing / Yandex via IndexNow; Google retired its automatic ping endpoint and requires a one-time manual submission in Search Console.',
     ],
 
     'form' => [
@@ -57,21 +57,18 @@ return [
 
     'actions' => [
         'regenerate' => 'Regenerate Now',
-        'ping_google' => 'Ping Google',
-        'ping_bing' => 'Ping Bing',
-        'google_pinged' => 'Google last pinged',
-        'bing_pinged' => 'Bing last pinged',
-    ],
-
-    'engines' => [
-        'google' => 'Google',
-        'bing' => 'Bing',
+        'ping_bing' => 'Push to Bing / Yandex (IndexNow)',
+        'ping_google' => 'Google Submission Guide',
+        'bing_pinged' => 'IndexNow last pushed',
+        'indexnow_hint' => 'IndexNow requires no registration: instantly submit all URLs currently in the sitemap to Bing, Yandex and other supporting engines (the key file is verified automatically on first push).',
+        'google_hint' => 'Google shut down its automatic sitemap ping in 2023. Submit the sitemap once manually on the Sitemaps page of Search Console (it is then recrawled automatically):',
     ],
 
     'flash' => [
         'saved' => 'Sitemap settings saved: cache rebuilt and robots.txt updated.',
         'regenerated' => 'Sitemap regenerated successfully — :count URLs in total.',
-        'ping_success' => ':engine notified successfully.',
-        'ping_failed' => 'Failed to notify :engine. Please retry later.',
+        'indexnow_success' => 'IndexNow accepted the submission — :count URLs pushed. Bing / Yandex will crawl them shortly.',
+        'indexnow_failed' => 'IndexNow push failed (endpoint returned HTTP :status). Please retry later.',
+        'google_manual' => 'Google does not support automatic pings: open Google Search Console → select your site → Sitemaps → submit :url (one-time; Google recrawls it automatically afterwards).',
     ],
 ];
