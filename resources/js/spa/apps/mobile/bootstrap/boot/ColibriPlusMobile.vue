@@ -100,9 +100,14 @@
 					title: __t('prompt.logout.title'),
 					description: __t('prompt.logout.description'),
 					confirmButtonText: __t('prompt.logout.confirm'),
-					onConfirm: () => {
-						authStore.logoutUser();
-						window.location.href = embedder('routes.user_auth_index');
+					onConfirm: async () => {
+						// 必须等待登出请求完成再跳转：否则导航会中断未完成的 POST，
+						// session 未销毁，/login 的 guest 中间件会把用户弹回首页（表现为“退出没反应”）
+						try {
+							await authStore.logoutUser();
+						} finally {
+							window.location.href = embedder('routes.user_auth_index');
+						}
 					}
 				});
 			}
