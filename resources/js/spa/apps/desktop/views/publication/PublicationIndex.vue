@@ -33,7 +33,7 @@
                     <div v-else class="bg-bg-pr z-10">
                         <button type="button" v-on:click="requestGate"
                             class="w-full px-4 py-3 text-left text-par-m text-lab-sc border-b border-bord-pr">
-                            {{ __t('auth.gate_caption') }}
+                            {{ $t('auth.gate_caption') }}
                         </button>
 
                         <div class="px-4 bg-fill-fv py-2">
