@@ -87,6 +87,7 @@
 	import { AxiosAuth } from '@/kernel/services/axios/index.js';
 	import { useAuthStore } from '@D/store/auth/auth.store.js';
 	import { colibriEventBus } from '@/kernel/events/bus/index.js';
+	import { toastError } from '@D/core/services/toasts/index.js';
 
 	export default defineComponent({
 		setup() {
@@ -100,11 +101,13 @@
 			const submitting = ref(false);
 
 			const openModal = function() {
-				step.value = 'gate';
-				error.value = '';
-				login.value = '';
-				password.value = '';
-				open.value = true;
+				// 访客触发保护功能：提示需登录并跳转到独立登录页（不再弹内嵌遮罩）。
+				open.value = false;
+				toastError(__t('auth.gate_caption'), 4000);
+
+				setTimeout(function() {
+					window.location.href = embedder('routes.user_auth_index');
+				}, 350);
 			};
 
 			const close = function() {
