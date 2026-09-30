@@ -5,6 +5,7 @@ return [
     'toast' => require __DIR__ . '/toast.php',
     'labels' => require __DIR__ . '/labels.php',
     'buttons' => require __DIR__ . '/buttons.php',
+    'auth' => require __DIR__ . '/../auth.php',
     'tips' => require __DIR__ . '/tips.php',
     'editor' => require __DIR__ . '/editor.php',
     'soundbar' => require __DIR__ . '/soundbar.php',
