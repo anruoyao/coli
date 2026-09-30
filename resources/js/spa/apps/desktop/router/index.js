@@ -538,8 +538,18 @@ Router.beforeEach((to, from) => {
 /**
  * 全局访客守卫（desktop）：
  * - 等待 bootstrap 完成；
- * - 访客命中 auth 路由：首次导航回首页并弹登录模态框；后续导航取消。
+ * - 访客可访问路由（首页/文章/个人主页）直接放行；
+ * - 访客命中其它 meta.auth 路由：首次导航重定向首页并弹登录引导；后续导航取消。
  */
+const GUEST_ALLOWED_ROUTES = new Set([
+    'home_index',
+    'publication_index',
+    'profile_index',
+    'profile_posts',
+    'profile_media',
+    'profile_info',
+]);
+
 Router.beforeEach(async (to) => {
 	if (appBootPromise) {
 		await appBootPromise;
@@ -548,6 +558,10 @@ Router.beforeEach(async (to) => {
 	const authStore = useAuthStore();
 
 	if (! to.meta?.auth || ! authStore.isGuest) {
+		return true;
+	}
+
+	if (GUEST_ALLOWED_ROUTES.has(to.name)) {
 		return true;
 	}
 

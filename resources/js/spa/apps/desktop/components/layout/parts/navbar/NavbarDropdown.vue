@@ -56,6 +56,7 @@
             });
 
             return {
+                authStore: authStore,
                 canAccessAdminPanel: computed(() => {
                     return authStore.userData.meta.is_admin || authStore.userData.meta.is_root;
                 }),
