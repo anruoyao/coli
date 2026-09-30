@@ -65,7 +65,11 @@ class GuestFeedTest extends GuestTestCase
 
     public function test_feed_does_not_leach_when_disabled(): void
     {
-        // 另一个测试进程视角：默认开关关闭
-        $response = $this->guestGet('feed')->assertStatus(403);
+        // 本类 setUp 默认开启访客模式；显式关闭后访客接口必须立即 403。
+        $settings = app(\App\Settings\GuestSettings::class);
+        $settings->enabled = false;
+        $settings->save();
+
+        $this->guestGet('feed')->assertStatus(403);
     }
 }

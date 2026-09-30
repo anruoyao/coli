@@ -7,7 +7,7 @@
 // 注意：浏览器需拉取到本文件（nginx 已对 /pwa/service-worker.js 设 no-cache）
 // 才会安装新 SW；存量用户首次仍由旧 SW 控制，属正常，下一次导航即切换。
 
-const BUILD_VERSION = '2026-08-28';
+const BUILD_VERSION = '2026-09-30';
 const CACHE_NAME = 'colibri-static-' + BUILD_VERSION;
 
 self.addEventListener('install', (event) => {

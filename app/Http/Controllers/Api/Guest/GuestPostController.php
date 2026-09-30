@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api\Guest;
 
 use App\Enums\User\UserStatus;
+use App\Http\Resources\Guest\GuestCommentCollection;
+use App\Http\Resources\Guest\GuestPostResource;
+use App\Http\Resources\Guest\GuestUserPreviewResource;
 use App\Support\Guest\GuestContentScope;
 use App\Traits\Http\Api\SupportsApiResponses;
 use Illuminate\Http\Request;

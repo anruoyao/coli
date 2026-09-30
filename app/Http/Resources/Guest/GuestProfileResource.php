@@ -32,10 +32,9 @@ class GuestProfileResource extends JsonResource
             'bio' => $this->bio,
             'join_date' => [
                 'raw' => $this->created_at?->getTimestamp(),
-                'formatted' => $this->created_at?->getCalendar(),
+                'formatted' => $this->getCreatedAt()->getCalendar(),
             ],
             'gender' => null,
-            'website' => null,
             'verified' => $this->isVerified(),
             'publications_count' => [
                 'raw' => $this->publications_count,
@@ -52,10 +51,13 @@ class GuestProfileResource extends JsonResource
             'meta' => [
                 'is_owner' => false,
                 'permissions' => [
-                    'can_sanction' => false,
                     'can_follow' => false,
-                    'can_mention' => false,
                     'can_message' => false,
+                    'can_edit' => false,
+                    'can_view_followers' => false,
+                    'can_view_followings' => false,
+                    'can_sanction' => false,
+                    'can_mention' => false,
                     'can_story_reply' => false,
                     'can_block' => false,
                     'can_report' => false,

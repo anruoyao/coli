@@ -31,7 +31,7 @@ class GuestContentScope
                 'media',
                 'poll',
                 'linkSnapshot',
-                'quotedPost' => function (Builder $query) {
+                'quotedPost' => function ($query) {
                     $query->where('status', PostStatus::ACTIVE)
                         ->where('is_sensitive', false)
                         ->whereHas('user', fn (Builder $u) => $u->where('status', UserStatus::ACTIVE))

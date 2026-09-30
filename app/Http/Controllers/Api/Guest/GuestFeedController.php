@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Guest;
 
+use App\Http\Resources\Guest\GuestPostCollection;
 use App\Support\Guest\GuestContentScope;
 use App\Traits\Http\Api\SupportsApiResponses;
 use Illuminate\Http\Request;

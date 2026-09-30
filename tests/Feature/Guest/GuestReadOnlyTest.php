@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Guest;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+
 /**
  * AC-5：访客 API 强制只读（写方法 405）。
  */
@@ -14,9 +16,7 @@ class GuestReadOnlyTest extends GuestTestCase
         $this->enableGuestMode();
     }
 
-    /**
-     * @dataProvider writeMethodsProvider
-     */
+    #[DataProvider('writeMethodsProvider')]
     public function test_write_methods_are_not_allowed(string $method, string $uri): void
     {
         $response = match ($method) {

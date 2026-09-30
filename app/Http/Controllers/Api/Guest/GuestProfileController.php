@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Guest;
 
 use App\Models\User;
+use App\Http\Resources\Guest\GuestPostCollection;
+use App\Http\Resources\Guest\GuestProfileResource;
 use App\Support\Guest\GuestContentScope;
 use App\Traits\Http\Api\SupportsApiResponses;
 use Illuminate\Http\Request;
