@@ -1,104 +1,139 @@
 <template>
 	<TimelineContainer>
-        <!-- 首页时间线切换：关注 / 推荐（吸顶） -->
-        <div class="sticky top-0 popup-background-tr z-10">
-            <ContentTabs v-bind:cols="2">
-                <TabsItem v-bind:isActive="state.activeTab === 0" v-on:click="switchTab(0)">
-                    {{ $t('labels.following') }}
-                </TabsItem>
-                <TabsItem v-bind:isActive="state.activeTab === 1" v-on:click="switchTab(1)">
-                    {{ $t('labels.for_you') }}
-                </TabsItem>
-            </ContentTabs>
-            <Border></Border>
-        </div>
+		<!-- 登录用户：关注/推荐切换 + 故事条 -->
+		<template v-if="! authStore.isGuest">
+			<!-- 首页时间线切换：关注 / 推荐（吸顶） -->
+			<div class="sticky top-0 popup-background-tr z-10">
+				<ContentTabs v-bind:cols="2">
+					<TabsItem v-bind:isActive="state.activeTab === 0" v-on:click="switchTab(0)">
+						{{ $t('labels.following') }}
+					</TabsItem>
+					<TabsItem v-bind:isActive="state.activeTab === 1" v-on:click="switchTab(1)">
+						{{ $t('labels.for_you') }}
+					</TabsItem>
+				</ContentTabs>
+				<Border></Border>
+			</div>
 
-        <div class="px-4 pb-3 pt-1">
-            <StoriesFeed></StoriesFeed>
-        </div>
-        <Border height="h-2" opacity="opacity-30"></Border>
-		<div v-if="state.isLoading">
-			<TimelinePublicationSkeleton v-for="i in 2" v-bind:key="i"></TimelinePublicationSkeleton>
-		</div>
-		<div class="pb-6" v-else>
-            <template v-if="state.activeTab === 0">
-                <FeedUpdate v-if="timelineNewPosts.length" v-bind:posts="timelineNewPosts" v-on:click="applyTimelineUpdate"></FeedUpdate>
-                <div v-if="timelinePosts.length">
-                    <template v-for="(postData, index) in timelinePosts" v-bind:key="postData.hash_id">
-                        <TimelinePublication v-bind:postData="postData" v-on:delete="handlePostDelete(postData)"></TimelinePublication>
-                        
-                        <!-- Show follow recommendation every 35 posts -->
-                        <template v-if="(index + 1) % 35 === 0">
-                            <FollowRecommendation v-bind:key="index"></FollowRecommendation>
-                        </template>
+			<div class="px-4 pb-3 pt-1">
+				<StoriesFeed></StoriesFeed>
+			</div>
+			<Border height="h-2" opacity="opacity-30"></Border>
+			<div v-if="state.isLoading">
+				<TimelinePublicationSkeleton v-for="i in 2" v-bind:key="i"></TimelinePublicationSkeleton>
+			</div>
+			<div class="pb-6" v-else>
+				<template v-if="state.activeTab === 0">
+					<FeedUpdate v-if="timelineNewPosts.length" v-bind:posts="timelineNewPosts" v-on:click="applyTimelineUpdate"></FeedUpdate>
+					<div v-if="timelinePosts.length">
+						<template v-for="(postData, index) in timelinePosts" v-bind:key="postData.hash_id">
+							<TimelinePublication v-bind:postData="postData" v-on:delete="handlePostDelete(postData)"></TimelinePublication>
 
-                        <!-- Show ad card every 10 posts -->
-                        <template v-if="(index + 1) % 10 === 0">
-                            <AdCard v-bind:key="index"></AdCard>
-                            <Border height="h-2" opacity="opacity-30"></Border>
-                        </template>
-                    </template>
+							<!-- Show follow recommendation every 35 posts -->
+							<template v-if="(index + 1) % 35 === 0">
+								<FollowRecommendation v-bind:key="index"></FollowRecommendation>
+							</template>
 
-                    <div v-if="state.isLoadingContent">
-                        <div class="flex justify-center my-4">
-                            <div class="colibri-primary-animation"></div>
-                        </div>
-                    </div>
-                </div>
-                <div v-else>
-                    <div class="py-32">
-                        <p class="text-lab-sc text-par-s text-center">
-                            {{ $t('empty_state.home.posts') }}
-                        </p>
-                    </div>
-                </div>
-            </template>
+							<!-- Show ad card every 10 posts -->
+							<template v-if="(index + 1) % 10 === 0">
+								<AdCard v-bind:key="index"></AdCard>
+								<Border height="h-2" opacity="opacity-30"></Border>
+							</template>
+						</template>
 
-            <template v-else>
-                <div v-if="state.isRecommendLoading">
-                    <TimelinePublicationSkeleton v-for="i in 5" v-bind:key="i"></TimelinePublicationSkeleton>
-                </div>
-                <template v-else>
-                    <FeedUpdate v-if="recommendedNewPosts.length" v-bind:posts="recommendedNewPosts" v-on:click="applyRecommendedUpdate"></FeedUpdate>
-                    <div v-if="recommendedPosts.length">
-                        <template v-for="(postData, index) in recommendedPosts" v-bind:key="postData.id">
-                            <TimelinePublication v-bind:postData="postData" v-on:delete="handlePostDelete(postData)"></TimelinePublication>
+						<div v-if="state.isLoadingContent">
+							<div class="flex justify-center my-4">
+								<div class="colibri-primary-animation"></div>
+							</div>
+						</div>
+					</div>
+					<div v-else>
+						<div class="py-32">
+							<p class="text-lab-sc text-par-s text-center">
+								{{ $t('empty_state.home.posts') }}
+							</p>
+						</div>
+					</div>
+				</template>
 
-                            <!-- Show follow recommendation every 35 posts -->
-                            <template v-if="(index + 1) % 35 === 0">
-                                <FollowRecommendation v-bind:key="index"></FollowRecommendation>
-                            </template>
+				<template v-else>
+					<div v-if="state.isRecommendLoading">
+						<TimelinePublicationSkeleton v-for="i in 5" v-bind:key="i"></TimelinePublicationSkeleton>
+					</div>
+					<template v-else>
+						<FeedUpdate v-if="recommendedNewPosts.length" v-bind:posts="recommendedNewPosts" v-on:click="applyRecommendedUpdate"></FeedUpdate>
+						<div v-if="recommendedPosts.length">
+							<template v-for="(postData, index) in recommendedPosts" v-bind:key="postData.id">
+								<TimelinePublication v-bind:postData="postData" v-on:delete="handlePostDelete(postData)"></TimelinePublication>
 
-                            <!-- Show ad card every 10 posts -->
-                            <template v-if="(index + 1) % 10 === 0">
-                                <AdCard v-bind:key="index"></AdCard>
-                                <Border height="h-2" opacity="opacity-30"></Border>
-                            </template>
-                        </template>
+								<!-- Show follow recommendation every 35 posts -->
+								<template v-if="(index + 1) % 35 === 0">
+									<FollowRecommendation v-bind:key="index"></FollowRecommendation>
+								</template>
 
-                        <div v-if="state.isLoadingContent">
-                            <div class="flex justify-center my-4">
-                                <div class="colibri-primary-animation"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-else>
-                        <div class="py-32">
-                            <p class="text-lab-sc text-par-s text-center">
-                                {{ $t('empty_state.empty') }}
-                            </p>
-                        </div>
-                    </div>
-                </template>
-            </template>
-		</div>
+								<!-- Show ad card every 10 posts -->
+								<template v-if="(index + 1) % 10 === 0">
+									<AdCard v-bind:key="index"></AdCard>
+									<Border height="h-2" opacity="opacity-30"></Border>
+								</template>
+							</template>
+
+							<div v-if="state.isLoadingContent">
+								<div class="flex justify-center my-4">
+									<div class="colibri-primary-animation"></div>
+								</div>
+							</div>
+						</div>
+						<div v-else>
+							<div class="py-32">
+								<p class="text-lab-sc text-par-s text-center">
+									{{ $t('empty_state.empty') }}
+								</p>
+							</div>
+						</div>
+					</template>
+				</template>
+			</div>
+		</template>
+
+		<!-- 访客：仅精选公开帖子流（无 tabs、无故事、无发帖/推荐/广告插入） -->
+		<template v-else>
+			<Border height="h-2" opacity="opacity-30"></Border>
+			<div v-if="guestState.isLoading">
+				<TimelinePublicationSkeleton v-for="i in 3" v-bind:key="i"></TimelinePublicationSkeleton>
+			</div>
+			<div class="pb-6" v-else>
+				<div v-if="guestPosts.length">
+					<TimelinePublication
+						v-for="postData in guestPosts"
+						v-bind:key="'g_'+postData.hash_id"
+						v-bind:postData="postData">
+					</TimelinePublication>
+
+					<div v-if="guestState.isLoadingContent">
+						<div class="flex justify-center my-4">
+							<div class="colibri-primary-animation"></div>
+						</div>
+					</div>
+				</div>
+				<div v-else>
+					<div class="py-32">
+						<p class="text-lab-sc text-par-s text-center">
+							{{ $t('empty_state.empty') }}
+						</p>
+					</div>
+				</div>
+			</div>
+		</template>
 	</TimelineContainer>
 </template>
 
 <script>
     import { defineComponent, ref, reactive, onMounted, computed, onUnmounted } from 'vue';
     import { useTimelineStore } from '@M/store/timeline/timeline.store.js';
+    import { useGuestFeedStore } from '@M/store/timeline/guest-feed.store.js';
     import { useExplorePostsStore } from '@M/store/explore/posts.store.js';
+    import { useAuthStore } from '@M/store/auth/auth.store.js';
     import { useDeletePost } from '@/kernel/vue/composables/delete-post/index.js';
     import { useInfiniteScroll } from '@/kernel/vue/composables/infinite-scroll/index.js';
     import { colibriEventBus } from '@/kernel/events/bus/index.js';
@@ -125,6 +160,13 @@
                 noMoreRecommend: false
             });
 
+            // 访客态加载状态
+            const guestState = reactive({
+                isLoading: false,
+                isLoadingContent: false,
+                noMore: false,
+            });
+
             let updateIntervalId = null;
             let updateAttempts = 0;
 
@@ -132,6 +174,8 @@
 
             const timelineStore = useTimelineStore();
             const explorePostsStore = useExplorePostsStore();
+            const guestFeedStore = useGuestFeedStore();
+            const authStore = useAuthStore();
 
             const timelineNewPosts = computed(() => {
                 return timelineStore.update;
@@ -149,12 +193,27 @@
                 return explorePostsStore.posts;
             });
 
+            const guestPosts = computed(() => {
+                return guestFeedStore.posts;
+            });
+
             onMounted(async () => {
+                // 访客：只加载精选公开流，不启动关注流/定时更新
+                if (authStore.isGuest) {
+                    guestState.isLoading = true;
+
+                    await guestFeedStore.initialLoad();
+
+                    guestState.isLoading = false;
+
+                    return;
+                }
+
                 state.isLoading = true;
 
                 // If they are loaded, we don't need to load them again.
                 // Timeline will be update by feed update component.
-                
+
                 if(! timelinePosts.value.length) {
                     await timelineStore.initialLoad();
                 }
@@ -163,7 +222,7 @@
 
                 // Update feed every 10 minutes.
                 // 10 minutes are optimal for the feed update interval.
-                
+
                 updateIntervalId = setInterval(async () => {
                     if(! state.isUpdating) {
                         const activeNewPosts = (state.activeTab === 0) ? timelineNewPosts.value : recommendedNewPosts.value;
@@ -193,10 +252,25 @@
                 }, ((60 * 1000) * 10));
             });
 
+            // 访客面板登录成功后：初始化登录态时间线（当前视图无刷新切换）
+            const onLoginSucceeded = async () => {
+                if (! timelinePosts.value.length) {
+                    state.isLoading = true;
+
+                    await timelineStore.initialLoad();
+
+                    state.isLoading = false;
+                }
+            };
+
+            colibriEventBus.on('auth:login-succeeded', onLoginSucceeded);
+
             onUnmounted(() => {
                 if(updateIntervalId) {
                     clearInterval(updateIntervalId);
                 }
+
+                colibriEventBus.off('auth:login-succeeded', onLoginSucceeded);
 			});
 
             const loadRecommended = async () => {
@@ -225,6 +299,20 @@
 
             const loadMorePost = async () => {
 				try {
+					// 访客态：加载精选流下一页
+					if (authStore.isGuest) {
+						if (! guestState.isLoadingContent && ! guestState.noMore && guestPosts.value.length) {
+							guestState.isLoadingContent = true;
+
+							const hasMore = await guestFeedStore.loadNextPage();
+
+							guestState.noMore = ! hasMore;
+							guestState.isLoadingContent = false;
+						}
+
+						return;
+					}
+
 					if(state.activeTab === 0) {
 						if(! state.isLoadingContent && ! state.noMoreContent && timelinePosts.value.length) {
 							state.isLoadingContent = true;
@@ -268,6 +356,9 @@
             });
 
             return {
+                authStore: authStore,
+                guestState: guestState,
+                guestPosts: guestPosts,
                 timelinePosts: timelinePosts,
                 state: state,
                 timelineNewPosts: timelineNewPosts,
@@ -277,7 +368,7 @@
                 handlePostDelete: (postData) => {
                     postDeleter(postData, (postId) => {
                         colibriEventBus.emit('timeline:post-deleted', postId);
-                        
+
                         toastSuccess(__t('toast.media.post_deleted'));
                     });
                 },

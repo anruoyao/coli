@@ -136,6 +136,10 @@ return [
             'title' => 'Linking Accounts',
             'caption' => 'Defines if users can link their accounts to other accounts.',
         ],
+        'guest_enabled' => [
+            'title' => 'Guest Browsing',
+            'caption' => 'When enabled, unauthenticated visitors may browse the featured public feed, public posts and comments, and sanitized user profiles (read-only; sign-in required to interact).',
+        ],
         'image_max_mb' => [
             'title' => 'Images',
             'caption' => 'Maximum size for image uploads across posts, stories, chats and profile media.',

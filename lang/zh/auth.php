@@ -14,6 +14,15 @@ return [
     */
 
     'failed' => '账号或密码错误，请重新输入。',
+
+    // 访客登录引导面板
+    'gate_title' => '登录后继续',
+    'gate_caption' => '登录账号即可点赞、评论、关注并与社区互动。',
+    'gate_signup' => '注册新账号',
+    'gate_continue' => '继续浏览',
+    'gate_back' => '返回',
+    'gate_no_account' => '还没有账号？',
+    'gate_signup_link' => '去注册',
     'email_blocked' => '您的电子邮箱已被封禁，无法在本平台注册账号。',
     'ip_blocked' => '您的 IP 地址已被封禁，无法访问本平台。',
     'email_not_found' => '我们找不到使用该邮箱的账号，请检查邮箱地址后重试。',

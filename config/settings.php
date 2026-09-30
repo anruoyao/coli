@@ -19,6 +19,7 @@ return [
         App\Settings\AuthSettings::class,
         App\Settings\CodeSettings::class,
         App\Settings\BrandSettings::class,
+        App\Settings\GuestSettings::class,
     ],
 
     /*

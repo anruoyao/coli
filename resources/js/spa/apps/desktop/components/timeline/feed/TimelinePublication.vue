@@ -207,6 +207,7 @@
     import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
     import { useLightboxStore } from '@D/store/lightbox/lightbox.store.js';
     import { colibriTranslator } from '@/kernel/services/translator/index.js';
+    import { useAuthGate } from '@D/core/composables/useAuthGate.js';
 
     import AvatarSmall from '@D/components/general/avatars/AvatarSmall.vue';
     import DropdownButton from '@D/components/general/dropdowns/parts/DropdownButton.vue';
@@ -251,7 +252,11 @@
 
             const lightboxStore = useLightboxStore();
 
+            const { guard } = useAuthGate();
+
             const openReactionsPicker = function() {
+                if (! guard()) return;
+
                 debounce(() => {
                     state.isReactionPickerOpen = true;
                 }, 50);
@@ -284,6 +289,8 @@
                 }),
                 userLocaleName: embedder('locale_name'),
                 addReaction: (reactionId) => {
+                    if (! guard()) return;
+
                     closeReactionsPicker();
 
                     colibriAPI().userTimeline().with({
@@ -344,15 +351,22 @@
                     return postData.value.meta.permissions.can_report;
                 }),
                 mentionAuthor: () => {
+                    if (! guard()) return;
+
                     colibriEventBus.emit('post-editor:open', {
                         mentionName: postData.value.relations.user.username
                     });
                 },
                 bookmarkPost: () => {
+                    if (! guard()) return;
+
                     colibriAPI().userTimeline().with({
                         id: postData.value.id
                     }).sendTo('post/bookmarks/add').then((response) => {
-                        postData.value.meta.activity.bookmarked = response.data.data.bookmarked;
+                        // 访客资源无 meta.activity（已被 guard 拦截）；登录态正常更新
+                        if (postData.value.meta.activity) {
+                            postData.value.meta.activity.bookmarked = response.data.data.bookmarked;
+                        }
 
                         if(response.data.data.bookmarked) {
                             toastSuccess(__t('toast.post.bookmarked'));
@@ -367,6 +381,8 @@
                     });
                 },
                 translate: async () => {
+                    if (! guard()) return;
+
                     if (state.isTranslating || state.isTranslated) {
                         return false;
                     }
@@ -402,6 +418,8 @@
                     });
                 },
 				quotePost: () => {
+					if (! guard()) return;
+
 					colibriEventBus.emit('post-editor:open', {
 						quotePostId: postData.value.id
 					});

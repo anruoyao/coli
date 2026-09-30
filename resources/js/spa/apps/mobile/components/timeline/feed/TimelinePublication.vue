@@ -56,15 +56,15 @@
                 <div class="pr-4 pl-3 mb-3">
                     <div class="flex items-center gap-1.5">
                         <div class="shrink-0 relative leading-zero">
-                            <PrimaryIconButton v-on:click.stop="state.reactionMenu.open" buttonColor="text-lab-pr2" iconSize="6" iconName="heart-rounded" iconType="line"></PrimaryIconButton>
+                            <PrimaryIconButton v-on:click.stop="openReactionMenu" buttonColor="text-lab-pr2" iconSize="6" iconName="heart-rounded" iconType="line"></PrimaryIconButton>
                         </div>
                         <div class="shrink-0 leading-zero relative">
                             <PrimaryIconButton v-on:click.stop="state.shareMenu.open" buttonColor="text-lab-pr2" iconSize="6" iconName="share-06" iconType="line"></PrimaryIconButton>
                         </div>
                         <div class="shrink-0 leading-zero relative">
                             <div class="inline-flex items-center">
-                                <PrimaryIconButton 
-                                    v-on:click.stop="state.commentsMenu.open"
+                                <PrimaryIconButton
+                                    v-on:click.stop="openCommentsMenu"
                                     buttonColor="text-lab-pr2"
                                     iconSize="6"
                                     iconName="message-circle-02"
@@ -149,6 +149,7 @@
     import { colibriTranslator } from '@/kernel/services/translator/index.js';
     import { useLightboxStore } from '@M/store/lightbox/lightbox.store.js';
     import { useMenu } from '@/kernel/vue/composables/menu/index.js';
+    import { useAuthGate } from '@M/core/composables/useAuthGate.js';
 
 	// Mobile components
 	import PublicationHeader from '@M/components/timeline/feed/parts/PublicationHeader.vue';
@@ -183,6 +184,17 @@
         setup: function(props) {
             const lightboxStore = useLightboxStore();
 
+            const { guard } = useAuthGate();
+
+            // 访客态打开反应/评论菜单前先拦截（登录引导）；登录用户正常打开。
+            const openReactionMenu = function() {
+                if (guard()) state.reactionMenu.open();
+            };
+
+            const openCommentsMenu = function() {
+                if (guard()) state.commentsMenu.open();
+            };
+
             const state = reactive({
                 shareMenu: useMenu(),
                 commentsMenu: useMenu(),
@@ -207,6 +219,8 @@
                 PostTypeUtils: PostTypeUtils,
                 postData: postData,
                 state: state,
+                openReactionMenu: openReactionMenu,
+                openCommentsMenu: openCommentsMenu,
                 postHasContent: computed(() => {
                     return postData.value.content.length;
                 }),
@@ -236,6 +250,8 @@
                     return postData.value.meta.permissions.can_report;
                 }),
                 addReaction: (reactionId) => {
+                    if (! guard()) return;
+
                     state.reactionMenu.close();
 
                     colibriAPI().userTimeline().with({
@@ -265,10 +281,15 @@
                     });
                 },
                 bookmarkPost: () => {
+                    if (! guard()) return;
+
                     colibriAPI().userTimeline().with({
                         id: postData.value.id
                     }).sendTo('post/bookmarks/add').then((response) => {
-                        postData.value.meta.activity.bookmarked = response.data.data.bookmarked;
+                        // 登录态资源含 meta.activity；访客资源不含（访客已被 guard 拦截）
+                        if (postData.value.meta.activity) {
+                            postData.value.meta.activity.bookmarked = response.data.data.bookmarked;
+                        }
 
                         if(response.data.data.bookmarked) {
                             toastSuccess(__t('toast.post.bookmarked'));

@@ -74,6 +74,8 @@
 <script>
 	import { defineComponent, ref, onMounted, reactive, inject } from 'vue';
 	import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
+	import { colibriEventBus } from '@/kernel/events/bus/index.js';
+	import { useAuthStore } from '@D/store/auth/auth.store.js';
 
 	import InfoList from '@D/components/general/info/InfoList.vue';
 	import InfoListItem from '@D/components/general/info/InfoListItem.vue';
@@ -83,6 +85,7 @@
 	export default defineComponent({
 		setup: function() {
 			const profileData = inject('profileData');
+			const authStore = useAuthStore();
 			const state = reactive({
 				isLoading: true
 			});
@@ -90,6 +93,15 @@
 			const profileDetails = ref({});
 
 			onMounted(async () => {
+				// 访客：info 不开放，触发登录引导并显示不可用状态
+				if (authStore.isGuest) {
+					colibriEventBus.emit('auth-gate:request', {});
+
+					state.isLoading = false;
+
+					return;
+				}
+
                 await colibriAPI().userProfile().params({ id: profileData.value.id }).getFrom('profile/details').then(function(response) {
                     profileDetails.value = response.data.data;
                     state.isLoading = false;

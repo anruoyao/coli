@@ -9,6 +9,12 @@ export default {
 
         return this;
     },
+    guest: function() {
+        // 访客公开只读 API（v1）：未登录 boot 与访客视图统一走该 namespace
+        this.namespace = 'guest/v1';
+
+        return this;
+    },
     admin: function() {
         this.namespace = 'admin';
 

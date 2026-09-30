@@ -33,9 +33,13 @@ const useAppStore = defineStore('app', {
                 credentials: 'include'
             });
 
-            await colibriAPI().bootstrap().getFrom('bootstrap').then(function(response) {
-                state.appData = response.data.data;
-                authStore.setUser(state.appData.auth.user);
+            // 统一走访客 bootstrap（公开只读）：未登录返回访客段，已登录返回用户。
+            await colibriAPI().guest().getFrom('bootstrap').then(function(response) {
+                const payload = response.data.data;
+
+                state.appData = payload;
+                authStore.setUser(payload.auth.user);
+                authStore.setGuestBootstrap(payload.guest);
             }).catch(function(error) {
                 if(error.response) {
                     router.push({ name: 'bootstrap_error' });

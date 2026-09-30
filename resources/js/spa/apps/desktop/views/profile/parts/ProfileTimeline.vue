@@ -28,10 +28,12 @@
 </template>
 
 <script>
-	import { defineComponent, ref, reactive, onMounted, inject } from 'vue';
+	import { defineComponent, ref, reactive, onMounted, onUnmounted, inject } from 'vue';
 	import { useInfiniteScroll } from '@/kernel/vue/composables/infinite-scroll/index.js';
 	import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
 	import { useDeletePost } from '@/kernel/vue/composables/delete-post/index.js';
+	import { colibriEventBus } from '@/kernel/events/bus/index.js';
+	import { useAuthStore } from '@D/store/auth/auth.store.js';
 
 	import TimelinePublicationSkeleton from '@D/components/timeline/feed/TimelinePublicationSkeleton.vue';
 	import TimelinePublication from '@D/components/timeline/feed/TimelinePublication.vue';
@@ -48,7 +50,8 @@
 			const profileData = inject('profileData');
 			const profilePosts = ref([]);
 			const { postDeleter } = useDeletePost();
-			
+			const authStore = useAuthStore();
+
 			const state = reactive({
                 noMoreContent: false,
                 isLoading: true,
@@ -66,13 +69,21 @@
 							cursorId = profilePosts.value.at(-1).id;
 						}
 
-						await colibriAPI().userProfile().params({
-							id: profileData.value.id,
-							filter: {
-								type: props.contentType,
-								cursor: cursorId
-							}
-						}).getFrom('profile/posts').then(function(response) {
+						// 访客：guest profile posts
+						const request = authStore.isGuest
+							? colibriAPI().guest().params({
+								cursor: cursorId,
+								filter: { type: props.contentType },
+							}).getFrom(`profile/${profileData.value.username}/posts`)
+							: colibriAPI().userProfile().params({
+								id: profileData.value.id,
+								filter: {
+									type: props.contentType,
+									cursor: cursorId
+								}
+							}).getFrom('profile/posts');
+
+						await request.then(function(response) {
 							let content = response.data.data;
 
 							if(content.length) {
@@ -102,6 +113,23 @@
 				await fetchPosts();
 
 				state.isLoading = false;
+			});
+
+			// 访客登录成功后重新加载 tab
+			const onLoginSucceeded = function() {
+				state.isLoading = true;
+				profilePosts.value = [];
+				state.noMoreContent = false;
+
+				fetchPosts().then(() => {
+					state.isLoading = false;
+				});
+			};
+
+			colibriEventBus.on('auth:login-succeeded', onLoginSucceeded);
+
+			onUnmounted(function() {
+				colibriEventBus.off('auth:login-succeeded', onLoginSucceeded);
 			});
 
 			const handleDeletePost = (postData) => {

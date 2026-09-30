@@ -18,9 +18,9 @@
                         <Border/>
 					</template>
 					<DropdownMenuItem v-on:click="copyProfileLink" iconName="link-01" iconType="solid" v-bind:textLabel="$t('dd.user.copy_link')"></DropdownMenuItem>
-					<RouterLink v-bind:to="{ name: 'profile_info', params: { id: profileData.username } }">
-						<DropdownMenuItem iconName="info-circle" v-bind:textLabel="$t('dd.user.about')"></DropdownMenuItem>
-					</RouterLink>
+					<RouterLink v-if="! authStore.isGuest" v-bind:to="{ name: 'profile_info', params: { id: profileData.username } }">
+					<DropdownMenuItem iconName="info-circle" v-bind:textLabel="$t('dd.user.about')"></DropdownMenuItem>
+				</RouterLink>
 
 					<template v-if="permissions.can_block">
 						<Border/>
@@ -64,6 +64,7 @@
 	import { colibriEventBus } from '@/kernel/events/bus/index.js';
 	import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
 	import { useRelationsStore } from '@D/store/relations/relations.store.js';
+	import { useAuthStore } from '@D/store/auth/auth.store.js';
 
 	import FollowPillButton from '@D/components/inter-ui/buttons/follows/FollowPillButton.vue';
 	import PrimaryPillButton from '@D/components/inter-ui/buttons/PrimaryPillButton.vue';
@@ -77,6 +78,7 @@
 		setup: function() {
 			const router = useRouter();
 			const profileData = inject('profileData');
+			const authStore = useAuthStore();
 			const relationsStore = useRelationsStore();
 			const state = reactive({
                 isDropdownOpen: false,
@@ -95,6 +97,7 @@
             });
 
 			return {
+				authStore: authStore,
 				state: state,
 				profileData: profileData,
                 muteRelationship: muteRelationship,

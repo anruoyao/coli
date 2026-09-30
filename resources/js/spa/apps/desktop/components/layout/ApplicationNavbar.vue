@@ -13,17 +13,28 @@
             </RouterLink>
         </div>
 
+        <!-- 登录用户：探索入口；访客：登录引导 -->
         <div class="block">
-            <RouterLink v-bind:to="{ name: 'explore_posts' }" v-slot="{ isActive }" class="block">
-                <div class="flex items-center"  v-bind:class="[((isActive == true) ? 'sidenav-active' : 'sidenav-inactive')]">
-                    <span class="size-icon-normal shrink-0">
-                        <SvgIcon name="hash-02"></SvgIcon>
-                    </span>
-                    <span class="ml-3 text-[19px]">
-                        {{ $t('labels.explore') }}
-                    </span>
-                </div>
-            </RouterLink>
+            <template v-if="! authStore.isGuest">
+                <RouterLink v-bind:to="{ name: 'explore_posts' }" v-slot="{ isActive }" class="block">
+                    <div class="flex items-center"  v-bind:class="[((isActive == true) ? 'sidenav-active' : 'sidenav-inactive')]">
+                        <span class="size-icon-normal shrink-0">
+                            <SvgIcon name="hash-02"></SvgIcon>
+                        </span>
+                        <span class="ml-3 text-[19px]">
+                            {{ $t('labels.explore') }}
+                        </span>
+                    </div>
+                </RouterLink>
+            </template>
+            <div v-else v-on:click="requestGate" class="flex items-center sidenav-inactive cursor-pointer">
+                <span class="size-icon-normal shrink-0">
+                    <SvgIcon name="hash-02"></SvgIcon>
+                </span>
+                <span class="ml-3 text-[19px]">
+                    {{ $t('labels.explore') }}
+                </span>
+            </div>
         </div>
         <div class="block">
             <div v-on:click="openNotificationsModal" class="flex items-center sidenav-inactive cursor-pointer">
@@ -33,23 +44,34 @@
                 <span class="ml-3 text-[19px]">
                     {{ $t('labels.notifications') }}
 
-                    <BadgeCounter v-if="notificationsCount.raw" v-bind:count="notificationsCount.formatted"></BadgeCounter>
+                    <BadgeCounter v-if="!authStore.isGuest && notificationsCount.raw" v-bind:count="notificationsCount.formatted"></BadgeCounter>
                 </span>
             </div>
         </div>
+        <!-- 登录用户：消息入口；访客：登录引导 -->
         <div class="block">
-            <RouterLink v-bind:to="{ name: 'messenger_index' }" v-slot="{ isActive }" class="block">
-                <div class="flex items-center"  v-bind:class="[((isActive == true) ? 'sidenav-active' : 'sidenav-inactive')]">
-                    <span class="size-icon-normal shrink-0">
-                        <SvgIcon name="message-chat-circle" v-bind:type="(isActive == true) ? 'solid' : 'line'"></SvgIcon>
-                    </span>
-                    <span class="ml-3 text-[19px]">
-                        {{ $t('labels.messages') }}
+            <template v-if="! authStore.isGuest">
+                <RouterLink v-bind:to="{ name: 'messenger_index' }" v-slot="{ isActive }" class="block">
+                    <div class="flex items-center"  v-bind:class="[((isActive == true) ? 'sidenav-active' : 'sidenav-inactive')]">
+                        <span class="size-icon-normal shrink-0">
+                            <SvgIcon name="message-chat-circle" v-bind:type="(isActive == true) ? 'solid' : 'line'"></SvgIcon>
+                        </span>
+                        <span class="ml-3 text-[19px]">
+                            {{ $t('labels.messages') }}
 
-                        <BadgeCounter v-if="inboxCount.raw" v-bind:count="inboxCount.formatted"></BadgeCounter>
-                    </span>
-                </div>
-            </RouterLink>
+                            <BadgeCounter v-if="inboxCount.raw" v-bind:count="inboxCount.formatted"></BadgeCounter>
+                        </span>
+                    </div>
+                </RouterLink>
+            </template>
+            <div v-else v-on:click="requestGate" class="flex items-center sidenav-inactive cursor-pointer">
+                <span class="size-icon-normal shrink-0">
+                    <SvgIcon name="message-chat-circle" type="line"></SvgIcon>
+                </span>
+                <span class="ml-3 text-[19px]">
+                    {{ $t('labels.messages') }}
+                </span>
+            </div>
         </div>
         <div class="block" v-if="$config('features.marketplace.enabled')">
             <RouterLink v-bind:to="{ name: 'marketplace_index' }" v-slot="{ isActive }" class="block">
@@ -76,17 +98,28 @@
             </RouterLink>
         </div>
         
+        <!-- 登录用户：我的资料；访客：登录引导 -->
         <div class="block">
-            <RouterLink v-bind:to="{ name: 'profile_index', params: { id: userData.username } }" v-slot="{ isActive }" class="block">
-                <div  class="flex items-center sidenav-inactive">
-                    <span class="size-icon-normal shrink-0">
-                        <SvgIcon name="user-01" type="line"></SvgIcon>
-                    </span>
-                    <span class="ml-3 text-[19px]">
-                        {{ $t('labels.my_profile') }}
-                    </span>
-                </div>
-            </RouterLink>
+            <template v-if="! authStore.isGuest">
+                <RouterLink v-bind:to="{ name: 'profile_index', params: { id: userData.username } }" v-slot="{ isActive }" class="block">
+                    <div  class="flex items-center sidenav-inactive">
+                        <span class="size-icon-normal shrink-0">
+                            <SvgIcon name="user-01" type="line"></SvgIcon>
+                        </span>
+                        <span class="ml-3 text-[19px]">
+                            {{ $t('labels.my_profile') }}
+                        </span>
+                    </div>
+                </RouterLink>
+            </template>
+            <div v-else v-on:click="requestGate" class="flex items-center sidenav-inactive cursor-pointer">
+                <span class="size-icon-normal shrink-0">
+                    <SvgIcon name="login-02" type="line"></SvgIcon>
+                </span>
+                <span class="ml-3 text-[19px]">
+                    {{ $t('buttons.login') }}
+                </span>
+            </div>
         </div>
         <div class="block pl-icon-normal pr-6">
             <span class="block bg-bord-sc h-px mx-3"></span>
@@ -121,7 +154,14 @@
                 return inboxStore.unreadCount;
             });
 
+            const requestGate = function() {
+                colibriEventBus.emit('auth-gate:request', {});
+            };
+
             onMounted(() => {
+                // 访客：不抓取计数、不订阅私有频道
+                if (authStore.isGuest) return;
+
                 notificationsStore.fetchUnreadCount();
 
                 inboxStore.fetchUnreadCount();
@@ -149,16 +189,25 @@
             });
 
             onUnmounted(() => {
-                if(window.ColibriBRD) {
-                    ColibriBRD.leave(BRD.getChannel('AUTH_USER', [authStore.userData.id]));
-                }
+                if (authStore.isGuest || ! window.ColibriBRD) return;
+
+                ColibriBRD.leave(BRD.getChannel('AUTH_USER', [authStore.userData.id]));
             });
 
             return {
+                authStore: authStore,
+                requestGate: requestGate,
                 notificationsCount: notificationsCount,
                 inboxCount: inboxCount,
                 userData: authStore.userData,
                 openNotificationsModal: () => {
+                    // 访客：登录引导
+                    if (authStore.isGuest) {
+                        requestGate();
+
+                        return;
+                    }
+
                     notificationsStore.openNotifications();
                 }
             };

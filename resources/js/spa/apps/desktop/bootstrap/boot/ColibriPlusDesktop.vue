@@ -25,6 +25,8 @@
     <MaintenanceOverlay v-if="appStore.maintenance && appStore.maintenance.on" :message="appStore.maintenance.message" :until="appStore.maintenance.until"></MaintenanceOverlay>
 
     <UserBlockedOverlay v-if="appStore.userStatus && appStore.userStatus.status" :status="appStore.userStatus.status" :reason="appStore.userStatus.reason"></UserBlockedOverlay>
+
+    <GuestAuthModal></GuestAuthModal>
 </template>
 
 <script>
@@ -39,6 +41,8 @@
     import MaintenanceOverlay from '@D/components/layout/parts/maintenance/MaintenanceOverlay.vue';
     import UserBlockedOverlay from '@D/components/layout/parts/maintenance/UserBlockedOverlay.vue';
     import { useAuthStore } from '@D/store/auth/auth.store.js';
+    import GuestAuthModal from '@D/components/auth/GuestAuthModal.vue';
+    import { setAppBootPromise } from '@D/bootstrap/boot-state.js';
     import BRD from '@/kernel/websockets/brd/index.js';
 
     // 公共命令频道：维护模式等全局指令广播（与 App 端一致）
@@ -120,13 +124,16 @@
                 ColibriBRD.leave(PUBLIC_COMMAND_CHANNEL);
             };
 
-            onMounted(async () => {
-                await appStore.bootstrapApplication();
-                
-                setTimeout(() => {
-                    appLoading.value = false;
-                }, 500);
+            // 启动在 setup 同步发起并注册 promise，供初始路由守卫 await。
+            const bootWork = appStore.bootstrapApplication();
 
+            setAppBootPromise(bootWork.then(() => {
+                return new Promise((resolve) => setTimeout(resolve, 500));
+            }).then(() => {
+                appLoading.value = false;
+            }));
+
+            onMounted(() => {
                 setupInteractionListeners();
 
                 maintenanceSubscription();
@@ -163,6 +170,7 @@
         components: {
             UserBlockedOverlay: UserBlockedOverlay,
             MaintenanceOverlay: MaintenanceOverlay,
+            GuestAuthModal: GuestAuthModal,
             NetworkStatusBar: NetworkStatusBar,
             ApplicationMainLayout: ApplicationMainLayout,
             ApplicationStoriesLayout: defineAsyncComponent(() => {

@@ -69,5 +69,19 @@
             name="formData.link_accounts_enabled">
         </x-form.switcher>
     </x-form.group>
+    <div class="mb-6">
+        <x-div/>
+    </div>
+    <x-form.group>
+        <x-callout.default
+            iconName="eye"
+            titleText="{{ __('admin/config.callout.guest_enabled.title') }}"
+        captionText="{{ __('admin/config.callout.guest_enabled.caption') }}" />
+        <x-form.switcher
+            labelText="{{ __('admin/config.form.switch_status') }}"
+            wire:model="formData.guest_enabled"
+            name="formData.guest_enabled">
+        </x-form.switcher>
+    </x-form.group>
     <x-ui.buttons.pill size="sm" type="submit" btnText="{{ __('buttons.save_changes') }}"></x-ui.buttons.pill>
 </form>

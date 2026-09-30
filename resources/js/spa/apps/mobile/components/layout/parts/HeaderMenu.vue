@@ -1,23 +1,36 @@
 <template>
 	<ActionSheet v-on:close="$emit('close')" v-bind:isMuted="true">
 		<div v-on:click.stop="$emit('close')">
-			<div class="mb-4">
-				<ActionSheetGroup>
-					<RouterLink v-bind:to="{ name: 'bookmarks_index' }">
-						<ActionSheetItem v-bind:notLast="true" iconName="bookmark" v-bind:textLabel="$t('labels.bookmarks')"></ActionSheetItem>
-					</RouterLink>
-					<RouterLink v-bind:to="{ name: 'wallet_index' }">
-						<ActionSheetItem iconName="wallet-02" v-bind:textLabel="$t('labels.wallet')"></ActionSheetItem>
-					</RouterLink>
-				</ActionSheetGroup>
-			</div>
+			<!-- 访客：仅登录 / 注册 -->
+			<template v-if="authStore.isGuest">
+				<div class="mb-4">
+					<ActionSheetGroup>
+						<ActionSheetItem v-bind:notLast="true" v-on:click="goLogin" iconName="login-01" v-bind:textLabel="$t('buttons.login')"></ActionSheetItem>
+						<ActionSheetItem v-on:click="goSignup" iconName="user-plus-01" v-bind:textLabel="$t('buttons.signup')"></ActionSheetItem>
+					</ActionSheetGroup>
+				</div>
+			</template>
 
-			<ActionSheetGroup>
-				<RouterLink v-bind:to="{ name: 'settings_index' }">
-					<ActionSheetItem v-bind:notLast="true" iconName="settings-01" v-bind:textLabel="$t('labels.account_settings')"></ActionSheetItem>
-				</RouterLink>
-				<ActionSheetItem v-on:click="logoutUser" iconName="log-out-01" itemColor="text-red-900" iconType="solid" v-bind:textLabel="$t('labels.logout')"></ActionSheetItem>
-			</ActionSheetGroup>
+			<!-- 登录用户：原菜单 -->
+			<template v-else>
+				<div class="mb-4">
+					<ActionSheetGroup>
+						<RouterLink v-bind:to="{ name: 'bookmarks_index' }">
+							<ActionSheetItem v-bind:notLast="true" iconName="bookmark" v-bind:textLabel="$t('labels.bookmarks')"></ActionSheetItem>
+						</RouterLink>
+						<RouterLink v-bind:to="{ name: 'wallet_index' }">
+							<ActionSheetItem iconName="wallet-02" v-bind:textLabel="$t('labels.wallet')"></ActionSheetItem>
+						</RouterLink>
+					</ActionSheetGroup>
+				</div>
+
+				<ActionSheetGroup>
+					<RouterLink v-bind:to="{ name: 'settings_index' }">
+						<ActionSheetItem v-bind:notLast="true" iconName="settings-01" v-bind:textLabel="$t('labels.account_settings')"></ActionSheetItem>
+					</RouterLink>
+					<ActionSheetItem v-on:click="logoutUser" iconName="log-out-01" itemColor="text-red-900" iconType="solid" v-bind:textLabel="$t('labels.logout')"></ActionSheetItem>
+				</ActionSheetGroup>
+			</template>
 
 			<div class="px-4 mt-4 text-center">
 				<span class="text-par-s text-lab-tr">
@@ -31,6 +44,7 @@
 <script>
 	import { defineComponent } from 'vue';
 	import { colibriEventBus } from '@/kernel/events/bus/index.js';
+	import { useAuthStore } from '@M/store/auth/auth.store.js';
 
 	import ActionSheet from '@M/components/general/sheets/ActionSheet.vue';
 	import ActionSheetGroup from '@M/components/general/sheets/ActionSheetGroup.vue';
@@ -39,11 +53,20 @@
 	export default defineComponent({
 		emits: ['close'],
 		setup: function() {
+			const authStore = useAuthStore();
+
 			return {
+				authStore: authStore,
 				currentYear: new Date().getFullYear(),
 				logoutUser: () => {
 					colibriEventBus.emit('auth:logout');
-				}
+				},
+				goLogin: () => {
+					window.location.href = '/auth/login';
+				},
+				goSignup: () => {
+					window.location.href = '/auth/signup';
+				},
 			};
 		},
 		components: {

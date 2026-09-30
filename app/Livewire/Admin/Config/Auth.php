@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Config;
 
 use App\Settings\AuthSettings;
+use App\Settings\GuestSettings;
 use App\Support\Views\Flash;
 use Livewire\Component;
 
@@ -20,6 +21,7 @@ class Auth extends Component
             'reg_verification_enabled' => $authSettings->reg_verification_enabled,
             'switch_account_enabled' => $authSettings->switch_account_enabled,
             'link_accounts_enabled' => $authSettings->link_accounts_enabled,
+            'guest_enabled' => app(GuestSettings::class)->enabled,
         ];
     }
 
@@ -31,12 +33,14 @@ class Auth extends Component
             'formData.reg_verification_enabled' => ['required', 'boolean'],
             'formData.switch_account_enabled' => ['required', 'boolean'],
             'formData.link_accounts_enabled' => ['required', 'boolean'],
+            'formData.guest_enabled' => ['required', 'boolean'],
         ], attributes: [
             'formData.registration_enabled' => __('admin/config.callout.registration_enabled.title'),
             'formData.login_enabled' => __('admin/config.callout.login_enabled.title'),
             'formData.reg_verification_enabled' => __('admin/config.callout.reg_verification_enabled.title'),
             'formData.switch_account_enabled' => __('admin/config.callout.switch_account_enabled.title'),
             'formData.link_accounts_enabled' => __('admin/config.callout.link_accounts_enabled.title'),
+            'formData.guest_enabled' => __('admin/config.callout.guest_enabled.title'),
         ]);
 
         $authSettings = app(AuthSettings::class);
@@ -47,6 +51,10 @@ class Auth extends Component
         $authSettings->switch_account_enabled = $this->formData['switch_account_enabled'];
         $authSettings->link_accounts_enabled = $this->formData['link_accounts_enabled'];
         $authSettings->save();
+
+        $guestSettings = app(GuestSettings::class);
+        $guestSettings->enabled = $this->formData['guest_enabled'];
+        $guestSettings->save();
 
         return redirect()->route('admin.config.auth')->with('flashMessage', (new Flash(content: __('admin/flash.config.settings_success')))->get());
     }

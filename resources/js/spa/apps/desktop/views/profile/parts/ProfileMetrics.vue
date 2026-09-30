@@ -1,12 +1,12 @@
 <template>
 	<div class="flex gap-4">
-		<span v-if="profileData.followers_count" v-on:click="state.isFollowersModalOpen = true" class="cursor-pointer text-lab-sc text-par-n">
+		<span v-if="profileData.followers_count" v-on:click="openFollowers" class="cursor-pointer text-lab-sc text-par-n">
 			<span class="text-lab-pr2 font-mono">
 				{{ profileData.followers_count.formatted }}
 			</span>
 			{{ $t('labels.followers_count', profileData.followers_count.raw) }}
 		</span>
-		<span v-if="profileData.following_count" v-on:click="state.isFollowingsModalOpen = true" class="cursor-pointer text-lab-sc text-par-n">
+		<span v-if="profileData.following_count" v-on:click="openFollowings" class="cursor-pointer text-lab-sc text-par-n">
 			<span class="text-lab-pr2 font-mono">
 				{{ profileData.following_count.formatted }}
 			</span>
@@ -31,6 +31,7 @@
 	import { defineComponent, reactive, inject } from 'vue';
 	import ProfileFollowersModal from '@D/views/profile/parts/modals/ProfileFollowersModal.vue';
 	import ProfileFollowingsModal from '@D/views/profile/parts/modals/ProfileFollowingsModal.vue';
+	import { useAuthGate } from '@D/core/composables/useAuthGate.js';
 
 	export default defineComponent({
 		setup: function() {
@@ -40,9 +41,17 @@
 				isFollowingsModalOpen: false
 			});
 
+			const { guard } = useAuthGate();
+
 			return {
 				state: state,
-				profileData: profileData
+				profileData: profileData,
+				openFollowers: function() {
+					if (guard()) state.isFollowersModalOpen = true;
+				},
+				openFollowings: function() {
+					if (guard()) state.isFollowingsModalOpen = true;
+				},
 			}
 		},
 		components: {

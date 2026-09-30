@@ -33,9 +33,16 @@ const useAppStore = defineStore('mobile_app_store', {
                 credentials: 'include'
             });
 
-            await colibriAPI().bootstrap().getFrom('bootstrap').then(function(response) {
-                state.appData = response.data.data;
-                authStore.setUser(state.appData.auth.user);
+            // 统一走访客 bootstrap（公开只读，不产生 401）：
+            // - 未登录：auth.user=null + 访客能力矩阵（访客模式由开关决定）；
+            // - 已登录（session）：返回当前用户，直接进入完整模式。
+            await colibriAPI().guest().getFrom('bootstrap').then(function(response) {
+                const payload = response.data.data;
+
+                state.appData = payload;
+
+                authStore.setUser(payload.auth.user);
+                authStore.setGuestBootstrap(payload.guest);
             }).catch(function(error) {
                 if(error.response) {
                     router.push({

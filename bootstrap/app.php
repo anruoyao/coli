@@ -62,6 +62,8 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
                 'log.request' => App\Http\Middleware\LogRequestMiddleware::class,
                 'abuse.guard' => App\Http\Middleware\AbuseGuardMiddleware::class,
                 'app.key' => App\Http\Middleware\VerifyAppKey::class,
+                'guest.enabled' => App\Http\Middleware\Guest\EnsureGuestEnabled::class,
+                'guest.context' => App\Http\Middleware\Guest\GuestContextMiddleware::class,
             ]);
 
             $middleware->web(append: [

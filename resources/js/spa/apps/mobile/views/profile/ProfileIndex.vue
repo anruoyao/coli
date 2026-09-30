@@ -31,7 +31,7 @@
 				<TabsLink v-bind:link="{ name: 'profile_media' }">
 					{{ $t('labels.media') }}
 				</TabsLink>
-				<TabsLink v-bind:link="{ name: 'profile_info' }">
+				<TabsLink v-if="! authStore.isGuest" v-bind:link="{ name: 'profile_info' }">
 					{{ $t('labels.info') }}
 				</TabsLink>
 			</ContentTabs>
@@ -43,8 +43,10 @@
 </template>
 
 <script>
-	import { defineComponent, computed, ref, watch, provide, onMounted, reactive } from 'vue';
+	import { defineComponent, computed, ref, watch, provide, onMounted, onUnmounted, reactive } from 'vue';
 	import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
+	import { colibriEventBus } from '@/kernel/events/bus/index.js';
+	import { useAuthStore } from '@M/store/auth/auth.store.js';
 	import { useRoute, useRouter } from 'vue-router';
 
 	import HeaderSkeleton from '@M/views/profile/parts/skeletons/HeaderSkeleton.vue';
@@ -63,6 +65,7 @@
 		setup: function(props) {
 			const route = useRoute();
 			const router = useRouter();
+			const authStore = useAuthStore();
 
 			const state = reactive({
 				isLoading: true
@@ -90,13 +93,18 @@
 			const fetchProfile = async () => {
 				state.isLoading = true;
 
-				await colibriAPI().userProfile().params({ id: props.id }).getFrom('profile').then(function(response) {
+				// 访客走访客 profile 端点（路径参数 username），登录用户走原端点
+				const request = authStore.isGuest
+					? colibriAPI().guest().getFrom(`profile/${props.id}`)
+					: colibriAPI().userProfile().params({ id: props.id }).getFrom('profile');
+
+				await request.then(function(response) {
                     profileData.value = response.data.data;
                 }).catch(function(error) {
                     router.push({
                         name: 'error_404',
                         params: {
-                            pathMatch: route.path.substring(1).split('/')
+                            id: route.path.substring(1).split('/')
                         },
                         query: route.query,
                         hash: route.hash
@@ -106,7 +114,19 @@
 				state.isLoading = false;
 			};
 
+			// 访客登录成功后：无刷新以登录态重新加载主页
+			const onLoginSucceeded = function() {
+				fetchProfile();
+			};
+
+			colibriEventBus.on('auth:login-succeeded', onLoginSucceeded);
+
+			onUnmounted(function() {
+				colibriEventBus.off('auth:login-succeeded', onLoginSucceeded);
+			});
+
 			return {
+				authStore: authStore,
 				state: state,
 				profileData: profileData
 			};

@@ -74,5 +74,10 @@ class AppServiceProvider extends ServiceProvider
 
         // App 注册邮箱验证码：防邮件轰炸（邮箱维度冷却见 RegistrationVerificationService）
         RateLimiter::for('verification-code', fn (Request $request) => Limit::perHour((int) config('security.auth.verification_code_max_per_ip', 10))->by($request->ip()));
+
+        // 访客公开只读 API：device_id 优先、IP 回退，按分钟限流。
+        RateLimiter::for('guest', fn (Request $request) => Limit::perMinute(
+            (int) config('security.guest.rate_per_minute', 60)
+        )->by($request->cookie('device_id') ?: $request->ip()));
     }
 }

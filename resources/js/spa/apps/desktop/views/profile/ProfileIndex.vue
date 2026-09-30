@@ -37,7 +37,7 @@
                         <TabsLink v-bind:link="{ name: 'profile_media' }">
                             {{ $t('labels.media') }}
                         </TabsLink>
-                        <TabsLink v-bind:link="{ name: 'profile_info' }">
+                        <TabsLink v-if="! authStore.isGuest" v-bind:link="{ name: 'profile_info' }">
                             {{ $t('labels.info') }}
                         </TabsLink>
                     </ContentTabs>
@@ -59,7 +59,7 @@
             </TimelineContainer>
         </template>
 
-        <template v-slot:sidebar>
+        <template v-if="! authStore.isGuest" v-slot:sidebar>
             <FollowRecommendationList></FollowRecommendationList>
             <AdGridItem></AdGridItem>
         </template>
@@ -69,9 +69,11 @@
 </template>
 
 <script>
-    import { defineComponent, ref, reactive, provide, onMounted, watch} from 'vue';
+    import { defineComponent, ref, reactive, provide, onMounted, onUnmounted, watch} from 'vue';
     import { useRoute, useRouter } from 'vue-router';
     import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
+    import { colibriEventBus } from '@/kernel/events/bus/index.js';
+    import { useAuthStore } from '@D/store/auth/auth.store.js';
 
     import ContentTabs from '@D/components/general/tabs/content/ContentTabs.vue';
     import TabsLink from '@D/components/general/tabs/content/parts/TabsLink.vue';
@@ -96,6 +98,8 @@
 			const profileId = ref(props.id);
             const route = useRoute();
             const router = useRouter();
+            const authStore = useAuthStore();
+
             const state = reactive({
                 isLoading: true
             });
@@ -120,7 +124,12 @@
 			const fetchProfile = async () => {
 				state.isLoading = true;
 
-				await colibriAPI().userProfile().params({ id: props.id }).getFrom('profile').then(function(response) {
+				// 访客走访客 profile 端点
+				const request = authStore.isGuest
+					? colibriAPI().guest().getFrom(`profile/${props.id}`)
+					: colibriAPI().userProfile().params({ id: props.id }).getFrom('profile');
+
+				await request.then(function(response) {
                     profileData.value = response.data.data;
                     state.isLoading = false;
                 }).catch(function(error) {
@@ -135,7 +144,19 @@
                 });
 			};
 
+            // 访客登录成功后无刷新加载主页
+            const onLoginSucceeded = function() {
+                fetchProfile();
+            };
+
+            colibriEventBus.on('auth:login-succeeded', onLoginSucceeded);
+
+            onUnmounted(function() {
+                colibriEventBus.off('auth:login-succeeded', onLoginSucceeded);
+            });
+
             return {
+                authStore: authStore,
                 state: state,
                 profileData: profileData
             };

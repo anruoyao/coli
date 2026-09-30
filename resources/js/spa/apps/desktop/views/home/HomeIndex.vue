@@ -4,78 +4,51 @@
             <TimelineContainer>
                 <HomeHeader></HomeHeader>
 
-                <!-- 首页时间线切换：关注 / 推荐 -->
-                <div class="grid grid-cols-2">
-                    <div role="tab" v-bind:class="['cursor-pointer w-full flex-1 text-center overflow-hidden truncate leading-4 text-par-m px-3 py-5', (state.activeTab === 0 ? 'active-tab-link' : '')]" v-on:click="switchTab(0)">
-                        <span v-bind:class="['font-semibold', (state.activeTab === 0 ? 'text-lab-pr2' : 'text-lab-sc')]">
-                            {{ $t('labels.following') }}
-                        </span>
-                    </div>
-                    <div role="tab" v-bind:class="['cursor-pointer w-full flex-1 text-center overflow-hidden truncate leading-4 text-par-m px-3 py-5', (state.activeTab === 1 ? 'active-tab-link' : '')]" v-on:click="switchTab(1)">
-                        <span v-bind:class="['font-semibold', (state.activeTab === 1 ? 'text-lab-pr2' : 'text-lab-sc')]">
-                            {{ $t('labels.for_you') }}
-                        </span>
-                    </div>
-                </div>
-                <Border></Border>
-
-                <div class="block" v-if="state.isLoading">
-                    <TimelinePublicationSkeleton v-for="i in 3" v-bind:key="i"></TimelinePublicationSkeleton>
-                </div>
-                <div class="block" v-else>
-                    <div class="pb-4 px-4">
-                        <StoriesFeed></StoriesFeed>
-                    </div>
-                    <Border></Border>
-                    <div class="block">
-                        <PublicationEditorTrigger></PublicationEditorTrigger>
+                <!-- 登录用户：关注 / 推荐切换 -->
+                <template v-if="! authStore.isGuest">
+                    <div class="grid grid-cols-2">
+                        <div role="tab" v-bind:class="['cursor-pointer w-full flex-1 text-center overflow-hidden truncate leading-4 text-par-m px-3 py-5', (state.activeTab === 0 ? 'active-tab-link' : '')]" v-on:click="switchTab(0)">
+                            <span v-bind:class="['font-semibold', (state.activeTab === 0 ? 'text-lab-pr2' : 'text-lab-sc')]">
+                                {{ $t('labels.following') }}
+                            </span>
+                        </div>
+                        <div role="tab" v-bind:class="['cursor-pointer w-full flex-1 text-center overflow-hidden truncate leading-4 text-par-m px-3 py-5', (state.activeTab === 1 ? 'active-tab-link' : '')]" v-on:click="switchTab(1)">
+                            <span v-bind:class="['font-semibold', (state.activeTab === 1 ? 'text-lab-pr2' : 'text-lab-sc')]">
+                                {{ $t('labels.for_you') }}
+                            </span>
+                        </div>
                     </div>
                     <Border></Border>
 
-                    <template v-if="state.activeTab === 0">
-                        <template v-if="globalPinnedPosts.length">
-                            <TimelinePublication
-                                v-for="pinnedPostData in globalPinnedPosts"
-                                v-bind:postData="pinnedPostData"
-                                v-bind:isPinned="true"
-                                v-on:delete="handlePostDelete(pinnedPostData)"
-                            v-bind:key="pinnedPostData.hash_id"></TimelinePublication>
-                        </template>
-                        <FeedUpdate v-if="timelineNewPosts.length" v-bind:posts="timelineNewPosts" v-on:click="applyTimelineUpdate"></FeedUpdate>
-                        <div v-if="timelinePosts.length">
-                            <TimelinePublication
-                                v-for="postData in timelinePosts"
-                                v-bind:postData="postData"
-                                v-on:delete="handlePostDelete(postData)"
-                            v-bind:key="postData.hash_id"></TimelinePublication>
+                    <div class="block" v-if="state.isLoading">
+                        <TimelinePublicationSkeleton v-for="i in 3" v-bind:key="i"></TimelinePublicationSkeleton>
+                    </div>
+                    <div class="block" v-else>
+                        <div class="pb-4 px-4">
+                            <StoriesFeed></StoriesFeed>
+                        </div>
+                        <Border></Border>
+                        <div class="block">
+                            <PublicationEditorTrigger></PublicationEditorTrigger>
+                        </div>
+                        <Border></Border>
 
-                            <div v-if="state.isLoadingContent">
-                                <div class="flex justify-center my-4">
-                                    <div class="colibri-primary-animation"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else>
-                            <div class="block py-72">
-                                <p class="text-lab-sc text-par-s text-center">
-                                    {{ $t('empty_state.home.posts') }}
-                                </p>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template v-else>
-                        <div v-if="state.isRecommendLoading">
-                            <TimelinePublicationSkeleton v-for="i in 3" v-bind:key="i"></TimelinePublicationSkeleton>
-                        </div>
-                        <template v-else>
-                            <FeedUpdate v-if="recommendedNewPosts.length" v-bind:posts="recommendedNewPosts" v-on:click="applyRecommendedUpdate"></FeedUpdate>
-                            <div v-if="recommendedPosts.length">
+                        <template v-if="state.activeTab === 0">
+                            <template v-if="globalPinnedPosts.length">
                                 <TimelinePublication
-                                    v-for="postData in recommendedPosts"
+                                    v-for="pinnedPostData in globalPinnedPosts"
+                                    v-bind:postData="pinnedPostData"
+                                    v-bind:isPinned="true"
+                                    v-on:delete="handlePostDelete(pinnedPostData)"
+                                v-bind:key="pinnedPostData.hash_id"></TimelinePublication>
+                            </template>
+                            <FeedUpdate v-if="timelineNewPosts.length" v-bind:posts="timelineNewPosts" v-on:click="applyTimelineUpdate"></FeedUpdate>
+                            <div v-if="timelinePosts.length">
+                                <TimelinePublication
+                                    v-for="postData in timelinePosts"
                                     v-bind:postData="postData"
                                     v-on:delete="handlePostDelete(postData)"
-                                v-bind:key="postData.id"></TimelinePublication>
+                                v-bind:key="postData.hash_id"></TimelinePublication>
 
                                 <div v-if="state.isLoadingContent">
                                     <div class="flex justify-center my-4">
@@ -86,17 +59,77 @@
                             <div v-else>
                                 <div class="block py-72">
                                     <p class="text-lab-sc text-par-s text-center">
-                                        {{ $t('empty_state.empty') }}
+                                        {{ $t('empty_state.home.posts') }}
                                     </p>
                                 </div>
                             </div>
                         </template>
-                    </template>
-                </div>
+
+                        <template v-else>
+                            <div v-if="state.isRecommendLoading">
+                                <TimelinePublicationSkeleton v-for="i in 3" v-bind:key="i"></TimelinePublicationSkeleton>
+                            </div>
+                            <template v-else>
+                                <FeedUpdate v-if="recommendedNewPosts.length" v-bind:posts="recommendedNewPosts" v-on:click="applyRecommendedUpdate"></FeedUpdate>
+                                <div v-if="recommendedPosts.length">
+                                    <TimelinePublication
+                                        v-for="postData in recommendedPosts"
+                                        v-bind:postData="postData"
+                                        v-on:delete="handlePostDelete(postData)"
+                                    v-bind:key="postData.id"></TimelinePublication>
+
+                                    <div v-if="state.isLoadingContent">
+                                        <div class="flex justify-center my-4">
+                                            <div class="colibri-primary-animation"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else>
+                                    <div class="block py-72">
+                                        <p class="text-lab-sc text-par-s text-center">
+                                            {{ $t('empty_state.empty') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- 访客：仅精选公开流（无 tabs、故事、编辑器、置顶） -->
+                <template v-else>
+                    <Border></Border>
+                    <div class="block" v-if="guestState.isLoading">
+                        <TimelinePublicationSkeleton v-for="i in 4" v-bind:key="i"></TimelinePublicationSkeleton>
+                    </div>
+                    <div v-else>
+                        <div v-if="guestPosts.length">
+                            <TimelinePublication
+                                v-for="postData in guestPosts"
+                                v-bind:key="'g_'+postData.hash_id"
+                                v-bind:postData="postData">
+                            </TimelinePublication>
+
+                            <div v-if="guestState.isLoadingContent">
+                                <div class="flex justify-center my-4">
+                                    <div class="colibri-primary-animation"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else>
+                            <div class="block py-72">
+                                <p class="text-lab-sc text-par-s text-center">
+                                    {{ $t('empty_state.empty') }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </template>
             </TimelineContainer>
         </template>
 
-        <template v-slot:sidebar>
+        <!-- 登录用户侧栏推荐；访客不展示侧栏推荐位 -->
+        <template v-if="! authStore.isGuest" v-slot:sidebar>
             <FollowRecommendationList></FollowRecommendationList>
 
             <AdGridItem></AdGridItem>
@@ -106,10 +139,12 @@
 </template>
 
 <script>
-    import { defineComponent, ref, reactive, onMounted, computed, onUnmounted } from 'vue';
+    import { defineComponent, ref, reactive, onMounted, onUnmounted, computed } from 'vue';
     import { useTimelineStore } from '@D/store/timeline/timeline.store.js';
+    import { useGuestFeedStore } from '@D/store/timeline/guest-feed.store.js';
     import { useExplorePostsStore } from '@D/store/explore/posts.store.js';
     import { usePinsStore } from '@D/store/timeline/pins.store.js';
+    import { useAuthStore } from '@D/store/auth/auth.store.js';
     import { useDeletePost } from '@/kernel/vue/composables/delete-post/index.js';
     import { useInfiniteScroll } from '@/kernel/vue/composables/infinite-scroll/index.js';
     import { colibriEventBus } from '@/kernel/events/bus/index.js';
@@ -142,12 +177,21 @@
                 }
             });
 
+            // 访客加载状态
+            const guestState = reactive({
+                isLoading: false,
+                isLoadingContent: false,
+                noMore: false,
+            });
+
             let updateIntervalId = null;
             let updateAttempts = 0;
             const { postDeleter } = useDeletePost();
             const timelineStore = useTimelineStore();
             const explorePostsStore = useExplorePostsStore();
+            const guestFeedStore = useGuestFeedStore();
             const pinsStore = usePinsStore();
+            const authStore = useAuthStore();
 
             const timelineNewPosts = computed(() => {
                 return timelineStore.update;
@@ -169,7 +213,22 @@
                 return pinsStore.posts;
             });
 
+            const guestPosts = computed(() => {
+                return guestFeedStore.posts;
+            });
+
             onMounted(async () => {
+                // 访客：只加载公开精选流
+                if (authStore.isGuest) {
+                    guestState.isLoading = true;
+
+                    await guestFeedStore.initialLoad();
+
+                    guestState.isLoading = false;
+
+                    return;
+                }
+
                 state.isLoading = true;
 
                 await timelineStore.initialLoad();
@@ -177,9 +236,6 @@
                 pinsStore.fetchGlobalPins();
 
                 state.isLoading = false;
-
-                // Update feed every 10 minutes.
-				// 10 minutes are optimal for the feed update interval.
 
                 updateIntervalId = setInterval(async () => {
                     if(! state.isUpdating) {
@@ -210,10 +266,27 @@
                 }, ((60 * 1000) * 10));
             });
 
+            // 访客登录成功后：初始化登录态首页数据（无刷新）
+            const onLoginSucceeded = async function() {
+                if (! timelinePosts.value.length) {
+                    state.isLoading = true;
+
+                    await timelineStore.initialLoad();
+
+                    pinsStore.fetchGlobalPins();
+
+                    state.isLoading = false;
+                }
+            };
+
+            colibriEventBus.on('auth:login-succeeded', onLoginSucceeded);
+
             onUnmounted(() => {
                 if(updateIntervalId) {
                     clearInterval(updateIntervalId);
                 }
+
+                colibriEventBus.off('auth:login-succeeded', onLoginSucceeded);
 			});
 
             const loadRecommended = async () => {
@@ -244,6 +317,19 @@
 
             const loadMorePosts = async () => {
 				try {
+					// 访客：精选流下一页
+					if (authStore.isGuest) {
+						if (! guestState.isLoadingContent && ! guestState.noMore && guestPosts.value.length) {
+							guestState.isLoadingContent = true;
+
+							guestState.noMore = ! await guestFeedStore.loadNextPage();
+
+							guestState.isLoadingContent = false;
+						}
+
+						return;
+					}
+
 					if(state.activeTab === 0) {
 						if(! state.isLoadingContent && ! state.noMoreContent && timelinePosts.value.length) {
 							state.isLoadingContent = true;
@@ -287,6 +373,9 @@
             });
 
             return {
+                authStore: authStore,
+                guestState: guestState,
+                guestPosts: guestPosts,
                 timelinePosts: timelinePosts,
                 state: state,
                 timelineNewPosts: timelineNewPosts,

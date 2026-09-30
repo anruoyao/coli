@@ -17,6 +17,8 @@
 	</template>
 
 	<MaintenanceOverlay v-if="appStore.maintenance && appStore.maintenance.on" :message="appStore.maintenance.message" :until="appStore.maintenance.until"></MaintenanceOverlay>
+
+	<GuestAuthSheet></GuestAuthSheet>
 </template>
 
 <script>
@@ -33,6 +35,8 @@
 	import FlatLayout from '@M/layouts/FlatLayout.vue';
 	import MaintenanceOverlay from '@M/components/layout/parts/maintenance/MaintenanceOverlay.vue';
 	import UserBlockedOverlay from '@M/components/layout/parts/maintenance/UserBlockedOverlay.vue';
+	import GuestAuthSheet from '@M/components/auth/GuestAuthSheet.vue';
+	import { setAppBootPromise } from '@M/bootstrap/boot-state.js';
 	import BRD from '@/kernel/websockets/brd/index.js';
 
 	// 公共命令频道：维护模式等全局指令广播（与 App 端一致）
@@ -83,17 +87,12 @@
 				});
 			};
 
-			onMounted(async () => {
-                await appStore.bootstrapApplication();
-
+			// 启动在 setup 同步发起并注册 promise：初始路由守卫 await 该 promise
+			// 完成后再按访客/登录态放行，保证深链直达时权限判定准确。
+			const bootPromise = appStore.bootstrapApplication();
+			setAppBootPromise(bootPromise.then(() => {
 				appLoading.value = false;
-
-				colibriEventBus.on('auth:logout', logoutUser);
-
-				maintenanceSubscription();
-
-				subscribeUserStatus();
-			});
+			}));
 
 			const logoutUser = () => {
 				colibriEventBus.emit('confirmation-modal:open', {
@@ -113,10 +112,19 @@
 			}
 
 			const layoutType = computed(() => {
-                return route.meta.layout;
-            });
+            return route.meta.layout;
+        });
 
-			return {
+		colibriEventBus.on('auth:logout', logoutUser);
+
+		maintenanceSubscription();
+		subscribeUserStatus();
+
+		onMounted(async () => {
+			await bootPromise;
+		});
+
+		return {
 				appLoading: appLoading,
 				appStore: appStore,
 				isMainLayout: computed(() => {
@@ -136,6 +144,7 @@
 		components: {
 			UserBlockedOverlay: UserBlockedOverlay,
 			MaintenanceOverlay: MaintenanceOverlay,
+			GuestAuthSheet: GuestAuthSheet,
 			ApplicationMainLayout: ApplicationMainLayout,
 			PostEditorLayout: PostEditorLayout,
 			MessengerLayout: MessengerLayout,

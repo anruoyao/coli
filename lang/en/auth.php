@@ -14,6 +14,15 @@ return [
     */
 
     'failed' => 'These credentials do not match our records.',
+
+    // Guest auth gate
+    'gate_title' => 'Sign in to continue',
+    'gate_caption' => 'Sign in to like, comment, follow and interact with the community.',
+    'gate_signup' => 'Create an account',
+    'gate_continue' => 'Continue browsing',
+    'gate_back' => 'Back',
+    'gate_no_account' => "Don't have an account?",
+    'gate_signup_link' => 'Sign up',
     'email_blocked' => 'Your email address has been blocked and can not be used to created and account on this platform.',
     'ip_blocked' => 'Your IP address has been blocked and can not be used to access this platform.',
     'email_not_found' => 'We couldn\'t find an account with that email. Please check the address and try again.',

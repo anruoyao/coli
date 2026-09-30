@@ -28,6 +28,7 @@
     import { defineComponent, computed, defineAsyncComponent } from 'vue';
     import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
     import { useTimelineStore } from '@D/store/timeline/timeline.store.js';
+    import { useAuthGate } from '@D/core/composables/useAuthGate.js';
     import PollChoiceItem from '@D/components/timeline/feed/parts/poll/PollChoiceItem.vue';
 
     export default defineComponent({
@@ -43,6 +44,8 @@
             });
 
             const timelineStore = useTimelineStore();
+            const { guard } = useAuthGate();
+
             const hasVotedPoll = computed(() => {
                 return postPoll.value.has_voted;
             });
@@ -52,11 +55,17 @@
                 pollChoices: computed(() => {
                     return postPoll.value.choices;
                 }),
+                // 兼容登录态（votes 数组）与访客态（votes 整数）
                 pollVotesTotal: computed(() => {
-                    return postPoll.value.votes.length
+                    const votes = postPoll.value.votes;
+
+                    return Array.isArray(votes) ? votes.length : (votes ?? 0);
                 }),
                 hasVotedPoll: hasVotedPoll,
                 votePoll: (choiceIndex) => {
+                    // 访客：拦截并打开登录引导
+                    if (! guard()) return;
+
                     if(! hasVotedPoll.value) {
                         colibriAPI().userTimeline().with({
                             choice_id: choiceIndex,
@@ -66,8 +75,9 @@
                         });
                     }
                 },
+                // 访客资源不含 voter_users
                 pollHasVoters: computed(() => {
-                    return postPoll.value.voter_users.length > 0;
+                    return (postPoll.value.voter_users ?? []).length > 0;
                 })
             };
         },

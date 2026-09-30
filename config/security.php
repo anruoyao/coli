@@ -13,6 +13,14 @@ return [
     // 新账号保护窗口：注册后 N 小时内的账号执行更严格的动作限流
     'new_user_window_hours' => env('SECURITY_NEW_USER_WINDOW_HOURS', 24),
 
+    /*
+    | 访客（未登录）API 限流
+    | 维度：device_id Cookie 优先，回退 IP（见 AppServiceProvider 的 guest 限流器）。
+    */
+    'guest' => [
+        'rate_per_minute' => env('SECURITY_GUEST_RATE_PER_MINUTE', 60),
+    ],
+
     // 同内容幂等去重窗口（秒）：同一用户对同一动作重复提交相同内容直接拒绝
     'duplicate_content_window_seconds' => env('SECURITY_DUPLICATE_CONTENT_WINDOW', 10),
 

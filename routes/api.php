@@ -77,6 +77,9 @@ Route::prefix('auth')->middleware(['throttle:60,60'])->group(function () {
     // App 注册邮箱验证码（发送 / 重发）
     Route::post('/email-code/send', [App\Http\Controllers\Api\User\Auth\EmailVerificationController::class, 'sendCode'])->middleware('throttle:verification-code');
     Route::post('/email-code/resend', [App\Http\Controllers\Api\User\Auth\EmailVerificationController::class, 'resendCode'])->middleware('throttle:verification-code');
+
+    // 访客面板内嵌登录：XHR 建立 web session，复用 login 限流器（成功后 SPA 无刷新切换）
+    Route::post('/guest-login', [App\Http\Controllers\Api\Guest\Auth\GuestSessionAuthController::class, 'login'])->middleware('throttle:login');
 });
 
 // App 私有频道 socket 认证（替代网页的 session 版 /broadcasting/auth）
@@ -87,6 +90,10 @@ Route::prefix('broadcasting')->middleware(['auth:sanctum', 'throttle:60,1', 'abu
 });
 
 Route::prefix('translations')->middleware(['throttle:60,1'])->group(base_path('routes/api/translations.php'));
+
+// 访客公开只读 API（v1）：独立中间件链，明确不挂 auth:sanctum，
+// 与现有登录用户 API 完全隔离。路由定义见 routes/api/guest.php。
+Route::prefix('guest/v1')->middleware(['guest.enabled', 'guest.context', 'throttle:guest'])->group(base_path('routes/api/guest.php'));
 
 Route::prefix('bootstrap')->middleware(['auth:sanctum', 'throttle:60,1', 'abuse.guard'])->group(base_path('routes/api/user/bootstrap.php'));
 

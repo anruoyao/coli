@@ -1,5 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, START_LOCATION } from 'vue-router';
 import { Layouts } from '@D/core/constants/layouts.js';
+import { useAuthStore } from '@D/store/auth/auth.store.js';
+import { colibriEventBus } from '@/kernel/events/bus/index.js';
+import { appBootPromise } from '@D/bootstrap/boot-state.js';
 
 const Router = createRouter({
 	history: createWebHistory(),
@@ -530,6 +533,33 @@ Router.beforeEach((to, from) => {
             return { name: 'error_404' };
         }
     }
+});
+
+/**
+ * 全局访客守卫（desktop）：
+ * - 等待 bootstrap 完成；
+ * - 访客命中 auth 路由：首次导航回首页并弹登录模态框；后续导航取消。
+ */
+Router.beforeEach(async (to) => {
+	if (appBootPromise) {
+		await appBootPromise;
+	}
+
+	const authStore = useAuthStore();
+
+	if (! to.meta?.auth || ! authStore.isGuest) {
+		return true;
+	}
+
+	colibriEventBus.emit('auth-gate:request', {
+		returnTo: to.fullPath,
+	});
+
+	if (Router.currentRoute.value === START_LOCATION) {
+		return { name: 'home_index' };
+	}
+
+	return false;
 });
 
 export default Router;

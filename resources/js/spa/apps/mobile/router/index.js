@@ -1,6 +1,9 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, START_LOCATION } from 'vue-router';
 
 import { Layouts } from '@M/core/constants/layouts.js';
+import { useAuthStore } from '@M/store/auth/auth.store.js';
+import { colibriEventBus } from '@/kernel/events/bus/index.js';
+import { appBootPromise } from '@M/bootstrap/boot-state.js';
 
 const Router = createRouter({
 	history: createWebHistory(),
@@ -228,6 +231,7 @@ const Router = createRouter({
             },
             meta: {
                 layout: Layouts.POST_EDITOR,
+                auth: true,
             }
         },
         {
@@ -238,6 +242,7 @@ const Router = createRouter({
             },
             meta: {
                 layout: Layouts.FLAT,
+                auth: true,
             }
         },
         {
@@ -319,6 +324,36 @@ const Router = createRouter({
             }
         },
 	]
+});
+
+/**
+ * 全局访客守卫：
+ * - 先等待 bootstrap 完成（初始深链直达时保证状态已知）；
+ * - 访客命中 meta.auth 路由：首次导航重定向到首页并弹登录引导；
+ *   后续导航取消并弹引导，停留原页面；
+ * - 登录用户不受影响。
+ */
+Router.beforeEach(async (to) => {
+	if (appBootPromise) {
+		await appBootPromise;
+	}
+
+	const authStore = useAuthStore();
+
+	if (! to.meta?.auth || ! authStore.isGuest) {
+		return true;
+	}
+
+	colibriEventBus.emit('auth-gate:request', {
+		returnTo: to.fullPath,
+	});
+
+	// 首次导航（地址栏深链）没有可停留的当前页：改入首页并由面板覆盖。
+	if (Router.currentRoute.value === START_LOCATION) {
+		return { name: 'home_index' };
+	}
+
+	return false;
 });
 
 export default Router;

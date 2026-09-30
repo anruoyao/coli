@@ -19,8 +19,22 @@
                         <TimelinePublication v-bind:postData="postData" v-on:delete="handlePostDelete"></TimelinePublication>
                     </div>
                     <Border></Border>
-                    <div v-if="! state.isLoading" class="sticky top-0 bg-bg-pr z-10">
+                    <!-- 登录用户：评论编辑器 -->
+                    <div v-if="! authStore.isGuest" class="sticky top-0 bg-bg-pr z-10">
                         <PublicationCommentEditor v-bind:postId="postData.id" v-on:add="handleCommentAdding"></PublicationCommentEditor>
+
+                        <div class="px-4 bg-fill-fv py-2">
+                            <span class="text-par-s text-lab-sc text-center block font-semibold">
+                                {{ $t('labels.comment_number', postData.comments_count.raw )}}
+                            </span>
+                        </div>
+                    </div>
+                    <!-- 访客：登录引导 + 评论计数 -->
+                    <div v-else class="bg-bg-pr z-10">
+                        <button type="button" v-on:click="requestGate"
+                            class="w-full px-4 py-3 text-left text-par-m text-lab-sc border-b border-bord-pr">
+                            {{ __t('auth.gate_caption') }}
+                        </button>
 
                         <div class="px-4 bg-fill-fv py-2">
                             <span class="text-par-s text-lab-sc text-center block font-semibold">
@@ -51,7 +65,8 @@
             </TimelineContainer>
         </template>
 
-        <template v-slot:sidebar>
+        <!-- 登录用户侧栏；访客无侧栏 -->
+        <template v-if="! authStore.isGuest" v-slot:sidebar>
             <FollowRecommendationList></FollowRecommendationList>
 
             <AdGridItem></AdGridItem>
@@ -66,6 +81,8 @@
     import { useRoute, useRouter } from 'vue-router';
     import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
     import { colibriEventBus } from '@/kernel/events/bus/index.js';
+    import { useAuthStore } from '@D/store/auth/auth.store.js';
+    import { useAuthGate } from '@D/core/composables/useAuthGate.js';
     import { useInfiniteScroll } from '@/kernel/vue/composables/infinite-scroll/index.js';
     import { useDeletePost } from '@/kernel/vue/composables/delete-post/index.js';
 
@@ -88,6 +105,13 @@
         setup: function() {
             const route = useRoute();
             const router = useRouter();
+            const authStore = useAuthStore();
+            const { guard } = useAuthGate();
+
+            const requestGate = function() {
+                colibriEventBus.emit('auth-gate:request', {});
+            };
+
             const state = reactive({
                 isLoading: true,
                 isLoadingComments: false,
@@ -106,7 +130,10 @@
                     if (cursorId) {
                         state.isLoadingComments = true;
 
-                        await colibriAPI().userTimeline().params({
+                        // 访客走访客评论端点
+                        const api = authStore.isGuest ? colibriAPI().guest() : colibriAPI().userTimeline();
+
+                        await api.params({
                             cursor: cursorId
                         }).getFrom(`post/${route.params.hash_id}/comments`).then(function(response) {
                             let comments = response.data.data;
@@ -130,8 +157,11 @@
 				callback: fetchComments
 			});
 
-            onMounted(() => {
-                colibriAPI().userTimeline().getFrom(`post/${route.params.hash_id}`).then(function(response) {
+            const fetchInitial = function() {
+                // 访客走访客端点，登录用户走原端点
+                const api = authStore.isGuest ? colibriAPI().guest() : colibriAPI().userTimeline();
+
+                api.getFrom(`post/${route.params.hash_id}`).then(function(response) {
                     postData.value = response.data.data.post;
                     postAuthor.value = response.data.data.author;
                     postComments.value = response.data.data.comments;
@@ -144,9 +174,24 @@
                         hash: route.hash
                     });
                 });
+            };
+
+            onMounted(fetchInitial);
+
+            // 访客登录成功后：无刷新以登录态重新加载
+            const onLoginSucceeded = function() {
+                fetchInitial();
+            };
+
+            colibriEventBus.on('auth:login-succeeded', onLoginSucceeded);
+
+            onUnmounted(function() {
+                colibriEventBus.off('auth:login-succeeded', onLoginSucceeded);
             });
 
             return {
+                authStore: authStore,
+                requestGate: requestGate,
                 state: state,
                 postData: postData,
                 postAuthor: postAuthor,
@@ -154,6 +199,8 @@
                     return postComments.value
                 }),
                 handleCommentReply: (commentId) => {
+                    if (! guard()) return;
+
                     let commentData = postComments.value.find((item) => {
                         if(item.id == commentId) {
                             return item;
@@ -167,6 +214,8 @@
                     }
                 },
                 handleCommentDelete: (commentId) => {
+                    if (! guard()) return;
+
                     colibriEventBus.emit('confirmation-modal:open', {
                         title: __t('prompt.delete_comment.title'),
                         description: __t('prompt.delete_comment.description'),

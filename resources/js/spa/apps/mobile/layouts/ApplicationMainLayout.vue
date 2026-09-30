@@ -53,6 +53,13 @@
 			};
 
 			onMounted(() => {
+				// 访客：无私有频道订阅
+				if (authStore.isGuest) {
+					colibriEventBus.on('post-editor:open', openEditor);
+
+					return;
+				}
+
 				if(window.ColibriBRD) {
                     ColibriBRD.private(BRD.getChannel('AUTH_USER', [authStore.userData.id])).notification(function (event) {
                         if(event.type === 'chat.notification') {
@@ -71,6 +78,13 @@
 			});
 
 			onUnmounted(() => {
+				// 访客：仅移除事件监听
+				if (authStore.isGuest) {
+					colibriEventBus.off('post-editor:open', openEditor);
+
+					return;
+				}
+
                 if(window.ColibriBRD) {
                     ColibriBRD.leave(BRD.getChannel('AUTH_USER', [authStore.userData.id]));
                 }

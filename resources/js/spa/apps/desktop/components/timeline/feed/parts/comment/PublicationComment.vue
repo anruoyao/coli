@@ -24,14 +24,17 @@
                             </p>
                         </template>
                         <template v-else>
-                            <span class="inline-flex items-center gap-1">
-                                <span class="inline-flex shrink-0 items-center gap-1 text-par-s font-semibold text-brand-900 leading-none">
-                                    <SvgIcon name="share-06" type="line" classes="size-icon-x-small transform -scale-x-100"></SvgIcon> {{ commentData.relations.parent.user.name }}
+                            <!-- parent 关系可能因父评论被删而为空（has_parent 基于 parent_id） -->
+                            <template v-if="commentData.relations?.parent">
+                                <span class="inline-flex items-center gap-1">
+                                    <span class="inline-flex shrink-0 items-center gap-1 text-par-s font-semibold text-brand-900 leading-none">
+                                        <SvgIcon name="share-06" type="line" classes="size-icon-x-small transform -scale-x-100"></SvgIcon> {{ commentData.relations.parent.user.name }}
+                                    </span>
+                                    <span class="text-par-n text-lab-pr3 break-words line-clamp-1">
+                                        {{ commentData.relations.parent.content }}
+                                    </span>
                                 </span>
-                                <span class="text-par-n text-lab-pr3 break-words line-clamp-1">
-                                    {{ commentData.relations.parent.content }}
-                                </span>
-                            </span>
+                            </template>
                         </template>
                     </div>
                     <div class="pr-6">
@@ -117,6 +120,7 @@
     import { defineComponent, defineAsyncComponent, ref, reactive, computed } from 'vue';
     import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
     import { colibriTranslator } from '@/kernel/services/translator/index.js';
+    import { useAuthGate } from '@D/core/composables/useAuthGate.js';
     
     import AvatarSmall from '@D/components/general/avatars/AvatarSmall.vue';
     import DropdownButton from '@D/components/general/dropdowns/parts/DropdownButton.vue';
@@ -146,7 +150,11 @@
                 isTranslating: false
             });
 
+            const { guard } = useAuthGate();
+
             const openReactionsPicker = function() {
+                if (! guard()) return;
+
                 setTimeout(() => {
                     state.isReactionPickerOpen = true;
                 }, 50);
@@ -169,6 +177,8 @@
                     return state.isTranslated ? commentTranslatedContent.value : commentData.value.content;
                 }),
                 replyToComment: () => {
+                    if (! guard()) return;
+
                     context.emit('reply', commentData.value.id);
                 },
                 toggleMainDropdown: () => {
@@ -186,6 +196,8 @@
                     context.emit('delete', commentData.value.id);
                 },
                 addReaction: (reactionId) => {
+                    if (! guard()) return;
+
                     closeReactionsPicker();
 
                     colibriAPI().userTimeline().with({
@@ -200,6 +212,8 @@
                     });
                 },
                 translate: async () => {
+                    if (! guard()) return;
+
                     if (state.isTranslating || state.isTranslated) {
                         return false;
                     }

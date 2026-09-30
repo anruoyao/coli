@@ -9,9 +9,11 @@
 </template>
 
 <script>
-	import { defineComponent, onMounted, reactive, ref } from 'vue';
+	import { defineComponent, onMounted, onUnmounted, reactive, ref } from 'vue';
 	import { useRouter } from 'vue-router';
 	import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
+	import { colibriEventBus } from '@/kernel/events/bus/index.js';
+	import { useAuthStore } from '@M/store/auth/auth.store.js';
 
 	import TimelinePublication from '@M/components/timeline/feed/TimelinePublication.vue';
     import TimelinePublicationSkeleton from '@M/components/timeline/feed/TimelinePublicationSkeleton.vue';
@@ -27,6 +29,7 @@
 		},
 		setup: function(props) {
 			const router = useRouter();
+			const authStore = useAuthStore();
 			const state = reactive({
 				isLoading: true
 			});
@@ -34,8 +37,13 @@
 			const postData = ref(null);
 			const postAuthor = ref(null);
 
-			onMounted(async () => {
-				await colibriAPI().userTimeline().getFrom(`post/${props.hash_id}`).then(function(response) {
+			const fetchPost = async function() {
+				state.isLoading = true;
+
+				// 访客走访客端点，登录用户走原 timeline 端点
+				const api = authStore.isGuest ? colibriAPI().guest() : colibriAPI().userTimeline();
+
+				await api.getFrom(`post/${props.hash_id}`).then(function(response) {
 					postData.value = response.data.data.post;
 					postAuthor.value = response.data.data.author;
 					state.isLoading = false;
@@ -44,6 +52,19 @@
                         name: 'error_404'
                     });
 				});
+			};
+
+			onMounted(fetchPost);
+
+			// 访客登录成功后：无刷新以登录态重新加载本页
+			const onLoginSucceeded = function() {
+				fetchPost();
+			};
+
+			colibriEventBus.on('auth:login-succeeded', onLoginSucceeded);
+
+			onUnmounted(function() {
+				colibriEventBus.off('auth:login-succeeded', onLoginSucceeded);
 			});
 
 			return {
