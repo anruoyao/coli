@@ -37,7 +37,7 @@ class GuestFeedTest extends GuestTestCase
         $blockedUser = $this->makeUser(['status' => UserStatus::BLOCKED->value]);
         $this->makePost($blockedUser, ['content' => 'BLOCKED_AUTHOR_POST']);
 
-        $response = $this->guestGet('feed', )->assertOk();
+        $response = $this->guestGet('feed')->assertOk();
 
         $contents = array_column($response->json('data'), 'content');
 
