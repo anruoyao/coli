@@ -28,7 +28,9 @@
         @include('layouts.parts.head-code')
     </head>
     <body>
-        <x-device-switcher.mobile></x-device-switcher.mobile>
+        @if(! empty($showDeviceSwitcher))
+            <x-device-switcher.mobile></x-device-switcher.mobile>
+        @endif
 
         @yield('pageContent')
 

@@ -7,6 +7,7 @@ use App\Settings\GuestSettings;
 use App\Support\Guest\CrawlerDetector;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
+use Jenssegers\Agent\Agent;
 
 /**
  * 前端 SPA shell / 公开 SEO 页统一处理器。
@@ -62,6 +63,35 @@ class SeoController
     {
         $deviceType = Cookie::get('device_type', 'desktop');
 
-        return view($deviceType === 'mobile' ? 'mobile::index' : 'desktop::index');
+        // 当前 shell 与设备类型一致时不展示切换提示（否者反复横跳）；
+        // 不一致时展示"切换到另一端"浮层，点击切换后自动消除。
+        $isMobileUa = $this->isMobileUserAgent();
+
+        $showSwitcher = ($deviceType === 'desktop' && $isMobileUa)
+            || ($deviceType === 'mobile' && ! $isMobileUa);
+
+        return view($deviceType === 'mobile' ? 'mobile::index' : 'desktop::index', [
+            'showDeviceSwitcher' => $showSwitcher,
+        ]);
+    }
+
+    /**
+     * UA 是否为手机/平板（iPadOS 13+ 桌面 UA 伪装需单独识别）。
+     */
+    protected function isMobileUserAgent(): bool
+    {
+        $userAgent = (string) request()->userAgent();
+
+        if ($userAgent === '') {
+            return false;
+        }
+
+        $agent = new Agent();
+        $agent->setUserAgent($userAgent);
+
+        // iPadOS 13+ 桌面 UA 伪装为 Macintosh，唯一区别是带 Mobile token。
+        $isIpadOs = preg_match('/Macintosh/i', $userAgent) && preg_match('/Mobile/i', $userAgent);
+
+        return $agent->isMobile() || $agent->isTablet() || $isIpadOs;
     }
 }

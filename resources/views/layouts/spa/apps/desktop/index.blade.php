@@ -28,7 +28,9 @@
         @include('layouts.parts.head-code')
     </head>
     <body class="font-sans antialiased bg-bg-pr min-w-[1200px]">
-        <x-device-switcher.desktop></x-device-switcher.desktop>
+        @if(! empty($showDeviceSwitcher))
+            <x-device-switcher.desktop></x-device-switcher.desktop>
+        @endif
 
         @yield('pageContent')
 
