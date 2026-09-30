@@ -61,7 +61,13 @@ class SeoController
 
     protected function shell(): \Illuminate\Contracts\View\View
     {
-        $deviceType = Cookie::get('device_type', 'desktop');
+        // 设备检测：显式 device_type cookie 优先；无 cookie（首次访问/新设备）
+        // 时按 UA 自动选择对应 shell，避免手机首次访问落到 PC 版。
+        $deviceType = Cookie::get('device_type');
+
+        if ($deviceType === null) {
+            $deviceType = $this->isMobileUserAgent() ? 'mobile' : 'desktop';
+        }
 
         // 当前 shell 与设备类型一致时不展示切换提示（否者反复横跳）；
         // 不一致时展示"切换到另一端"浮层，点击切换后自动消除。
