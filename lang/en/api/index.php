@@ -4,6 +4,7 @@ return [
     'notifs' => require __DIR__ . '/notifs.php',
     'toast' => require __DIR__ . '/toast.php',
     'labels' => require __DIR__ . '/labels.php',
+    'buttons' => require __DIR__ . '/buttons.php',
     'tips' => require __DIR__ . '/tips.php',
     'editor' => require __DIR__ . '/editor.php',
     'soundbar' => require __DIR__ . '/soundbar.php',
