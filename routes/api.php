@@ -120,7 +120,9 @@ Route::prefix('marketplace')->middleware(['auth:sanctum', 'throttle:60,1', 'abus
 
 Route::prefix('jobs')->middleware(['auth:sanctum', 'throttle:60,1', 'abuse.guard'])->group(base_path('routes/api/user/jobs.php'));
 
-Route::prefix('messenger')->middleware(['auth:sanctum', 'throttle:60,1', 'abuse.guard'])->group(base_path('routes/api/user/messenger.php'));
+// messenger：聊天实时性高（进会话拉详情/消息 + 标记已读 + 未读对账），
+// 突发请求密集，限流放宽到 240/min，避免正常操作互相挤爆触发 429。
+Route::prefix('messenger')->middleware(['auth:sanctum', 'throttle:240,1', 'abuse.guard'])->group(base_path('routes/api/user/messenger.php'));
 
 Route::prefix('admin')->middleware(['auth:sanctum', 'throttle:60,1', 'abuse.guard'])->group(base_path('routes/api/user/admin.php'));
 

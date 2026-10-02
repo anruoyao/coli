@@ -49,6 +49,7 @@ class ChatResource extends JsonResource
                 $chatItem['chat_info'] = [
                     'id' => $interlocutor->user->id,
                     'name' => $interlocutor->user->name,
+                    'username' => $interlocutor->user->username,
                     'avatar_url' => $interlocutor->user->avatar_url,
                     'verified' => $interlocutor->user->isVerified(),
                 ];
