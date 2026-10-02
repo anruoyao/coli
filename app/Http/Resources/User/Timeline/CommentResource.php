@@ -18,6 +18,7 @@ namespace App\Http\Resources\User\Timeline;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\MissingValue;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class CommentResource extends JsonResource
@@ -33,8 +34,12 @@ class CommentResource extends JsonResource
             'id' => $this->id,
             'post_id' => $this->post_id,
             'parent_id' => $this->parent_id,
+            // 顶层主评论的 id（主评论自身为 null）；客户端据此把回复归并到线程
+            'root_id' => $this->root_id,
             'has_parent' => (empty($this->parent_id)) ? false : true,
             'content' => e($this->content),
+            // 线程回复总数（仅主评论在 threaded 模式下有值，其余为 0）
+            'replies_total' => (int) ($this->getAttribute('thread_replies_count') ?? 0),
             'relations' => [
                 'user' => [
                     'avatar_url' => $this->user->avatar_url,
@@ -44,6 +49,10 @@ class CommentResource extends JsonResource
                 ],
                 'reactions' => ReactionCollection::make($this->reactions),
                 'parent' => $this->getParentCommentData(),
+                // 主评论折叠态下展示的最新 2 条回复（threaded 模式，未水合时省略）
+                'preview_replies' => $this->relationLoaded('previewReplies')
+                    ? CommentResource::collection($this->getRelation('previewReplies'))
+                    : new MissingValue(),
             ],
             'date' => [
                 'iso' => $this->created_at->getIso(),

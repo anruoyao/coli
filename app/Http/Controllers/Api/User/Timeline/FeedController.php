@@ -20,6 +20,7 @@ use Illuminate\Http\Request;
 use App\Enums\Post\PostStatus;
 use App\Database\Configs\Table;
 use App\Http\Controllers\Controller;
+use App\Services\Comment\CommentThreadService;
 use App\Traits\Http\Api\SupportsApiResponses;
 use App\Http\Resources\User\Timeline\TimelineResource;
 use App\Http\Resources\User\Timeline\CommentCollection;
@@ -81,7 +82,9 @@ class FeedController extends Controller
         $postData = Post::active()->whereHashId($postHashId)->timelineFormatPosts()->first();
         
         if($postData) {
-            $postComments = $this->fetchPostItemComments($postData);
+            $postComments = $request->boolean('threaded')
+                ? $this->fetchThreadedRoots($postData)
+                : $this->fetchPostItemComments($postData);
 
             return $this->responseSuccess([
                 'data' => [
@@ -111,6 +114,14 @@ class FeedController extends Controller
             return $this->responseResourceNotFoundError('Post', $postHashId);
         }
 
+        if ($request->boolean('threaded')) {
+            $roots = $this->fetchThreadedRoots($postData, $cursorId);
+
+            return $this->responseSuccess([
+                'data' => CommentCollection::make($roots)
+            ]);
+        }
+
         $postComments = $this->fetchPostItemComments($postData, $cursorId);
 
         return $this->responseSuccess([
@@ -118,8 +129,41 @@ class FeedController extends Controller
         ]);
     }
 
+    /**
+     * 某条主评论线程下的全部回复（游标分页，id DESC）。
+     */
+    public function getCommentReplies(Request $request, CommentThreadService $threads)
+    {
+        $rootId = (int) $request->route('id');
+
+        $rootComment = $threads->findRootComment($rootId);
+
+        if (empty($rootComment)) {
+            return $this->responseResourceNotFoundError('Comment', $rootId);
+        }
+
+        $postData = Post::active()->where('id', $rootComment->post_id)->first();
+
+        if (empty($postData)) {
+            return $this->responseResourceNotFoundError('Post', $rootComment->post_id);
+        }
+
+        $result = $threads->repliesForRoot(
+            $rootId,
+            $request->integer('cursor'),
+            (int) config('post.comments.paginate_per')
+        );
+
+        return $this->responseSuccess([
+            'data' => CommentCollection::make($result['items']),
+            'meta' => [
+                'total' => $result['total']
+            ]
+        ]);
+    }
+
     private function fetchPostItemComments(Post $postData, int|string $cursorId = 0)
-    {   
+    {
         $postComments = $postData->comments()->with([
             'post:id,user_id',
             'user:id,first_name,last_name,avatar,username',
@@ -130,5 +174,23 @@ class FeedController extends Controller
         })->latest('id');
 
         return $postComments->take(config('post.comments.paginate_per'))->get();
+    }
+
+    /**
+     * 树状模式：只返回主评论，并水合 replies_total + 最新回复预览。
+     */
+    private function fetchThreadedRoots(Post $postData, int|string $cursorId = 0)
+    {
+        $threads = app(CommentThreadService::class);
+
+        $roots = $threads->rootsForPost(
+            $postData,
+            (int) $cursorId,
+            (int) config('post.comments.paginate_per')
+        );
+
+        $threads->hydrateThreadPreviews($roots);
+
+        return $roots;
     }
 }

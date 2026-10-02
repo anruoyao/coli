@@ -19,6 +19,7 @@ Route::get('/feed', [Guest\GuestFeedController::class, 'feed']);
 // 公开帖子详情 + 评论分页
 Route::get('/post/{hashId}', [Guest\GuestPostController::class, 'show']);
 Route::get('/post/{hashId}/comments', [Guest\GuestPostController::class, 'comments']);
+Route::get('/post/comment/{id}/replies', [Guest\GuestPostController::class, 'commentReplies']);
 
 // 脱敏公开用户主页 + 其公开帖子（不开放粉丝/关注列表）
 Route::get('/profile/{username}', [Guest\GuestProfileController::class, 'show']);

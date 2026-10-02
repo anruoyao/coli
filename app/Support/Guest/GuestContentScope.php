@@ -47,4 +47,9 @@ class GuestContentScope
     {
         return self::posts()->whereHashId($hashId)->first();
     }
+
+    public static function findById(int $postId): ?Post
+    {
+        return self::posts()->where('id', $postId)->first();
+    }
 }

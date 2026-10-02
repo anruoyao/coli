@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Guest;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\MissingValue;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
 
@@ -18,12 +19,17 @@ class GuestCommentResource extends JsonResource
             'id' => $this->id,
             'post_id' => $this->post_id,
             'parent_id' => $this->parent_id,
+            'root_id' => $this->root_id,
             'has_parent' => ! empty($this->parent_id),
             'content' => e($this->content),
+            'replies_total' => (int) ($this->getAttribute('thread_replies_count') ?? 0),
             'relations' => [
                 'user' => GuestUserPreviewResource::make($this->user),
                 'reactions' => GuestReactionSummary::map($this->reactions),
                 'parent' => $this->getParentData(),
+                'preview_replies' => $this->relationLoaded('previewReplies')
+                    ? GuestCommentResource::collection($this->getRelation('previewReplies'))
+                    : new MissingValue(),
             ],
             'date' => [
                 'iso' => $this->created_at?->getIso(),

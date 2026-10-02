@@ -22,6 +22,8 @@ Route::get('/post/{hashId}', [App\Http\Controllers\Api\User\Timeline\FeedControl
 
 Route::get('/post/{hashId}/comments', [App\Http\Controllers\Api\User\Timeline\FeedController::class, 'getPostComments']);
 
+Route::get('/post/comment/{id}/replies', [App\Http\Controllers\Api\User\Timeline\FeedController::class, 'getCommentReplies']);
+
 Route::post('/post/poll/vote', [App\Http\Controllers\Api\User\Timeline\PostPollController::class, 'votePoll']);
 
 Route::post('/post/bookmarks/add', [App\Http\Controllers\Api\User\Timeline\PostController::class, 'bookmarkPost']);
