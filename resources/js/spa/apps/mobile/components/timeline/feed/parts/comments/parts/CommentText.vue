@@ -1,9 +1,6 @@
 <template>
 	<div class="block">
-		<p class="text-par-m text-lab-pr" v-bind:class="clamped ? 'line-clamp-2' : ''">
-			<span v-if="replyTo" class="font-semibold text-brand-900">{{ $t('labels.reply_to_prefix', {name: replyTo}) }}</span>
-			<span v-html="$mdInline(commentContent)"></span>
-		</p>
+		<p class="text-par-m text-lab-pr" v-bind:class="clamped ? 'line-clamp-2' : ''" v-html="(replyTo ? $t('labels.reply_to_prefix', {name: replyTo}) : '') + $mdInline(commentContent)"></p>
 	</div>
 </template>
 
@@ -16,7 +13,7 @@
 				type: String,
 				required: true
 			},
-			// 回复目标用户名：存在时行内渲染「回复 @name：」前缀
+			// 回复目标用户名：存在时正文前渲染「回复 @name：」前缀
 			replyTo: {
 				type: String,
 				default: ''
