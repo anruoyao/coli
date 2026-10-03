@@ -32,7 +32,8 @@ class MessagesLocalDeleteAction
 			return [
 				'message_id' => $item->id,
 				'chat_id' => $item->chat_id,
-				'user_id' => me()->id
+				'user_id' => me()->id,
+				'created_at' => now(),
 			];
 		})->toArray());
 	}

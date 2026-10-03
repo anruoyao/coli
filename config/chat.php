@@ -82,4 +82,12 @@ return [
 		'chat_message_sent' => 'assets/sounds/chats/chat-message-sent.mp3',
     ],
     'enable_video_compression' => true,
+
+    // 聊天媒体回收：消息被会话中「所有当前参与者」本地删除（隐藏）且超过宽限期后，
+    // 由 chats:reclaim-media 定时任务回收图片/视频/语音文件（本地盘与 S3 均适用）。
+    'media_reclamation' => [
+        'enabled' => env('CHAT_MEDIA_RECLAMATION_ENABLED', true),
+        'grace_days' => env('CHAT_MEDIA_RECLAMATION_GRACE_DAYS', 7),
+        'batch_size' => env('CHAT_MEDIA_RECLAMATION_BATCH_SIZE', 500),
+    ],
 ];

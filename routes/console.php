@@ -33,6 +33,9 @@ Schedule::command('chat:invite-clear')->weekly();
 // 在线量小时快照聚合（P1 数据分析：整点+5 分钟，避免边界竞态；重复执行同桶幂等覆盖）
 Schedule::command('presence:aggregate')->hourlyAt(5)->withoutOverlapping();
 
+// 聊天媒体回收：全员本地删除且超过宽限期的消息，回收其图片/视频/语音（含 S3）
+Schedule::command('chats:reclaim-media')->dailyAt('03:30')->withoutOverlapping();
+
 Artisan::command('app:version', function () {
     $this->info(ColibriPlus::VERSION);
 });
