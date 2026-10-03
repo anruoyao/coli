@@ -85,6 +85,10 @@
             }
         },
         emits: ['toggle', 'load-more', 'reply', 'delete'],
+        components: {
+            Border: Border,
+            PublicationComment: PublicationComment
+        },
         setup: function(props) {
             const bodyRef = ref(null);
             const heightSwap = useHeightSwap(bodyRef);

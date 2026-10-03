@@ -29,6 +29,10 @@
                 required: true
             }
         },
-        emits: ['toggle-expand', 'load-more', 'reply', 'delete']
+        emits: ['toggle-expand', 'load-more', 'reply', 'delete'],
+        components: {
+            PublicationComment: PublicationComment,
+            RepliesContainer: RepliesContainer
+        }
     });
 </script>
