@@ -192,7 +192,8 @@ return [
 	'expand_replies' => '展开回复',
 	'view_more_replies' => '查看更多回复',
 	'view_more_replies_count' => '查看更多回复（{n}）',
-	'reply_to_prefix' => '回复 @{name}：',
+	// vue-i18n 中 @ 是链接消息起始符，字面量必须用 {'@'} 转义，否则消息编译抛 Invalid linked format
+	'reply_to_prefix' => "回复 {'@'}{name}：",
 	'replies_load_failed' => '回复加载失败，点击重试',
 	'loading' => '加载中',
 	'media' => '媒体',

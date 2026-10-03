@@ -192,7 +192,8 @@ return [
 	'expand_replies' => 'Expand replies',
 	'view_more_replies' => 'View more replies',
 	'view_more_replies_count' => 'View more replies ({n})',
-	'reply_to_prefix' => 'Reply to @{name}: ',
+	// vue-i18n treats @ as the linked-message marker; escape the literal @ as {'@'} to avoid Invalid linked format
+	'reply_to_prefix' => "Reply to {'@'}{name}: ",
 	'replies_load_failed' => 'Failed to load replies, tap to retry',
 	'loading' => 'Loading',
 	'media' => 'Media',

@@ -29,7 +29,7 @@ return [
     'password' => '密码不正确。',
     'birthdate_required' => '请选择您的出生日期',
     'password_label' => '密码',
-    'password_strength_helper' => '请输入至少 :min_length 个字符的密码，需包含大小写字母、数字和特殊符号（如 @$!%*?&）。',
+    'password_strength_helper' => "请输入至少 :min_length 个字符的密码，需包含大小写字母、数字和特殊符号（如 {'@'}\$!%*?&）。",
     'throttle' => '登录尝试次数过多，请在 :seconds 秒后重试。',
     'restore_access' => '恢复访问',
     'back_to_login' => '返回登录页面',

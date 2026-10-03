@@ -195,7 +195,7 @@ return [
 			'new_password_copied' => '新密码已复制到剪贴板。',
 			'password' => '账号密码',
 			'password_placeholder' => '输入密码',
-			'page_desc' => '密码必须至少包含 6 个字符，包括数字、字母和特殊字符 {\'(!$@%)"。',
+			'page_desc' => "密码必须至少包含 6 个字符，包括数字、字母和特殊字符 {'(!\$@%)'}。",
 			'current_password' => '当前密码',
 			'current_password_helper' => '输入当前密码以更改账号密码。',
 			'new_password' => '新密码',
