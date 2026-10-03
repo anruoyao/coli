@@ -54,7 +54,6 @@ return [
 	'double_click_to_reply' => 'Double click to reply',
 	'write_reply' => 'Write your reply...',
 	'sending_message' => 'Sending message...',
-    'cancel_media_recording' => 'Click ESC or outside to cancel.',
 	'no_chat_history' => 'No chats history',
 	'no_chat_requests' => 'No requests yet',
 	'no_group_participants' => 'No group participants found',

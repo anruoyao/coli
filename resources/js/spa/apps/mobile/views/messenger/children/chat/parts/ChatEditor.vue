@@ -1,48 +1,33 @@
 <template>
 	<ToastNotification></ToastNotification>
 
-    <template v-if="state.videoRecorder.open">
-        <VideoRecordPreview></VideoRecordPreview>
+    <template v-if="repliedMessage">
+        <MessageReplyPreview v-bind:messageData="repliedMessage" v-on:cancel="cancelReply" v-bind:key="repliedMessage.id"></MessageReplyPreview>
     </template>
-    <template v-else-if="state.audioRecorder.open">
-        <AudioRecorder v-on:sendAudio="sendAudio" v-on:cancel="state.audioRecorder.open = false"></AudioRecorder>
-    </template>
-    <template v-else>
-        <template v-if="repliedMessage">
-            <MessageReplyPreview v-bind:messageData="repliedMessage" v-on:cancel="cancelReply" v-bind:key="repliedMessage.id"></MessageReplyPreview>
-        </template>
 
-        <div class="pb-3 px-4 pt-3">
-            <div class="flex overflow-hidden gap-2">
-                <div class="flex-1">
-                    <textarea ref="messageContentField" class="resize-none border border-bord-pr pl-4 pt-2.5 pr-22 pb-2 leading-normal text-lab-pr text-par-l bg-fill-qt w-full h-12 min-h-12 max-h-40 overflow-x-hidden overflow-y-auto rounded-3xl outline-hidden placeholder:whitespace-nowrap placeholder:text-par-l placeholder:text-lab-sc placeholder:font-normal"
-                        v-model.trim="messageContent"
-                        v-on:input="messageInputHandler"
-                    v-bind:placeholder="inputPlaceholder"></textarea>
-                </div>
+    <div class="pb-3 px-4 pt-3">
+        <div class="flex overflow-hidden gap-2">
+            <div class="flex-1">
+                <textarea ref="messageContentField" class="resize-none border border-bord-pr pl-4 pt-2.5 pr-22 pb-2 leading-normal text-lab-pr text-par-l bg-fill-qt w-full h-12 min-h-12 max-h-40 overflow-x-hidden overflow-y-auto rounded-3xl outline-hidden placeholder:whitespace-nowrap placeholder:text-par-l placeholder:text-lab-sc placeholder:font-normal"
+                    v-model.trim="messageContent"
+                    v-on:input="messageInputHandler"
+                v-bind:placeholder="inputPlaceholder"></textarea>
+            </div>
 
-                <div class="shrink-0 pt-2">
-                    <div class="inline-flex gap-2">
-                        <PrimaryIconButton v-if="hasTyped" v-bind:disabled="state.isSubmitting" v-on:click="submitForm" iconName="send-03" iconSize="icon-normal" buttonColor="text-brand-900"></PrimaryIconButton>
-                        <template v-else>
-                            <PrimaryIconButton v-on:click="$refs.messageImageFileInput.click()" v-bind:disabled="state.isSubmitting" iconName="image-01" iconType="line"></PrimaryIconButton>
-                            <PrimaryIconButton iconName="camera-03" iconType="line" v-bind:disabled="state.isSubmitting" v-on:click.stop="state.videoRecorder.open = true"></PrimaryIconButton>
-                            <PrimaryIconButton iconName="microphone-01" iconType="line" v-bind:disabled="state.isSubmitting" v-on:click.stop="state.audioRecorder.open = true"></PrimaryIconButton>
-                        </template>
-                    </div>
+            <div class="shrink-0 pt-2">
+                <div class="inline-flex gap-2">
+                    <PrimaryIconButton v-if="hasTyped" v-bind:disabled="state.isSubmitting" v-on:click="submitForm" iconName="send-03" iconSize="icon-normal" buttonColor="text-brand-900"></PrimaryIconButton>
+                    <template v-else>
+                        <PrimaryIconButton v-on:click="$refs.messageImageFileInput.click()" v-bind:disabled="state.isSubmitting" iconName="image-01" iconType="line"></PrimaryIconButton>
+                    </template>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="hidden">
-            <input v-on:change="sendImage" type="file" accept="image/jpeg, image/png, image/webp, image/heic, image/heif, image/heif-sequence, image/heic-sequence" ref="messageImageFileInput">
-        </div>
-    </template>
-
-
-    <template v-if="state.videoRecorder.open">
-        <VideoRecorder v-on:sendVideo="sendVideo" v-on:cancel="state.videoRecorder.open = false"></VideoRecorder>
-    </template>
+    <div class="hidden">
+        <input v-on:change="sendImage" type="file" accept="image/jpeg, image/png, image/webp, image/heic, image/heif, image/heif-sequence, image/heic-sequence" ref="messageImageFileInput">
+    </div>
 </template>
 
 <script>
@@ -56,9 +41,6 @@
 	import PrimaryIconButton from '@M/components/inter-ui/buttons/PrimaryIconButton.vue';
 	import ToastNotification from '@M/components/notifications/toast/ToastNotification.vue';
 	import MessageReplyPreview from '@M/views/messenger/children/chat/parts/editor/MessageReplyPreview.vue';
-    import VideoRecorder from '@M/views/messenger/children/chat/parts/form/VideoRecorder.vue';
-    import AudioRecorder from '@M/views/messenger/children/chat/parts/form/AudioRecorder.vue';
-    import VideoRecordPreview from '@M/views/messenger/children/chat/parts/form/VideoRecordPreview.vue';
 
 	export default defineComponent({
 		emits: ['typing'],
@@ -71,12 +53,6 @@
 
 			const state = reactive({
 				isSubmitting: false,
-                videoRecorder: {
-                    open: false,
-                },
-                audioRecorder: {
-                    open: false,
-                },
 			});
 
 			onMounted(() => {
@@ -148,42 +124,6 @@
                 });
             }
 
-            const sendVideo = async (videoData) => {
-                state.videoRecorder.open = false;
-
-                // 本地预检测：超出后台配置的视频大小限制时立即提示
-                const sizeCheck = await checkFileSize(videoData.blob, 'video');
-                if (! sizeCheck.ok) {
-                    toastError(sizeCheck.message);
-                    return;
-                }
-
-                await chatStore.sendMediaMessage({
-                    type: 'video',
-                    file: videoData.blob,
-                    extension: videoData.blob.type.includes('mp4') ? 'mp4' : 'webm',
-                    duration: videoData.duration,
-                });
-            }
-
-            const sendAudio = async (audioData) => {
-                state.audioRecorder.open = false;
-
-                // 本地预检测：超出后台配置的音频大小限制时立即提示
-                const sizeCheck = await checkFileSize(audioData.blob, 'audio');
-                if (! sizeCheck.ok) {
-                    toastError(sizeCheck.message);
-                    return;
-                }
-
-                await chatStore.sendMediaMessage({
-                    type: 'audio',
-                    extension: audioData.blob.type.includes('mp4') ? 'mp4' : 'webm',
-                    file: audioData.blob,
-                    duration: audioData.duration,
-                });
-            }
-
 			return {
 				state: state,
 				messageContent: messageContent,
@@ -191,8 +131,6 @@
 				repliedMessage: repliedMessage,
                 messageContentField: messageContentField,
 				messageInputHandler: messageInputHandler,
-                sendVideo: sendVideo,
-                sendAudio: sendAudio,
 				isReplaying: computed(() => {
 					return repliedMessage.value !== null;
 				}),
@@ -220,9 +158,6 @@
 			PrimaryIconButton: PrimaryIconButton,
 			ToastNotification: ToastNotification,
 			MessageReplyPreview: MessageReplyPreview,
-			VideoRecorder: VideoRecorder,
-            VideoRecordPreview: VideoRecordPreview,
-            AudioRecorder: AudioRecorder,
 		}
 	});
 </script>

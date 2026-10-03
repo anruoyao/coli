@@ -11,11 +11,6 @@ const useChatStore = defineStore('mobile_chats_chat', {
 			chatMessages: [],
 			chatParticipants: [],
 			inboxStore: useInboxStore(),
-            messageForm: {
-                videoRecorder: {
-                    elapsed: 0,
-                }
-            }
 		};
 	},
 	getters: {
@@ -92,7 +87,7 @@ const useChatStore = defineStore('mobile_chats_chat', {
             formData.append('chat_id', this.chatId);
             formData.append('media_type', mediaData.type);
 
-            // In case if it's audio or video, we need to add the duration.
+            // 聊天仅保留图片媒体（audio/video 已下线），时长字段不再需要。
             if(mediaData.duration) {
                 formData.append('media_duration', mediaData.duration);
             }

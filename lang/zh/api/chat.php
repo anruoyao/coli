@@ -54,7 +54,6 @@ return [
 	'double_click_to_reply' => '双击回复',
 	'write_reply' => '写下您的回复...',
 	'sending_message' => '正在发送消息...',
-    'cancel_media_recording' => '按 ESC 或点击外部取消。',
 	'no_chat_history' => '暂无聊天记录',
 	'no_chat_requests' => '暂无请求',
 	'no_group_participants' => '未找到群组成员',

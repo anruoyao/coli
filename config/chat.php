@@ -7,16 +7,12 @@ return [
 	],
     'validation' => [
         'message' => [
+            // 聊天仅保留图片媒体发送：录音（audio）与录像（video）已彻底下线。
             'media_type' => [
-                'types' => ['image', 'video', 'audio'],
+                'types' => ['image'],
             ],
             'media' => [
                 'mimes' => join(',', [
-                    'mp4',
-                    'avi',
-                    'mpeg',
-                    'mov',
-                    'webm',
                     'gif',
                     'jpeg',
                     'png',
@@ -26,19 +22,8 @@ return [
                     'heif',
                     'heif-sequence',
                     'heic-sequence',
-                    'mp3',
-                    'wav',
-                    'm4a',
-                    'ogg',
-                    'aac',
-                    'opus',
                 ]),
                 'mimetypes' => join(',', [
-                    'video/mp4',
-                    'video/avi',
-                    'video/mpeg',
-                    'video/quicktime',
-                    'video/webm',
                     'image/gif',
                     'image/jpeg',
                     'image/png',
@@ -47,14 +32,6 @@ return [
                     'image/heif',
                     'image/heif-sequence',
                     'image/heic-sequence',
-                    'audio/mpeg',
-                    'audio/wav',
-                    'audio/x-wav',
-                    'audio/mp4',
-                    'audio/aac',
-                    'audio/ogg',
-                    'audio/opus',
-                    'audio/webm',
                 ]),
                 'max' => '512000' // 512MB
             ],

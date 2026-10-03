@@ -368,12 +368,8 @@ class ChatController extends Controller
 
     public function sendMessage(Request $request)
     {
-        // 按媒体类型应用统一的后台上传大小限制（KB）
-        $mediaMax = match ($request->input('media_type')) {
-            'image' => config('upload.image.max'),
-            'audio' => config('upload.audio.max'),
-            default => config('upload.video.max'),
-        };
+        // 聊天媒体仅支持图片（录音/录像已下线），直接使用后台配置的图片大小限制（KB）
+        $mediaMax = config('upload.image.max');
 
         $validator = Validator::make([
             'chat_id' => $request->get('chat_id'),
@@ -387,8 +383,8 @@ class ChatController extends Controller
             'parent_id' => ['nullable', 'integer'],
             'content' => ['nullable', 'required_without:media', 'string', 'min:1', XRule::join('max', config('chat.message.validation.content.max'))],
             'media_type' => ['nullable', 'required_with:media', 'string', Rule::in(config('chat.validation.message.media_type.types'))],
-            // TODO: Add validation types from config not hardcoded.
-            'media_duration' => ['nullable', 'requiredIf:media_type,video,audio', 'integer', 'min:1'],
+            // 图片消息无需时长字段（video/audio 已下线），保持可空以免旧客户端携带时误报。
+            'media_duration' => ['nullable', 'integer', 'min:1'],
             'media' => ['nullable', 'required_without:content', 'file',
                 XRule::join('mimes', config('chat.validation.message.media.mimes')),
                 XRule::join('mimetypes', config('chat.validation.message.media.mimetypes')),
@@ -450,11 +446,10 @@ class ChatController extends Controller
 
                 // Handle media upload.
                 if($request->hasFile('media')) {
-                    $mediaDuration = $request->input('media_duration') ?? 0;
                     $mediaType = $request->input('media_type');
                     $mediaFile = $request->file('media');
 
-                    $mediaUploaded = $this->uploadMedia($messageData, $mediaFile, $mediaType, $mediaDuration);
+                    $mediaUploaded = $this->uploadMedia($messageData, $mediaFile, $mediaType);
 
                     if(! $mediaUploaded) {
                         // 上传失败：删除半成品空消息行，避免双方界面出现空白气泡
