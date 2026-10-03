@@ -189,6 +189,8 @@ class ChatController extends Controller
             $chatData = Chat::participatedChats()->where('chat_id', $chatId)->first();
 
             if($chatData) {
+                // 排序必须带 id 二级键：created_at 为秒级精度，同秒消息仅按时间列排序
+                // 时 MySQL 不保证顺序（偶发出现图片/文字顺序颠倒），id 单调递增即真实发送顺序。
                 $chatMessages = $chatData->messages()->excludeDeleted()->with([
                     'reactions',
                     'media',
@@ -197,7 +199,7 @@ class ChatController extends Controller
                     'parent.user:id,first_name,last_name,username,verified',
                     'parent.participant',
                     'linkSnapshot'
-                ])->latest()->take(30)->get();
+                ])->orderByDesc('created_at')->orderByDesc('id')->take(30)->get();
 
                 return $this->responseSuccess([
                     'data' => MessageCollection::make($chatMessages->reverse())
@@ -398,7 +400,10 @@ class ChatController extends Controller
             $chatId = $request->input('chat_id');
             $messageContent = $request->input('content');
             $parentId = $request->integer('parent_id');
-            $chatData = Chat::participatedChats()->where('chat_id', $chatId)->first();
+            // 不能用 participatedChats：它排除了「我删除（隐藏）过的会话」，
+            // 会导致删除会话后对方再发消息 / 自己重新进入时直接 404（会话无法复活）。
+            // 这里只校验参与关系，找到后清除隐藏标记。
+            $chatData = $this->findParticipatedChat($chatId);
 
             if($chatData) {
                 // 私信隐私校验：单聊中对方「谁能私信我」设置不允许时禁止发送
@@ -449,7 +454,17 @@ class ChatController extends Controller
                     $mediaType = $request->input('media_type');
                     $mediaFile = $request->file('media');
 
-                    $this->uploadMedia($messageData, $mediaFile, $mediaType, $mediaDuration);
+                    $mediaUploaded = $this->uploadMedia($messageData, $mediaFile, $mediaType, $mediaDuration);
+
+                    if(! $mediaUploaded) {
+                        // 上传失败：删除半成品空消息行，避免双方界面出现空白气泡
+                        $messageData->media()->delete();
+                        $messageData->delete();
+
+                        return $this->responseError([
+                            'message' => '媒体上传失败，请重试'
+                        ], 502);
+                    }
 
                     $messageData->load('media');
                 }
@@ -501,10 +516,11 @@ class ChatController extends Controller
             $messageContent = $request->input('content');
             $payload = $request->input('payload');
 
-            $chatData = Chat::participatedChats()->where('chat_id', $chatId)->first();
+            // 与 sendMessage 一致：含隐藏会话，命中即复活，避免删除后快捷发送 404
+            $chatData = $this->findParticipatedChat($chatId);
 
             if($chatData) {
-                // 私信隐私校验（与 sendMessage 一致）
+                // 私信隐私校验（与 createChat 一致）
                 if($chatData->type->isDirect()) {
                     $interlocutorData = $chatData->interlocutor?->user;
 
@@ -749,6 +765,8 @@ class ChatController extends Controller
                     (new MessagesLocalDeleteAction($messagesChunkList))->execute();
                 });
 
+                // hidden_chats 无唯一索引：先删旧行再插入，避免反复删除同一会话堆积重复行
+                HiddenChat::where('chat_id', $chatData->id)->where('user_id', me()->id)->delete();
                 HiddenChat::create([
                     'chat_id' => $chatData->id,
                     'user_id' => me()->id,
@@ -762,6 +780,31 @@ class ChatController extends Controller
         }
 
         return $this->responseResourceNotFoundError('Chat', $chatId);
+    }
+
+    /**
+     * 按 chat_id 查找「我参与的」会话（含被我删除/隐藏的）。
+     * participatedChats 会排除隐藏会话，导致删除后重新进入/对方发消息 404；
+     * 写入类入口（发消息）用本方法校验参与关系，命中即复活会话。
+     */
+    private function findParticipatedChat(string $chatId): ?Chat
+    {
+        if(! Str::isUuid($chatId)) {
+            return null;
+        }
+
+        $chatData = Chat::where('chat_id', $chatId)
+            ->whereHas('participants', function ($query) {
+                $query->where('user_id', me()->id);
+            })
+            ->first();
+
+        if($chatData) {
+            // 我删除过该会话：新消息/重新进入时对我复活
+            HiddenChat::where('chat_id', $chatData->id)->where('user_id', me()->id)->delete();
+        }
+
+        return $chatData;
     }
 
     private function initiateChat(int $userId)
@@ -789,6 +832,10 @@ class ChatController extends Controller
             $chatData->addParticipant(me()->id);
             $chatData->addParticipant($userId);
         }
+
+        // 复用的是我曾删除（隐藏）过的旧会话：发起时对我复活，
+        // 否则后续 getChatData/getChatMessages/send 全部被 participatedChats 过滤而 404。
+        HiddenChat::where('chat_id', $chatData->id)->where('user_id', me()->id)->delete();
 
         return $chatData;
     }

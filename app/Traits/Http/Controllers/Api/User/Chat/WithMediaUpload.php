@@ -26,7 +26,12 @@ trait WithMediaUpload
     private Message $messageData;
     private int $mediaDuration;
 
-    private function uploadMedia(Message $messageData, UploadedFile $mediaData, string $mediaType, int $mediaDuration)
+    /**
+     * 上传并挂载媒体。返回是否成功。
+     * 失败时必须由调用方删除已创建的空消息行——旧实现静默吞掉异常，
+     * 数据库会残留「无文本、无媒体」的消息，双方界面显示为空白气泡。
+     */
+    private function uploadMedia(Message $messageData, UploadedFile $mediaData, string $mediaType, int $mediaDuration): bool
     {
         $this->videoUploadService = app(VideoUploadService::class);
         $this->audioUploadService = app(AudioUploadService::class);
@@ -45,9 +50,11 @@ trait WithMediaUpload
         elseif($mediaType === 'image') {
             return $this->uploadImage($mediaData);
         }
+
+        return false;
     }
 
-    private function uploadImage(UploadedFile $mediaData)
+    private function uploadImage(UploadedFile $mediaData): bool
     {
         try {
             $imageStorageDisk = $this->roundRobinService->getNextDisk();
@@ -74,13 +81,16 @@ trait WithMediaUpload
             $this->messageData->update([
                 'type' => MessageType::IMAGE,
             ]);
+
+            return true;
         }
         catch(Exception $e) {
-            // Pass
+            report($e);
+            return false;
         }
     }
 
-    private function uploadVideo(UploadedFile $chatVideoFile)
+    private function uploadVideo(UploadedFile $chatVideoFile): bool
     {
         try {
             $videoStorageDisk = $this->roundRobinService->getNextDisk();
@@ -135,12 +145,15 @@ trait WithMediaUpload
             $this->messageData->update([
                 'type' => MessageType::VIDEO_CIRCLE,
             ]);
+
+            return true;
         } catch (Exception $e) {
-            // Pass
+            report($e);
+            return false;
         }
     }
 
-    private function uploadAudio(UploadedFile $chatAudioFile)
+    private function uploadAudio(UploadedFile $chatAudioFile): bool
     {
         try {
             $audioData = $this->audioUploadService
@@ -170,9 +183,12 @@ trait WithMediaUpload
             $this->messageData->update([
                 'type' => MessageType::AUDIO,
             ]);
+
+            return true;
         }
         catch(Exception $e) {
-            // Pass
+            report($e);
+            return false;
         }
     }
 
