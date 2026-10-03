@@ -11,11 +11,14 @@
 			</template>
 			<template v-else>
 				<div class="flex-1 overflow-y-auto">
-					<div v-if="postComments.length">
-						<div v-for="(commentItem, idx) in postComments">
-							<Comment v-on:delete="handleCommentDelete"
-								v-bind:key="commentItem.id"
-							v-bind:commentData="commentItem"></Comment>
+					<div v-if="threads.length">
+						<div v-for="threadItem in threads" v-bind:key="threadItem.root.id">
+							<CommentThread
+								v-bind:thread="threadItem"
+								v-on:toggle-expand="toggleExpand(threadItem)"
+								v-on:load-more="loadMore(threadItem)"
+								v-on:reply="handleCommentReply"
+							v-on:delete="handleCommentDelete"></CommentThread>
 						</div>
 						<template v-if="state.isLoadingComments">
 							<div class="flex justify-center py-4">
@@ -44,11 +47,12 @@
 	import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
 	import { colibriEventBus } from '@/kernel/events/bus/index.js';
 	import { useTimelineStore } from '@M/store/timeline/timeline.store.js';
+	import { useCommentThreads } from '@/kernel/vue/composables/comment-threads/index.js';
 
 	import ActionSheet from '@M/components/general/sheets/ActionSheet.vue';
 	import SheetTitle from '@M/components/general/sheets/SheetTitle.vue';
 	import TimelineEmptyState from '@M/components/timeline/state/TimelineEmptyState.vue';
-	import Comment from '@M/components/timeline/feed/parts/comments/parts/Comment.vue';
+	import CommentThread from '@M/components/timeline/feed/parts/comments/parts/CommentThread.vue';
 	import CommentEditor from '@M/components/timeline/feed/parts/comments/editor/CommentEditor.vue';
 	import LoadmoreButton from '@M/components/inter-ui/buttons/LoadmoreButton.vue';
 
@@ -72,25 +76,36 @@
                 noMoreComments: false
 			});
 
-			const postComments = ref([]);
+			// 树状评论线程（与 Flutter 端同一套 threaded API）
+			const {
+				threads,
+				setRoots,
+				appendRoots,
+				toggleExpand,
+				loadMore,
+				applyCreated,
+				applyDeleted,
+				findComment
+			} = useCommentThreads(computed(() => false));
 
 			const fetchComments = async () => {
                 if (! state.noMoreComments && ! state.isLoadingComments) {
                 	let cursorId = 0;
 
-					if (postComments.value.length) {
-						cursorId = postComments.value.at(-1).id;
+					if (threads.value.length) {
+						cursorId = Math.min(...threads.value.map((thread) => thread.root.id));
 					}
-                    
+
 					state.isLoadingComments = true;
 
-					await colibriAPI().userTimeline().params({ 
-						cursor: cursorId
+					await colibriAPI().userTimeline().params({
+						cursor: cursorId,
+						threaded: 1
 					}).getFrom(`post/${postData.value.hash_id}/comments`).then(function(response) {
 						let comments = response.data.data;
 
 						if (comments.length) {
-							postComments.value = postComments.value.concat(comments);
+							appendRoots(comments);
 						}
 						else {
 							state.noMoreComments = true;
@@ -113,11 +128,19 @@
 			
 
 			return {
-				postComments: postComments,
 				state: state,
-				commentsCount: computed(() => {
-					return postData.value.comments_count;
-				}),
+				threads: threads,
+				toggleExpand: toggleExpand,
+				loadMore: loadMore,
+				handleCommentReply: (commentId) => {
+					const commentData = findComment(commentId);
+
+					if (commentData) {
+						colibriEventBus.emit('publication-comment:reply', {
+							commentData: commentData
+						});
+					}
+				},
 				handleCommentDelete: (commentId) => {
                     colibriEventBus.emit('confirmation-modal:open', {
                         title: __t('prompt.delete_comment.title'),
@@ -129,19 +152,8 @@
 
 								timelineStore.updateCommentCount(postData.value.id, response.data.data.post.comments_count);
 
-                                let commentIndex = postComments.value.findIndex((item) => {
-                                    return item.id == commentId;
-                                });
-
-                                if(commentIndex !== -1) {
-                                    postComments.value.splice(commentIndex, 1);
-                                }
-
-                                postComments.value.forEach(function(item) {
-                                    if(item.parent_id && item.parent_id == commentId) {
-                                        item.deleted = true;
-                                    }
-                                });
+								// 主评论整棵线程移除；回复从线程内摘除
+                                applyDeleted(commentId);
 
                                 toastSuccess(__t('toast.media.comment_deleted'));
                             }).catch((error) => {
@@ -153,7 +165,12 @@
                     });
                 },
 				handleCommentCreate: (commentData) => {
-                    postComments.value.unshift(commentData.comment);
+                    const located = applyCreated(commentData.comment);
+
+					// 找不到所属线程（极端情况）：保守重拉保证数据一致
+                    if (! located) {
+                    	fetchComments();
+                    }
 
                     postData.value.comments_count = commentData.post.comments_count;
                 },
@@ -164,7 +181,7 @@
 		},
 		components: {
 			ActionSheet: ActionSheet,
-			Comment: Comment,
+			CommentThread: CommentThread,
 			SheetTitle: SheetTitle,
 			TimelineEmptyState: TimelineEmptyState,
 			CommentEditor: CommentEditor,

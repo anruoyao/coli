@@ -1,9 +1,13 @@
 <template>
-    <div class="flex px-4 py-2 select-none active:bg-fill-qt relative" v-longpress="openReactionsPicker">
-        <div class="w-avatar-small shrink-0">
-            <AvatarExtraSmall v-bind:avatarSrc="commentData.relations.user.avatar_url"></AvatarExtraSmall>
+    <div v-bind:class="isReply
+        ? 'flex px-2 py-1.5 select-none active:bg-fill-qt relative'
+        : 'flex px-4 py-2 select-none active:bg-fill-qt relative'"
+    v-longpress="openReactionsPicker">
+        <div v-bind:class="isReply ? 'w-2x-small-avatar shrink-0' : 'w-avatar-small shrink-0'">
+            <Avatar2ExtraSmall v-if="isReply" v-bind:avatarSrc="commentData.relations.user.avatar_url"></Avatar2ExtraSmall>
+            <AvatarExtraSmall v-else v-bind:avatarSrc="commentData.relations.user.avatar_url"></AvatarExtraSmall>
         </div>
-        <div class="flex-1 overflow-hidden pl-2">
+        <div v-bind:class="isReply ? 'flex-1 overflow-hidden pl-1.5' : 'flex-1 overflow-hidden pl-2'">
             <div class="block leading-none mb-1">
                 <div class="inline-flex items-center gap-1">
                     <h3 class="text-par-n font-semibold text-lab-pr2">
@@ -14,7 +18,8 @@
                     </span>
                 </div>
             </div>
-            <div v-if="commentData.has_parent" class="overflow-hidden mb-1">
+            <!-- 主评论变体保留旧的父评论摘要展示（兼容） -->
+            <div v-if="! isReply && commentData.has_parent" class="overflow-hidden mb-1">
                 <div class="cursor-pointer">
                     <!-- TODO: Show parent comment in popup element if clicked -->
                     <template v-if="commentData.deleted">
@@ -32,13 +37,16 @@
                     </template>
                 </div>
             </div>
-            <CommentText v-bind:commentContent="commentData.content"></CommentText>
-            <div v-if="! commentData.deleted">
+            <CommentText
+                v-bind:commentContent="commentData.content"
+                v-bind:replyTo="replyToName"
+                v-bind:clamped="preview"></CommentText>
+            <div v-if="! commentData.deleted && ! preview">
                 <div class="mt-2" v-if="hasReactions">
                     <ReactionsViewer v-on:add="addReaction" v-bind:reactions="commentData.relations.reactions"></ReactionsViewer>
                 </div>
             </div>
-            <div v-if="! commentData.deleted">
+            <div v-if="! commentData.deleted && ! preview">
                 <MarginalTextButton
                     buttonColor="text-lab-sc/70"
                     v-on:click="reply"
@@ -46,7 +54,7 @@
             </div>
         </div>
 
-        <div class="absolute top-1 right-4 opacity-40 active:opacity-100">
+        <div v-if="! preview" class="absolute top-1 right-4 opacity-40 active:opacity-100">
             <DropdownButton v-on:click="toggleMenu"></DropdownButton>
         </div>
     </div>
@@ -83,6 +91,7 @@
     import { colibriEventBus } from '@/kernel/events/bus/index.js';
     
     import AvatarExtraSmall from '@M/components/general/avatars/AvatarExtraSmall.vue';
+    import Avatar2ExtraSmall from '@M/components/general/avatars/Avatar2ExtraSmall.vue';
     import PrimaryIconButton from '@M/components/inter-ui/buttons/PrimaryIconButton.vue';
     import ActionSheet from '@M/components/general/sheets/ActionSheet.vue';
     import ActionSheetItem from '@M/components/general/sheets/ActionSheetItem.vue';
@@ -96,6 +105,16 @@
             commentData: {
                 type: Object,
                 default: {}
+            },
+            // root = 主评论；reply = 线程内回复（紧凑密度 + 行内回复前缀）
+            variant: {
+                type: String,
+                default: 'root'
+            },
+            // 折叠预览态：正文 2 行截断、隐藏表态/操作区
+            preview: {
+                type: Boolean,
+                default: false
             }
         },
         emits: ['reply', 'delete'],
@@ -106,7 +125,22 @@
                 isReactionPickerOpen: false
             });
 
+            const isReply = computed(() => props.variant === 'reply');
+
+            // 回复目标用户名（父评论被删时关系可能为空）
+            const replyToName = computed(() => {
+                if (! isReply.value) {
+                    return '';
+                }
+
+                return commentData.value.relations?.parent?.user?.username ?? '';
+            });
+
             const openReactionsPicker = function() {
+                if (props.preview) {
+                    return;
+                }
+
                 state.isReactionPickerOpen = true;
             }
 
@@ -116,6 +150,8 @@
 
             return {
                 state: state,
+                isReply: isReply,
+                replyToName: replyToName,
                 commentData: commentData,
                 closeReactionsPicker: closeReactionsPicker,
                 openReactionsPicker: openReactionsPicker,
@@ -171,6 +207,7 @@
                 return import('@M/components/reactions/ReactionsPicker.vue');
             }),
             AvatarExtraSmall: AvatarExtraSmall,
+            Avatar2ExtraSmall: Avatar2ExtraSmall,
             PrimaryIconButton: PrimaryIconButton,
             ActionSheet: ActionSheet,
             ActionSheetItem: ActionSheetItem,

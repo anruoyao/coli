@@ -1,10 +1,11 @@
 <template>
-    <div class="relative markdown-text py-3 group">
-        <div class="absolute overflow-hidden top-4 left-4">
-            <AvatarSmall v-bind:avatarSrc="commentData.relations.user.avatar_url"></AvatarSmall>
+    <div v-bind:class="isReply ? 'relative markdown-text py-1.5' : 'relative markdown-text py-3 group'">
+        <div v-bind:class="isReply ? 'absolute overflow-hidden top-1.5 left-2' : 'absolute overflow-hidden top-4 left-4'">
+            <AvatarExtraSmall v-if="isReply" v-bind:avatarSrc="commentData.relations.user.avatar_url"></AvatarExtraSmall>
+            <AvatarSmall v-else v-bind:avatarSrc="commentData.relations.user.avatar_url"></AvatarSmall>
         </div>
-        <div class="ml-4 pr-4 pb-1 max-w-full">
-            <div class="ml-small-avatar pl-2">
+        <div v-bind:class="isReply ? 'ml-2 pr-2 max-w-full' : 'ml-4 pr-4 pb-1 max-w-full'">
+            <div v-bind:class="isReply ? 'ml-x-small-avatar pl-1.5' : 'ml-small-avatar pl-2'">
                 <div class="block leading-none mb-1">
                     <div class="inline-flex items-center gap-2">
 						<h3 class="text-par-n font-semibold text-lab-pr2">
@@ -16,7 +17,8 @@
                     </div>
                 </div>
                 <div class="block">
-                    <div v-if="commentData.has_parent" class="overflow-hidden leading-tight">
+                    <!-- 主评论变体保留旧的父评论摘要展示（兼容非线程场景） -->
+                    <div v-if="! isReply && commentData.has_parent" class="overflow-hidden leading-tight">
                         <!-- TODO: Show parent comment in popup element if clicked -->
                         <template v-if="commentData.deleted">
                             <p class="text-cap-l text-lab-sc break-words italic">
@@ -37,29 +39,32 @@
                             </template>
                         </template>
                     </div>
-                    <div class="pr-6">
-                        <CommentText v-bind:commentContent="commentContent"></CommentText>
+                    <div v-bind:class="isReply ? '' : 'pr-6'">
+                        <CommentText
+                            v-bind:commentContent="commentContent"
+                            v-bind:replyTo="replyToName"
+                            v-bind:clamped="preview"></CommentText>
                     </div>
                     <div v-if="state.isTranslated" class="mt-2">
                         <TranslationService></TranslationService>
                     </div>
                 </div>
-                <div v-if="! commentData.deleted">
+                <div v-if="! commentData.deleted && ! preview">
                     <div class="block mt-2" v-if="hasReactions">
                         <ReactionsViewer v-on:add="addReaction" v-bind:reactions="commentData.relations.reactions"></ReactionsViewer>
                     </div>
                 </div>
-                <div v-if="! commentData.deleted" class="flex items-center leading-none mt-2 gap-3">
+                <div v-if="! commentData.deleted && ! preview" class="flex items-center leading-none mt-2 gap-3">
                     <div class="shrink-0 relative">
                         <MarginalTextButton
                             buttonColor="text-lab-sc"
-                            v-on:click.stop="openReactionsPicker" 
+                            v-on:click.stop="openReactionsPicker"
                         v-bind:buttonText="$t('labels.like')"></MarginalTextButton>
 
                         <PrimaryTransition>
                             <div class="absolute left-0 top-4 origin-top-left z-20">
-                                <ReactionsPicker 
-                                    v-if="state.isReactionPickerOpen" 
+                                <ReactionsPicker
+                                    v-if="state.isReactionPickerOpen"
                                     v-on:add="addReaction"
                                 v-outside-click="closeReactionsPicker"></ReactionsPicker>
                             </div>
@@ -86,8 +91,8 @@
                 </div>
             </div>
         </div>
-        
-        <div v-if="! commentData.deleted" class="absolute top-2 right-2.5 leading-none">
+
+        <div v-if="! commentData.deleted && ! preview" class="absolute top-2 right-2.5 leading-none">
             <div class="relative">
                 <div class="opacity-30 hover:opacity-100">
                     <DropdownButton v-on:click.stop="toggleMainDropdown"></DropdownButton>
@@ -96,7 +101,7 @@
                     <DropdownMenu v-outside-click="toggleMainDropdown" v-on:click="toggleMainDropdown">
                         <DropdownReactions v-on:add="addReaction"></DropdownReactions>
                         <DropdownMenuItem v-on:click="openReactionsPicker" iconName="heart-rounded" v-bind:textLabel="$t('dd.add_reaction')"></DropdownMenuItem>
-                        
+
                         <template v-if="commentData.meta.is_translatable">
                             <DropdownMenuItem v-if="state.isTranslated" v-on:click="cancelTranslation" iconName="translate-01" v-bind:textLabel="$t('labels.show_untranslated')"></DropdownMenuItem>
                             <DropdownMenuItem v-else v-on:click="translate" iconName="translate-01" v-bind:textLabel="$t('dd.translate')"></DropdownMenuItem>
@@ -121,8 +126,9 @@
     import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
     import { colibriTranslator } from '@/kernel/services/translator/index.js';
     import { useAuthGate } from '@D/core/composables/useAuthGate.js';
-    
+
     import AvatarSmall from '@D/components/general/avatars/AvatarSmall.vue';
+    import AvatarExtraSmall from '@D/components/general/avatars/AvatarExtraSmall.vue';
     import DropdownButton from '@D/components/general/dropdowns/parts/DropdownButton.vue';
     import DropdownMenu from '@D/components/general/dropdowns/parts/DropdownMenu.vue';
     import DropdownMenuItem from '@D/components/general/dropdowns/parts/DropdownMenuItem.vue';
@@ -137,6 +143,16 @@
             commentData: {
                 type: Object,
                 default: {}
+            },
+            // root = 主评论；reply = 线程内回复（紧凑密度 + 行内回复前缀）
+            variant: {
+                type: String,
+                default: 'root'
+            },
+            // 折叠预览态：正文 2 行截断、隐藏表态/操作区
+            preview: {
+                type: Boolean,
+                default: false
             }
         },
         emits: ['reply', 'delete'],
@@ -152,6 +168,17 @@
 
             const { guard } = useAuthGate();
 
+            const isReply = computed(() => props.variant === 'reply');
+
+            // 回复目标用户名（父评论被删时关系可能为空）
+            const replyToName = computed(() => {
+                if (! isReply.value) {
+                    return '';
+                }
+
+                return commentData.value.relations?.parent?.user?.username ?? '';
+            });
+
             const openReactionsPicker = function() {
                 if (! guard()) return;
 
@@ -166,6 +193,8 @@
 
             return {
                 state: state,
+                isReply: isReply,
+                replyToName: replyToName,
                 commentData: commentData,
                 closeReactionsPicker: closeReactionsPicker,
                 openReactionsPicker: openReactionsPicker,
@@ -242,6 +271,7 @@
                 return import('@D/components/reactions/ReactionsPicker.vue');
             }),
             AvatarSmall: AvatarSmall,
+            AvatarExtraSmall: AvatarExtraSmall,
             DropdownButton: DropdownButton,
             DropdownMenu: DropdownMenu,
             DropdownMenuItem: DropdownMenuItem,

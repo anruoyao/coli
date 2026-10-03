@@ -42,16 +42,17 @@
                             </span>
                         </div>
                     </div>
-                    <div class="block" v-if="postComments.length">
+                    <div class="block" v-if="threads.length">
 
-                        <div v-for="(commentItem, idx) in postComments">
-                            <PublicationComment
-                                v-on:delete="handleCommentDelete"
+                        <template v-for="(threadItem, idx) in threads" v-bind:key="threadItem.root.id">
+                            <Border v-if="idx > 0"></Border>
+                            <CommentThread
+                                v-bind:thread="threadItem"
+                                v-on:toggle-expand="toggleExpand(threadItem)"
+                                v-on:load-more="loadMore(threadItem)"
                                 v-on:reply="handleCommentReply"
-                                v-bind:key="commentItem.id"
-                            v-bind:commentData="commentItem"></PublicationComment>
-                            <Border v-if="idx != (postComments.length - 1)"></Border>
-                        </div>
+                            v-on:delete="handleCommentDelete"></CommentThread>
+                        </template>
                         <div v-if="state.isLoadingComments">
                             <div class="flex justify-center my-4">
                                 <div class="colibri-primary-animation"></div>
@@ -85,9 +86,10 @@
     import { useAuthGate } from '@D/core/composables/useAuthGate.js';
     import { useInfiniteScroll } from '@/kernel/vue/composables/infinite-scroll/index.js';
     import { useDeletePost } from '@/kernel/vue/composables/delete-post/index.js';
+    import { useCommentThreads } from '@/kernel/vue/composables/comment-threads/index.js';
 
     import TimelinePublication from '@D/components/timeline/feed/TimelinePublication.vue';
-    import PublicationComment from '@D/components/timeline/feed/parts/comment/PublicationComment.vue';
+    import CommentThread from '@D/components/timeline/feed/parts/comment/CommentThread.vue';
     import PageHeader from '@D/components/layout/PageHeader.vue';
 
     import SidedContentLayout from '@D/components/layout/SidedContentLayout.vue';
@@ -121,11 +123,22 @@
             const { postDeleter } = useDeletePost();
             const postData = ref({});
             const postAuthor = ref({});
-            const postComments = ref([]);
+
+            // 树状评论线程（与 Flutter 端同一套 threaded API）
+            const {
+                threads,
+                setRoots,
+                appendRoots,
+                toggleExpand,
+                loadMore,
+                applyCreated,
+                applyDeleted,
+                findComment
+            } = useCommentThreads(computed(() => authStore.isGuest));
 
             const fetchComments = async () => {
-                if (postComments.value.length && ! state.noMoreComments && ! state.isLoadingComments) {
-                    const cursorId = postComments.value.at(-1).id;
+                if (threads.value.length && ! state.noMoreComments && ! state.isLoadingComments) {
+                    const cursorId = Math.min(...threads.value.map((thread) => thread.root.id));
 
                     if (cursorId) {
                         state.isLoadingComments = true;
@@ -134,12 +147,13 @@
                         const api = authStore.isGuest ? colibriAPI().guest() : colibriAPI().userTimeline();
 
                         await api.params({
-                            cursor: cursorId
+                            cursor: cursorId,
+                            threaded: 1
                         }).getFrom(`post/${route.params.hash_id}/comments`).then(function(response) {
                             let comments = response.data.data;
 
                             if (comments.length) {
-                                postComments.value = postComments.value.concat(comments);
+                                appendRoots(comments);
                             }
                             else {
                                 state.noMoreComments = true;
@@ -158,13 +172,15 @@
 			});
 
             const fetchInitial = function() {
-                // 访客走访客端点，登录用户走原端点
+                // 访客走访客端点，登录用户走原端点；threaded=1 只回主评论 + 回复预览
                 const api = authStore.isGuest ? colibriAPI().guest() : colibriAPI().userTimeline();
 
-                api.getFrom(`post/${route.params.hash_id}`).then(function(response) {
+                api.params({
+                    threaded: 1
+                }).getFrom(`post/${route.params.hash_id}`).then(function(response) {
                     postData.value = response.data.data.post;
                     postAuthor.value = response.data.data.author;
-                    postComments.value = response.data.data.comments;
+                    setRoots(response.data.data.comments);
                     state.isLoading = false;
                 }).catch(function(error) {
                     router.push({
@@ -195,17 +211,13 @@
                 state: state,
                 postData: postData,
                 postAuthor: postAuthor,
-                postComments: computed(() => {
-                    return postComments.value
-                }),
+                threads: threads,
+                toggleExpand: toggleExpand,
+                loadMore: loadMore,
                 handleCommentReply: (commentId) => {
                     if (! guard()) return;
 
-                    let commentData = postComments.value.find((item) => {
-                        if(item.id == commentId) {
-                            return item;
-                        }
-                    });
+                    const commentData = findComment(commentId);
 
                     if(commentData) {
                         colibriEventBus.emit('publication-comment:reply', {
@@ -226,19 +238,8 @@
 
                                 postData.value.comments_count = response.data.data.post.comments_count;
 
-                                let commentIndex = postComments.value.findIndex((item) => {
-                                    return item.id == commentId;
-                                });
-
-                                if(commentIndex !== -1) {
-                                    postComments.value.splice(commentIndex, 1);
-                                }
-
-                                postComments.value.forEach(function(item) {
-                                    if(item.parent_id && item.parent_id == commentId) {
-                                        item.deleted = true;
-                                    }
-                                });
+                                // 主评论整棵线程移除；回复从线程内摘除
+                                applyDeleted(commentId);
 
                                 toastSuccess(__t('toast.media.comment_deleted'));
                             }).catch((error) => {
@@ -250,7 +251,12 @@
                     });
                 },
                 handleCommentAdding: (commentData) => {
-                    postComments.value.unshift(commentData.comment);
+                    const located = applyCreated(commentData.comment);
+
+                    // 找不到所属线程（极端情况）：保守整页重载保证数据一致
+                    if (! located) {
+                        fetchInitial();
+                    }
 
                     postData.value.comments_count = commentData.post.comments_count;
                 },
@@ -267,7 +273,7 @@
         },
         components: {
             TimelinePublication: TimelinePublication,
-            PublicationComment: PublicationComment,
+            CommentThread: CommentThread,
             PageHeader: PageHeader,
             TimelinePublicationSkeleton: TimelinePublicationSkeleton,
             TimelineContainer: TimelineContainer,

@@ -56,3 +56,50 @@ input[type="number"] {
 .callout-error{
     @apply text-[#FF6367] border-red-900 bg-red-900/5;
 }
+
+/*
+|--------------------------------------------------------------------------
+| 评论线程动画（与 Flutter AnimatedSize / _ReplySlideIn 风格统一）
+|--------------------------------------------------------------------------
+*/
+
+/* 面板切换时整体淡入 + 轻微上移 */
+.ct-fade-in {
+    animation: ct-fade-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* 新回复出现：淡入 + 上移（同 key 复用不会重放） */
+.ct-reply-in {
+    animation: ct-reply-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes ct-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ct-reply-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ct-fade-in,
+    .ct-reply-in {
+        animation: none;
+    }
+}
