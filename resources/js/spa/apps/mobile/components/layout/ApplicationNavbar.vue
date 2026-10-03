@@ -10,13 +10,25 @@
 				</RouterLink>
 			</div>
 			<div class="flex items-center justify-center">
-				<PrimaryIconButton v-on:click="requestGate" buttonColor="text-lab-pr" iconName="search-lg" iconType="solid"></PrimaryIconButton>
+				<RouterLink v-if="! authStore.isGuest" v-bind:to="{ name: 'explore_index' }">
+					<PrimaryIconButton buttonColor="text-lab-pr" iconName="search-lg" iconType="solid"></PrimaryIconButton>
+				</RouterLink>
+				<PrimaryIconButton v-else v-on:click="requestGate" buttonColor="text-lab-pr" iconName="search-lg" iconType="solid"></PrimaryIconButton>
 			</div>
 			<div class="flex items-center justify-center">
-				<PrimaryIconButton v-on:click="requestGate" buttonColor="text-lab-pr" iconName="plus-square-dashed" iconType="line"></PrimaryIconButton>
+				<PrimaryIconButton v-if="! authStore.isGuest" v-on:click="state.mainMenu.open" buttonColor="text-lab-pr" iconName="plus-square-dashed" iconType="line"></PrimaryIconButton>
+				<PrimaryIconButton v-else v-on:click="requestGate" buttonColor="text-lab-pr" iconName="plus-square-dashed" iconType="line"></PrimaryIconButton>
 			</div>
 			<div class="flex items-center justify-center">
-				<PrimaryIconButton v-on:click="requestGate" buttonColor="text-lab-pr" iconName="message-chat-circle" iconType="line"></PrimaryIconButton>
+				<div class="relative">
+					<RouterLink v-if="! authStore.isGuest" v-bind:to="{ name: 'messenger_index' }">
+						<PrimaryIconButton buttonColor="text-lab-pr" iconName="message-chat-circle" iconType="line"></PrimaryIconButton>
+					</RouterLink>
+					<PrimaryIconButton v-else v-on:click="requestGate" buttonColor="text-lab-pr" iconName="message-chat-circle" iconType="line"></PrimaryIconButton>
+					<span class="absolute -top-1.5 -right-1">
+						<BadgeCounter v-if="inboxCount.raw" v-bind:count="inboxCount.formatted"></BadgeCounter>
+					</span>
+				</div>
 			</div>
 			<!-- 登录用户：个人头像入口；访客：登录引导图标 -->
 			<div class="flex items-center justify-center leading-zero">
@@ -57,6 +69,7 @@
 	import BRD from '@/kernel/websockets/brd/index.js';
 
 	import PrimaryIconButton from '@M/components/inter-ui/buttons/PrimaryIconButton.vue';
+	import BadgeCounter from '@M/components/general/counters/BadgeCounter.vue';
 	import ToastNotification from '@M/components/notifications/toast/ToastNotification.vue';
 	import ActionSheet from '@M/components/general/sheets/ActionSheet.vue';
 	import ActionSheetItem from '@M/components/general/sheets/ActionSheetItem.vue';
@@ -69,6 +82,10 @@
 			const inboxStore = useInboxStore();
 			const state = reactive({
 				mainMenu: useMenu()
+			});
+
+			const inboxCount = computed(() => {
+				return inboxStore.unreadCount;
 			});
 
 			onMounted(() => {
@@ -96,6 +113,7 @@
 					return authStore.userData;
 				}),
 				state: state,
+				inboxCount: inboxCount,
 				// 访客统一登录引导
 				requestGate: function() {
 					colibriEventBus.emit('auth-gate:request', {});
@@ -107,6 +125,7 @@
 		},
 		components: {
 			PrimaryIconButton: PrimaryIconButton,
+			BadgeCounter: BadgeCounter,
 			ToastNotification: ToastNotification,
 			ActionSheet: ActionSheet,
 			ActionSheetItem: ActionSheetItem,
