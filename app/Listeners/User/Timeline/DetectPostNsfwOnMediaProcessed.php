@@ -2,7 +2,6 @@
 
 namespace App\Listeners\User\Timeline;
 
-use App\Models\Post;
 use App\Jobs\User\Timeline\DetectPostNsfwContent;
 use App\Events\User\Timeline\MediaProcessedEvent;
 
@@ -26,9 +25,11 @@ class DetectPostNsfwOnMediaProcessed
             return; // 音频不涉及 NSFW 检测
         }
 
-        $post = $media->mediaable;
+        // MediaProcessedEvent 仅由帖子视频/音频转码 Job 触发，媒体必属 Post。
+        // 注意：勿用 $media->mediaable（Media 模型该 morphTo 定义参数有误，生产未使用）。
+        $post = $media->post;
 
-        if ($post instanceof Post && $post->exists) {
+        if ($post && $post->exists) {
             DetectPostNsfwContent::dispatch($post);
         }
     }
