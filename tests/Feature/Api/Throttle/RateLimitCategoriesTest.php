@@ -58,7 +58,7 @@ class RateLimitCategoriesTest extends ThrottleTestCase
         $this->getJson('/api/timeline/feed')->assertOk();
         $this->getJson('/api/timeline/feed')->assertStatus(429);
 
-        // 其他分类（profile，未改配置 60/min）不受 timeline 桶影响
-        $this->getJson('/api/profile/profile')->assertOk();
+        // 其他分类（notifications，未改配置 60/min）不受 timeline 桶影响
+        $this->getJson('/api/notifications/all')->assertOk();
     }
 }
