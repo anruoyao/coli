@@ -62,8 +62,9 @@ class NsfwDetectionTest extends TestCase
 
         Notification::fake();
 
-        // 检测源文件：local 盘写一个占位文件（服务端为 Http::fake，内容无需为真实图片）
+        // 检测源文件：local 盘写占位文件（服务端为 Http::fake，内容无需为真实媒体）
         Storage::disk('local')->put('nsfw-test/sample.jpg', 'fake-image-bytes');
+        Storage::disk('local')->put('nsfw-test/sample.mp4', 'fake-video-bytes');
     }
 
     private function makePost(array $overrides = []): Post
@@ -285,7 +286,8 @@ class NsfwDetectionTest extends TestCase
             ->call('saveSettings')
             ->assertHasNoErrors();
 
-        $settings = app(NsfwDetectionSettings::class)->fresh();
+        // spatie/laravel-settings 该版本无 fresh()，重新 resolve 即重新从库 hydrate
+        $settings = app(NsfwDetectionSettings::class);
 
         $this->assertTrue($settings->enabled);
         $this->assertSame(0.75, $settings->threshold);
