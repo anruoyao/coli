@@ -63,13 +63,16 @@ class SendReportNotificationEmailJob implements ShouldQueue
         $failed = [];
 
         foreach($recipients as $recipient) {
-            // 幂等：同一举报同一邮箱只保留一条日志；已成功的跳过（重试只补发失败者）
+            // 幂等：同一举报同一邮箱只保留一条日志；已成功的跳过（重试只补发失败者）。
+            // recipient_email 为加密存储，无法参与 where 查询，故以明文 sha1 哈希作幂等键。
             $log = ReportEmailLog::firstOrCreate(
                 [
                     'report_id' => $report->id,
-                    'recipient_email' => $recipient->email,
+                    'recipient_hash' => sha1($recipient->email),
                 ],
                 [
+                    'recipient_email' => $recipient->email,
+                    'recipient_hash' => sha1($recipient->email),
                     'status' => ReportEmailLog::STATUS_PENDING,
                     'attempts' => 0,
                 ]
@@ -160,7 +163,9 @@ class SendReportNotificationEmailJob implements ShouldQueue
 
         return [
             'id' => $report->id,
-            'time' => $report->created_at->timezone(config('app.timezone'))->format('Y-m-d H:i:s'),
+            // reports.created_at 为自定义 DateFormatter cast，经 Carbon 转应用时区格式化
+            'time' => \Carbon\Carbon::parse($report->created_at->getTimestamp())
+                ->timezone(config('app.timezone'))->format('Y-m-d H:i:s'),
             'reporter' => [
                 'id' => $report->reporter->id,
                 'username' => $report->reporter->username,

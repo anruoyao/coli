@@ -3,7 +3,7 @@
     @if($flashContent)
         <div class="flex items-center gap-2 rounded-xl px-4 py-3 {{ $flashType === 'error' ? 'bg-red-500/10 text-red-900' : 'bg-green-500/10 text-green-900' }}">
             <span class="size-4 shrink-0">
-                <x-ui.icon name="{{ $flashType === 'error' ? 'alert-triangle' : 'check-circle' }}" type="line" class="size-full"></x-ui.icon>
+                <x-ui-icon name="{{ $flashType === 'error' ? 'alert-triangle' : 'check-circle' }}" type="line" class="size-full"></x-ui-icon>
             </span>
             <span class="text-par-n">
                 {{ $flashContent }}

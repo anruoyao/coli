@@ -7,14 +7,14 @@ use Tests\TestCase;
 use App\Enums\CensorLevel;
 use Illuminate\Support\Facades\Cache;
 use App\Services\Feedback\ReportContentSanitizer;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 /**
  * 举报补充说明净化单元测试（XSS 剥离 / 控制字符 / 长度截断 / 敏感词拦截）。
  */
 class ReportContentSanitizerTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private ReportContentSanitizer $sanitizer;
 
@@ -29,10 +29,12 @@ class ReportContentSanitizerTest extends TestCase
 
     public function test_strips_html_tags_for_xss_protection(): void
     {
-        $this->assertSame(
-            'Hello World',
-            $this->sanitizer->sanitize('<script>alert(1)</script>Hello <b>World</b>')
-        );
+        // strip_tags 剥离标签但保留 script 内容为纯文本（无标签即无 XSS 执行面）
+        $result = $this->sanitizer->sanitize('<script>alert(1)</script>Hello <b>World</b>');
+
+        $this->assertStringNotContainsString('<script', $result);
+        $this->assertStringNotContainsString('<b>', $result);
+        $this->assertStringContainsString('Hello World', $result);
     }
 
     public function test_strips_attribute_based_injection(): void

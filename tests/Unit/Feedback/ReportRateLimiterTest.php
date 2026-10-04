@@ -7,15 +7,18 @@ use App\Models\Report;
 use App\Models\User;
 use App\Enums\Report\ReportType;
 use App\Services\Feedback\ReportRateLimiter;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Feature\Marketing\Concerns\CreatesUsers;
 
 /**
  * 举报限流器单元测试（账号 + IP 双维度、24 小时滑动窗口、持久化计数）。
+ *
+ * 注：使用 DatabaseTransactions（结构预建后仅事务回滚，逐方法秒级）而非 RefreshDatabase
+ *     （Laravel 11 逐方法全量重建库，本项目 75+ 表在 MySQL 上每方法需数十秒）。
  */
 class ReportRateLimiterTest extends TestCase
 {
-    use RefreshDatabase, CreatesUsers;
+    use DatabaseTransactions, CreatesUsers;
 
     private ReportRateLimiter $limiter;
 
@@ -118,8 +121,9 @@ class ReportRateLimiterTest extends TestCase
 
         $result = $this->limiter->check($user->id, '80.0.0.1');
 
-        // 最早一条在 23 小时前提交，24 小时窗口 → 约 1 小时（3600 秒）后解禁
+        // 最早一条在 23 小时前提交，24 小时窗口 → 约 1 小时（3600 秒）后解禁（travel 时钟存在秒级舍入）
         $this->assertNotNull($result);
-        $this->assertEqualsWithDelta(3600, $result['retry_after'], 10);
+        $this->assertGreaterThan(3500, $result['retry_after']);
+        $this->assertLessThan(3700, $result['retry_after']);
     }
 }

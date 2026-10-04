@@ -15,10 +15,15 @@ use Illuminate\Mail\Mailables\Envelope;
  */
 class ReportNotificationMail extends Mailable
 {
+    // 父类 Mailable 已有 $subject（无类型声明），子类不得添加类型，否则 PHP 报
+    // "Type of ReportNotificationMail::$subject must not be defined"
+    public $subject;
+
     public function __construct(
-        public string $subject,
+        string $subject,
         public array $payload
     ) {
+        $this->subject = $subject;
     }
 
     public function envelope(): Envelope

@@ -3,6 +3,7 @@
 namespace App\Services\Feedback;
 
 use App\Models\Report;
+use Carbon\Carbon;
 
 /**
  * 举报限流器（账号 + IP 双维度）。
@@ -87,7 +88,10 @@ class ReportRateLimiter
             return 0;
         }
 
-        $availableAt = $earliest->created_at->addHours($this->windowHours());
+        // reports.created_at 为自定义 DateFormatter cast（无 Carbon 方法）。
+        // 与 DateFormatter 内部一致地按默认时区解析字符串（勿加显式 'UTC'，否则与 now() 产生偏移）。
+        $availableAt = Carbon::parse($earliest->created_at->getTimestamp())
+            ->addHours($this->windowHours());
 
         return max(0, now()->diffInSeconds($availableAt));
     }

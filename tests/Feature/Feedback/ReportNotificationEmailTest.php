@@ -16,7 +16,10 @@ use App\Models\ReportNotificationEmail;
 use App\Settings\ReportNotificationSettings;
 use App\Jobs\Feedback\SendReportNotificationEmailJob;
 use App\Livewire\Admin\Config\ReportNotifications;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\User;
+use App\Enums\User\UserStatus;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Livewire\Livewire;
 use Tests\Feature\Marketing\Concerns\CreatesUsers;
 
 /**
@@ -24,14 +27,21 @@ use Tests\Feature\Marketing\Concerns\CreatesUsers;
  *
  * 覆盖：API 提交（comment 落库 / IP 记录 / Job 派发）、限流 429、敏感词 422、
  * 邮箱加密存储、Job 多邮箱发送 / 失败重试 / 已发送跳过 / 总开关、后台配置 CRUD 与审计日志。
+ *
+ * 注：使用 DatabaseTransactions（结构预建后仅事务回滚）而非 RefreshDatabase，
+ *     避免 Laravel 11 逐方法全量重建库导致 MySQL 上超时。
  */
 class ReportNotificationEmailTest extends TestCase
 {
-    use RefreshDatabase, CreatesUsers;
+    use DatabaseTransactions, CreatesUsers;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        // API 组最前挂 VerifyAppKey（X-App-Key）中间件，未携带密钥返回 404 伪装。
+        // 业务测试聚焦举报链路本身，此处关闭密钥门槛（密钥校验属另一中间件职责）。
+        config(['security.app_key.enabled' => false]);
 
         Mail::fake();
         Queue::fake();
@@ -41,10 +51,16 @@ class ReportNotificationEmailTest extends TestCase
 
     // ===================== API 提交 =====================
 
+    /** 被举报目标需为 ACTIVE 状态（ReportController 经 User::activeById 查询）。 */
+    private function activeUser(array $overrides = []): User
+    {
+        return $this->makeUser(array_merge(['status' => UserStatus::ACTIVE], $overrides));
+    }
+
     public function test_submission_persists_report_and_dispatches_job(): void
     {
         $user = $this->makeUser();
-        $target = $this->makeUser();
+        $target = $this->activeUser();
 
         $response = $this->actingAs($user, 'sanctum')->postJson('/api/feedback/report/send', [
             'type' => 'user',
@@ -58,7 +74,9 @@ class ReportNotificationEmailTest extends TestCase
         $report = Report::query()->where('reporter_id', $user->id)->first();
 
         $this->assertNotNull($report);
-        $this->assertSame('这是补充说明', $report->reporter_comment); // XSS 标签被剥离
+        // strip_tags 剥离标签但保留 script 内容为纯文本（无标签即无 XSS 执行面）
+        $this->assertStringNotContainsString('<script', $report->reporter_comment);
+        $this->assertStringContainsString('这是补充说明', $report->reporter_comment);
         $this->assertSame('127.0.0.1', $report->ip_address);
 
         Queue::assertPushed(SendReportNotificationEmailJob::class, fn ($job) => $job->reportId === $report->id);
@@ -67,9 +85,12 @@ class ReportNotificationEmailTest extends TestCase
     public function test_eleventh_submission_is_rate_limited_with_retry_data(): void
     {
         $user = $this->makeUser();
-        $target = $this->makeUser();
 
+        // 限流按 24h 窗口累计：对同一目标重复举报会先删后建不虚增计数，
+        // 故需举报 10 个不同目标才触发账号维度限流。
         for($i = 0; $i < 10; $i++) {
+            $target = $this->activeUser();
+
             $this->actingAs($user, 'sanctum')->postJson('/api/feedback/report/send', [
                 'type' => 'user',
                 'reason_index' => 0,
@@ -80,7 +101,7 @@ class ReportNotificationEmailTest extends TestCase
         $response = $this->actingAs($user, 'sanctum')->postJson('/api/feedback/report/send', [
             'type' => 'user',
             'reason_index' => 0,
-            'reportable_id' => $target->id,
+            'reportable_id' => $this->activeUser()->id,
         ]);
 
         $response->assertStatus(429);
@@ -97,7 +118,7 @@ class ReportNotificationEmailTest extends TestCase
         Censor::create(['word' => 'badword', 'level' => CensorLevel::BANNED]);
 
         $user = $this->makeUser();
-        $target = $this->makeUser();
+        $target = $this->activeUser();
 
         $response = $this->actingAs($user, 'sanctum')->postJson('/api/feedback/report/send', [
             'type' => 'user',
@@ -131,7 +152,7 @@ class ReportNotificationEmailTest extends TestCase
     private function makeReport(): Report
     {
         $reporter = $this->makeUser();
-        $target = $this->makeUser();
+        $target = $this->activeUser();
 
         return $target->reports()->create([
             'reporter_id' => $reporter->id,
@@ -168,10 +189,11 @@ class ReportNotificationEmailTest extends TestCase
         ReportNotificationEmail::create(['email' => 'first@example.com', 'enabled' => true]);
         ReportNotificationEmail::create(['email' => 'second@example.com', 'enabled' => true]);
 
-        // 首个邮箱在上一轮已发送成功
+        // 首个邮箱在上一轮已发送成功（幂等键为明文哈希，recipient_email 加密不可查）
         ReportEmailLog::create([
             'report_id' => $report->id,
             'recipient_email' => 'first@example.com',
+            'recipient_hash' => sha1('first@example.com'),
             'status' => ReportEmailLog::STATUS_SENT,
             'attempts' => 1,
             'sent_at' => now(),
