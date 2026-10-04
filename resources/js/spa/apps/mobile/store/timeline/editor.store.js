@@ -11,12 +11,22 @@ const usePostEditorStore = defineStore('mobile_post_editor_store', {
             },
             quotedPost: null,
             mentionName: null,
-            initialType: PostType.TEXT
+            initialType: PostType.TEXT,
+            marks: {
+                isSensitive: false,
+                isAiGenerated: false
+            }
 		}
 	},
     getters: {
         pollChoices: (state) => {
             return state.draftPost.relations.poll.choices;
+        },
+        isSensitive: (state) => {
+            return state.marks.isSensitive;
+        },
+        isAiGenerated: (state) => {
+            return state.marks.isAiGenerated;
         }
     },
     actions: {
@@ -54,6 +64,8 @@ const usePostEditorStore = defineStore('mobile_post_editor_store', {
         finishEditing: function() {
             this.initialType = PostType.TEXT;
             this.mentionName = null;
+            this.marks.isSensitive = false;
+            this.marks.isAiGenerated = false;
             this.preservedPostData = {};
             this.resetDraftPost();
         },
@@ -70,6 +82,12 @@ const usePostEditorStore = defineStore('mobile_post_editor_store', {
                 relations: {},
                 ...this.preservedPostData
             };
+        },
+        markPostAsSensitive: function() {
+            this.marks.isSensitive = ! this.marks.isSensitive;
+        },
+        markPostAsAiGenerated: function() {
+            this.marks.isAiGenerated = ! this.marks.isAiGenerated;
         }
     }
 });

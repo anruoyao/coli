@@ -1,13 +1,15 @@
+/**
+ * Underline plugin for markdown-it
+ * Renders `++ text ++` syntax into `<u>` HTML tag.
+ *
+ * @see highlight.plugin.js (sibling `:: text ::` plugin)
+ */
 export default function (md) {
-    // Add a rule to parse the custom syntax
     md.inline.ruler.after('emphasis', 'underline', (state, silent) => {
-        const marker = state.src[state.pos];
+        const start = state.pos;
 
         // Check for "++" at the current position
-        if (marker !== '+') return false;
-
-        // Ensure there are at least two "+" symbols
-        const start = state.pos;
+        if (state.src[start] !== '+') return false;
         if (state.src[start + 1] !== '+') return false;
 
         // Find the closing "++"
@@ -15,29 +17,24 @@ export default function (md) {
         if (!match) return false;
 
         if (!silent) {
-        // Push the underline token
-        state.push({
-            type: 'underline_open',
-            level: state.level,
-        });
-        state.push({
-            type: 'text',
-            content: match[1],
-            level: state.level + 1,
-        });
-        state.push({
-            type: 'underline_close',
-            level: state.level,
-        });
+            const openToken = state.push('underline_open', 'u', 1);
+            openToken.level = state.level;
+
+            const textToken = state.push('text', '', 0);
+            textToken.content = match[1];
+            textToken.level = state.level;
+
+            const closeToken = state.push('underline_close', 'u', -1);
+            closeToken.level = state.level;
         }
 
         // Update position to after the closing "++"
         state.pos += match[0].length + 2;
 
-            // Define rendering rules for the underline tokens
-        md.renderer.rules.underline_open = () => '<u>';
-        md.renderer.rules.underline_close = () => '</u>';
-
         return true;
     });
+
+    // Rendering rules for the underline tokens
+    md.renderer.rules.underline_open = () => '<u>';
+    md.renderer.rules.underline_close = () => '</u>';
 }

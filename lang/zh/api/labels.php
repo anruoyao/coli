@@ -173,7 +173,7 @@ return [
 	'follow_decline_button' => '拒绝',
 	'condition' => '成色',
 	'all' => '全部',
-	'ai_generated' => 'AI 生成内容',
+	'ai_generated' => 'AI 生成',
 	'ai_abbreviation' => 'AI',
 	'admin_panel' => '管理面板',
 	'cancel' => '取消',

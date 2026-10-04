@@ -72,7 +72,7 @@
         },
         components: {
             MarkdownCheatSheet: defineAsyncComponent(() => {
-                return import('@D/components/layout/parts/cheat-sheets/text/markdown/MarkdownCheatSheet.vue');
+                return import('@/kernel/vue/components/cheat-sheets/MarkdownCheatSheet.vue');
             }),
             ShortcutsCheatSheet: defineAsyncComponent(() => {
                 return import('@D/components/layout/parts/cheat-sheets/shortcuts/ShortcutsCheatSheet.vue');

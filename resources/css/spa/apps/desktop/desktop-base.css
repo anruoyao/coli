@@ -120,6 +120,10 @@ body.sticky-bar-open .sticky-bar-bottom-fix{
     @apply text-brand-900 hover:opacity-80 font-medium;
 }
 
+.markdown-text mark {
+    @apply rounded-sm bg-amber-100 px-1 text-inherit;
+}
+
 .bounce-up {
     animation: bounce-up 2s ease-in-out infinite;
 }

@@ -125,3 +125,7 @@ html {
 .markdown-text code {
     @apply border text-lab-pr px-2 py-2 border-l-5 border-bord-pr rounded-r-2xl text-par-n overflow-hidden break-words rounded-md block;
 }
+
+.markdown-text mark {
+    @apply rounded-sm bg-amber-100 px-1 text-inherit;
+}

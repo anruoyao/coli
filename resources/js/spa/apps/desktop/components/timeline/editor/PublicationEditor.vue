@@ -647,7 +647,7 @@
                 return import('@D/components/timeline/editor/preview/video/PostVideoPreview.vue');
             }),
             SensitivePostTape: defineAsyncComponent(() => {
-                return import('@D/components/timeline/editor/assets/SensitivePostTape.vue');
+                return import('@/kernel/vue/components/editor/SensitivePostTape.vue');
             }),
             MediaFileDropper: defineAsyncComponent(() => {
                 return import('@D/components/timeline/editor/parts/MediaFileDropper.vue');

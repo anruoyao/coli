@@ -173,7 +173,7 @@ return [
 	'follow_decline_button' => 'Decline',
 	'condition' => 'Condition',
 	'all' => 'All',
-	'ai_generated' => 'AI generated content',
+	'ai_generated' => 'AI generated',
 	'ai_abbreviation' => 'AI',
 	'admin_panel' => 'Admin panel',
 	'cancel' => 'Cancel',

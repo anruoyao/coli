@@ -15,9 +15,6 @@
                                             {{ postData.relations.user.name }}
                                         </span>
                                         <VerificationBadge v-if="postData.relations.user.verified"></VerificationBadge>
-                                        <span v-if="postData.meta.is_ai_generated" v-bind:title="$t('labels.ai_generated')" class="size-icon-x-small inline-block text-amber-500">
-                                            <SvgIcon name="ai-icon"></SvgIcon>
-                                        </span>
                                     </span>
                                 </h3>
                                 <span class="text-par-n text-lab-sc truncate">
@@ -51,6 +48,9 @@
 							</div>
                         </div>
                     </template>
+                    <div v-if="postData.meta.is_ai_generated" class="overflow-hidden mb-3">
+                        <AiGeneratedLabel></AiGeneratedLabel>
+                    </div>
                     <div class="overflow-hidden mb-2" v-if="postHasMedia">
                         <template v-if="PostTypeUtils.isImage(postData.type)">
                             <div v-on:click="lightboxImages" class="block cursor-pointer rounded-2xl overflow-hidden border border-bord-card">
@@ -215,6 +215,7 @@
     import DropdownMenuItem from '@D/components/general/dropdowns/parts/DropdownMenuItem.vue';
     import DropdownReactions from '@D/components/general/dropdowns/parts/DropdownReactions.vue';
     import ViewsCounter from '@/kernel/vue/components/general/counters/ViewsCounter.vue';
+    import AiGeneratedLabel from '@/kernel/vue/components/posts/AiGeneratedLabel.vue';
     import PrimaryIconButton from '@D/components/inter-ui/buttons/PrimaryIconButton.vue';
     import TextTranslateButton from '@D/components/inter-ui/buttons/TextTranslateButton.vue';
     import TranslationService from '@D/components/general/TranslationService.vue';
@@ -443,6 +444,7 @@
             DropdownMenu: DropdownMenu,
             DropdownMenuItem: DropdownMenuItem,
             DropdownReactions: DropdownReactions,
+            AiGeneratedLabel: AiGeneratedLabel,
             PrimaryIconButton: PrimaryIconButton,
             TextTranslateButton: TextTranslateButton,
             PublicationQuote: PublicationQuote,

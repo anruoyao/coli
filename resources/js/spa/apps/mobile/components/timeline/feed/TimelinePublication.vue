@@ -19,6 +19,9 @@
                         <PublicationText v-bind:postContent="postContent"></PublicationText>
                     </div>
                 </template>
+                <div v-if="postData.meta.is_ai_generated" class="overflow-hidden mb-3 px-4">
+                    <AiGeneratedLabel></AiGeneratedLabel>
+                </div>
                 <div class="mb-2" v-if="PostTypeUtils.isMedia(postData.type)">
                     <template v-if="PostTypeUtils.isImage(postData.type)">
                         <div v-on:click="lightboxImages" class="cursor-pointer">
@@ -339,6 +342,9 @@
             ActionSheet: ActionSheet,
             ActionSheetItem: ActionSheetItem,
             ActionSheetGroup: ActionSheetGroup,
+            AiGeneratedLabel: defineAsyncComponent(() => {
+                return import('@/kernel/vue/components/posts/AiGeneratedLabel.vue');
+            }),
             PublicationComments: PublicationComments,
             ReactionsViewer: defineAsyncComponent(() => {
                 return import('@/kernel/vue/components/reactions/ReactionsViewer.vue');

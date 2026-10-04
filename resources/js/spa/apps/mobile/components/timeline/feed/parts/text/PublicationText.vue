@@ -14,6 +14,8 @@
     import { checkTextOverflow } from '@/kernel/helpers/html/index.js';
     
     import MarkdownMentionPlugin from '@/kernel/plugins/markdownit/mention.plugin.js';
+    import MarkdownUnderlinePlugin from '@/kernel/plugins/markdownit/underline.plugin.js';
+    import MarkdownHighlightPlugin from '@/kernel/plugins/markdownit/highlight.plugin.js';
     import MarkdownParser from 'markdown-it';
 
     export default defineComponent({
@@ -31,6 +33,8 @@
             });
 
             MarkdownIT.use(MarkdownMentionPlugin);
+            MarkdownIT.use(MarkdownUnderlinePlugin);
+            MarkdownIT.use(MarkdownHighlightPlugin);
 
             const state = reactive({
                 textExpanded: false,
