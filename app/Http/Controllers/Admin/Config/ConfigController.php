@@ -56,6 +56,11 @@ class ConfigController extends Controller
         return view('admin::config.notifications.index');
     }
 
+    public function reportNotifications()
+    {
+        return view('admin::config.report-notifications.index');
+    }
+
     public function api()
     {
         return view('admin::config.api.index');

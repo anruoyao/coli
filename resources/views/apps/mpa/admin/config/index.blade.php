@@ -88,6 +88,9 @@
                 <x-navbar.item href="{{ route('admin.config.notifications') }}" icon="bell-01">
                     {{ __('admin/sidebar.notifications') }}
                 </x-navbar.item>
+                <x-navbar.item href="{{ route('admin.config.report-notifications') }}" icon="flag-01">
+                    {{ __('admin/sidebar.report_notifications') }}
+                </x-navbar.item>
                 <x-navbar.item href="{{ route('admin.marketing.index') }}" icon="mail-01">
                     {{ __('admin/sidebar.marketing') }}
                 </x-navbar.item>

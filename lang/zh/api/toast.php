@@ -2,6 +2,8 @@
 
 return [
 	'report_sent' => '感谢您的举报。我们将进行审核并采取适当措施。',
+	'report_rate_limited' => '举报次数已达上限（:window 小时内最多 :limit 次），请于 :time 后再试。',
+	'report_comment_banned_word' => '举报补充说明包含敏感词，请修改后再提交。',
 	'share_copied' => '链接已复制到剪贴板！',
 	'profile_link_copied' => '主页链接已复制到剪贴板！',
 	'post_published' => '帖子已发布！',

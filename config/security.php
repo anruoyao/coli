@@ -44,6 +44,15 @@ return [
         'verification_code_max_per_ip' => env('SECURITY_VERIFICATION_CODE_MAX_PER_IP', 10),       // 发码接口每 IP 每小时
     ],
 
+    /*
+    | 举报限流（双维度：账号 + IP）
+    | 计数来源为 reports 表本身（DB 持久化，系统重启后限流状态不丢失）。
+    */
+    'reports' => [
+        'max_per_day' => env('SECURITY_REPORTS_MAX_PER_DAY', 10),          // 同一用户/IP 窗口期内最多提交次数
+        'window_hours' => env('SECURITY_REPORTS_WINDOW_HOURS', 24),       // 滑动窗口（小时）
+    ],
+
     // 一次性邮箱域名黑名单（注册拦截）
     'disposable_email_domains' => [
         'mailinator.com', 'mailinator.net', 'mailinator.org',

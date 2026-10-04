@@ -21,6 +21,7 @@ return [
 	'file_storage' => '文件存储',
 	'email_settings' => '邮件设置',
 	'notifications' => '通知设置',
+	'report_notifications' => '举报通知配置',
 	'marketing' => '营销活动',
 	'api_settings' => 'API 设置',
 	'reported_content' => '举报内容',

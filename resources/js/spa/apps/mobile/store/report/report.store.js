@@ -18,17 +18,28 @@ const useReportStore = defineStore('mobile_report_store', {
 				this.reportReasons[type] = response.data.data;
 			}).catch((error) => {
 				if(error.response) {
-					alert(error.response.data.message);
+					toastError(error.response.data.message);
 				}
 			});
 		},
-		sendReport: function(reportData) {
-			colibriAPI().feedback().with(reportData).sendTo('report/send').then((response) => {
-				
+		sendReport: async function(reportData) {
+			return await colibriAPI().feedback().with(reportData).sendTo('report/send').then((response) => {
+				return {
+					success: true,
+					remaining: response.data.data.remaining ?? null
+				};
 			}).catch((error) => {
 				if(error.response) {
-					alert(error.response.data.message);
+					return {
+						success: false,
+						status: error.response.status,
+						message: error.response.data.message,
+						errors: error.response.data.errors,
+						rateLimit: error.response.data.data
+					};
 				}
+
+				throw error;
 			});
 		}
     }

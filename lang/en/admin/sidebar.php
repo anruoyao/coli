@@ -21,6 +21,7 @@ return [
 	'file_storage' => 'File storage',
 	'email_settings' => 'Email settings',
 	'notifications' => 'Notification settings',
+	'report_notifications' => 'Report notifications',
 	'marketing' => 'Marketing campaigns',
 	'api_settings' => 'API settings',
 	'reported_content' => 'Reported content',

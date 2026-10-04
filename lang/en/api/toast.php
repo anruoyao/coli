@@ -2,6 +2,8 @@
 
 return [
 	'report_sent' => 'Thank you for your report. We will review it and take appropriate action.',
+	'report_rate_limited' => 'You have reached the report limit (:limit reports within :window hours). You can report again after :time.',
+	'report_comment_banned_word' => 'Your report comment contains banned words. Please modify it and try again.',
 	'share_copied' => 'Link has been copied to clipboard!',
 	'profile_link_copied' => 'Profile link has been copied to clipboard!',
 	'post_published' => 'The post has been published!',

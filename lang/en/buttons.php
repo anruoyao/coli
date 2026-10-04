@@ -7,4 +7,7 @@ return [
     'signup' => 'Sign up',
     'create_backup' => 'Create backup',
     'submit_request' => 'Submit Request',
+    'edit' => 'Edit',
+    'cancel' => 'Cancel',
+    'delete' => 'Delete',
 ];

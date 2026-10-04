@@ -74,4 +74,7 @@ class Table
     public const PRESENCE_SNAPSHOTS = 'presence_snapshots';
     public const MARKETING_CAMPAIGNS = 'marketing_campaigns';
     public const MARKETING_CAMPAIGN_RECIPIENTS = 'marketing_campaign_recipients';
+    public const REPORT_NOTIFICATION_EMAILS = 'report_notification_emails';
+    public const REPORT_EMAIL_LOGS = 'report_email_logs';
+    public const ADMIN_CONFIG_CHANGE_LOGS = 'admin_config_change_logs';
 }
