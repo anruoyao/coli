@@ -52,8 +52,8 @@
 				<PrimaryIconButton v-on:click="selectAudio" v-bind:disabled="postMediaButtonStatus(PostType.AUDIO)" iconName="music-note-01" iconType="line" buttonColor="text-lab-pr3"></PrimaryIconButton>
 				<PrimaryIconButton v-on:click="createPoll" v-bind:disabled="postMediaButtonStatus(PostType.POLL)" iconName="bar-chart-12" iconType="line" buttonColor="text-lab-pr3"></PrimaryIconButton>
 				<PrimaryIconButton v-on:click="toggleGifPicker" v-bind:disabled="postMediaButtonStatus(PostType.GIF)" iconName="gif" iconType="line" buttonColor="text-lab-pr3"></PrimaryIconButton>
-				<PrimaryIconButton v-on:click="toggleCheatSheet" iconName="type-01" buttonColor="text-lab-pr3"></PrimaryIconButton>
-				<PrimaryIconButton v-on:click="toggleMarksMenu" v-bind:buttonColor="(isSensitivePost || isAiGeneratedPost) ? 'text-brand-900' : 'text-lab-pr3'" iconName="circle-dots"></PrimaryIconButton>
+				<PrimaryIconButton v-on:click="toggleCheatSheet" iconName="type-01" iconType="line" buttonColor="text-lab-pr3"></PrimaryIconButton>
+				<PrimaryIconButton v-on:click="toggleMarksMenu" iconType="line" v-bind:buttonColor="(isSensitivePost || isAiGeneratedPost) ? 'text-brand-900' : 'text-lab-pr3'" iconName="circle-dots"></PrimaryIconButton>
 
 				<div class="ml-auto opacity-80">
 					<PrimaryIconButton v-bind:disabled="submitButtonStatus" v-on:click="submitForm" iconName="send-03" buttonColor="text-lab-pr2"></PrimaryIconButton>
