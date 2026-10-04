@@ -8,4 +8,5 @@ return [
 	],
 	'maintenance' => '系统正在维护中，请稍后再试。',
 	'throttle' => '操作过于频繁，请稍后再试。',
+	'throttle_seconds' => '操作过于频繁，请 :seconds 秒后再试。',
 ];

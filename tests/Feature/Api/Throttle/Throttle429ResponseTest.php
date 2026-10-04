@@ -34,6 +34,12 @@ class Throttle429ResponseTest extends ThrottleTestCase
         $this->assertNotEmpty($response->headers->get('Retry-After'));
         $this->assertNotEmpty($response->headers->get('X-RateLimit-Limit'));
         $this->assertNotNull($response->headers->get('X-RateLimit-Reset'));
+
+        // message 带剩余等待秒数（Web/App 直接展示该文案）
+        $this->assertSame(
+            __('api/error.throttle_seconds', ['seconds' => (int) $response->headers->get('Retry-After')]),
+            $response->json('message')
+        );
     }
 
     public function test_throttle_429_event_is_recorded_for_authenticated_user(): void

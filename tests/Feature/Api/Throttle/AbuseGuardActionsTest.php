@@ -136,9 +136,9 @@ class AbuseGuardActionsTest extends ThrottleTestCase
 
         $response->assertStatus(429);
         $this->assertSame(
-            __('api/error.throttle'),
+            __('api/error.throttle_seconds', ['seconds' => (int) $response->headers->get('Retry-After')]),
             $response->json('message'),
-            'AbuseGuard 429 文案应与全局 throttle 渲染统一'
+            'AbuseGuard 429 文案应与全局 throttle 渲染统一（带等待秒数）'
         );
     }
 }

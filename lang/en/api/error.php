@@ -8,4 +8,5 @@ return [
 	],
 	'maintenance' => 'We are performing maintenance. Please try again later.',
 	'throttle' => 'Too many requests. Please slow down and try again later.',
+    'throttle_seconds' => 'Too many requests. Please try again in :seconds seconds.',
 ];

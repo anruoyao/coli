@@ -191,10 +191,15 @@ class AbuseGuardMiddleware
             $headers['X-RateLimit-Reset'] = now()->addSeconds($retryAfter)->getTimestamp();
         }
 
+        // 带剩余等待秒数时给用户更明确的提示（与全局 throttle 渲染 / IP 闸门一致）
+        $message = ($retryAfter > 0)
+            ? __('api/error.throttle_seconds', ['seconds' => $retryAfter])
+            : __('api/error.throttle');
+
         return response()->json([
             'status'  => 'error',
             'code'    => 429,
-            'message' => __('api/error.throttle'),
+            'message' => $message,
         ], 429, $headers);
     }
 }

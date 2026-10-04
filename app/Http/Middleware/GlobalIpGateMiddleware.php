@@ -62,7 +62,7 @@ class GlobalIpGateMiddleware
             return response()->json([
                 'status'  => 'error',
                 'code'    => 429,
-                'message' => __('api/error.throttle'),
+                'message' => __('api/error.throttle_seconds', ['seconds' => $retryAfter]),
             ], 429, [
                 'Retry-After'         => $retryAfter,
                 'X-RateLimit-Limit'   => $max,

@@ -95,7 +95,8 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
                 }
 
                 $headers = $e->getHeaders();
-                $limit = isset($headers['X-RateLimit-Limit']) ? (int) $headers['X-RateLimit-Limit'] : null;
+            $limit = isset($headers['X-RateLimit-Limit']) ? (int) $headers['X-RateLimit-Limit'] : null;
+            $retryAfter = isset($headers['Retry-After']) ? max(0, (int) $headers['Retry-After']) : null;
 
                 // 从路径提取限流分类（api/timeline/feed → throttle:timeline）
                 $category = preg_match('#^api/([^/]+)#', $request->path(), $matches)
@@ -110,10 +111,15 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
                     record_throttle_event(\App\Models\ApiThrottleEvent::DIMENSION_IP, (string) $request->ip(), $category, null, $limit);
                 }
 
+                // 带剩余等待秒数时给用户更明确的提示（Web/App 均直接展示该 message）
+                $message = ($retryAfter !== null && $retryAfter > 0)
+                    ? __('api/error.throttle_seconds', ['seconds' => $retryAfter])
+                    : __('api/error.throttle');
+
                 return response()->json([
                     'status'  => 'error',
                     'code'    => 429,
-                    'message' => __('api/error.throttle'),
+                    'message' => $message,
                 ], 429)->withHeaders($headers);
             });
 
