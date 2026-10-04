@@ -204,6 +204,27 @@ class NsfwDetectionTest extends TestCase
         Notification::assertSentTo($post->user, PostMarkedNsfwNotification::class);
     }
 
+    /**
+     * 纯图片/视频帖（无文本内容）使用不带 :content 占位符的文案，
+     * 避免「您的帖子「」」的空引号。
+     */
+    public function test_notification_uses_no_content_message_key_for_media_only_posts(): void
+    {
+        $post = $this->makePost(['content' => '']);
+        $this->makeMedia($post);
+
+        $this->fakeDetectionService([
+            ['label' => 'FEMALE_BREAST_EXPOSED', 'score' => 0.9, 'box' => [], 'frame' => 0],
+        ]);
+
+        $this->runJob($post);
+
+        Notification::assertSentTo($post->user, PostMarkedNsfwNotification::class,
+            fn (PostMarkedNsfwNotification $notification) => $notification->toDatabase($post->user)['message_key'] === 'post_marked_nsfw_no_content'
+                && $notification->toDatabase($post->user)['message_params'] === []
+        );
+    }
+
     public function test_service_failure_throws_without_flagging(): void
     {
         $post = $this->makePost();

@@ -62,12 +62,15 @@ class PostMarkedNsfwNotification extends Notification implements ShouldQueue
 
     private function getData()
     {
+        // 纯图片/视频帖无文本内容，改用不带「:content」占位符的文案，避免「您的帖子「」」
+        $hasContent = trim((string) $this->postData->content) !== '';
+
         return [
             'message_group' => 'important',
-            'message_key' => 'post_marked_nsfw',
-            'message_params' => [
+            'message_key' => $hasContent ? 'post_marked_nsfw' : 'post_marked_nsfw_no_content',
+            'message_params' => $hasContent ? [
                 'content' => $this->cutContent($this->postData->content)
-            ],
+            ] : [],
             'metadata' => [
                 'is_viewable' => true
             ],

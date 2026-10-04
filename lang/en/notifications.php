@@ -32,6 +32,7 @@ return [
 	'important' => [
 		'account_linked' => 'has linked your account to their account',
 		'post_marked_nsfw' => 'Your post ":content" has been automatically marked as sensitive content by the system. If you believe this is a mistake, please contact the administrator.',
+		'post_marked_nsfw_no_content' => 'Your post (image/video) has been automatically marked as sensitive content by the system. If you believe this is a mistake, please contact the administrator.',
 	],
 	'wallet' => [
 		'deposit_success' => 'Your deposit has been successfully completed',

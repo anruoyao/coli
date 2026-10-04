@@ -32,6 +32,7 @@ return [
 	'important' => [
 		'account_linked' => '已将您的账号关联到他们的账号',
 		'post_marked_nsfw' => '您的帖子「:content」因包含敏感内容已被系统自动标记。如认为此为误判，请联系管理员申诉。',
+		'post_marked_nsfw_no_content' => '您发布的帖子（图片/视频）因包含敏感内容已被系统自动标记。如认为此为误判，请联系管理员申诉。',
 	],
 	'wallet' => [
 		'deposit_success' => '您的充值已成功完成',
