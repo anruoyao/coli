@@ -33,15 +33,17 @@
                         </div>
                         <Border></Border>
 
+                        <!-- 全局置顶帖：关注 / 推荐两个标签页均置顶展示 -->
+                        <template v-if="globalPinnedPosts.length">
+                            <TimelinePublication
+                                v-for="pinnedPostData in globalPinnedPosts"
+                                v-bind:postData="pinnedPostData"
+                                v-bind:isPinned="true"
+                                v-on:delete="handlePostDelete(pinnedPostData)"
+                            v-bind:key="pinnedPostData.hash_id"></TimelinePublication>
+                        </template>
+
                         <template v-if="state.activeTab === 0">
-                            <template v-if="globalPinnedPosts.length">
-                                <TimelinePublication
-                                    v-for="pinnedPostData in globalPinnedPosts"
-                                    v-bind:postData="pinnedPostData"
-                                    v-bind:isPinned="true"
-                                    v-on:delete="handlePostDelete(pinnedPostData)"
-                                v-bind:key="pinnedPostData.hash_id"></TimelinePublication>
-                            </template>
                             <FeedUpdate v-if="timelineNewPosts.length" v-bind:posts="timelineNewPosts" v-on:click="applyTimelineUpdate"></FeedUpdate>
                             <div v-if="timelinePosts.length">
                                 <TimelinePublication

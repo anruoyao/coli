@@ -3,6 +3,7 @@
 		v-bind:avatarSrc="postData.relations.user.avatar_url"
 		v-bind:name="postData.relations.user.name"
 		v-bind:caption="postData.relations.user.caption"
+		v-bind:showPin="isPinned"
 	v-bind:verified="postData.relations.user.verified"></AvatarRightSided>
 </template>
 
@@ -13,6 +14,10 @@
 
 	export default defineComponent({
 		props: {
+			isPinned: {
+				type: Boolean,
+				default: false
+			},
 			postData: {
 				type: Object,
 				required: true
@@ -22,6 +27,9 @@
 			const postData = ref(props.postData);
 
 			return {
+				isPinned: computed(() => {
+					return props.isPinned;
+				}),
 				postUserCaption: computed(() => {
                     return `${postData.value.relations.user.caption} · ${postData.value.date.time_ago}`;
                 }),

@@ -23,7 +23,14 @@
 				<TimelinePublicationSkeleton v-for="i in 2" v-bind:key="i"></TimelinePublicationSkeleton>
 			</div>
 			<div class="pb-6" v-else>
-				<template v-if="state.activeTab === 0">
+					<!-- 全局置顶帖：关注 / 推荐两个标签页均置顶展示 -->
+					<template v-if="globalPinnedPosts.length">
+						<template v-for="pinnedPostData in globalPinnedPosts" v-bind:key="'pin_'+pinnedPostData.hash_id">
+							<TimelinePublication v-bind:postData="pinnedPostData" v-bind:isPinned="true" v-on:delete="handlePostDelete(pinnedPostData)"></TimelinePublication>
+						</template>
+					</template>
+
+					<template v-if="state.activeTab === 0">
 					<FeedUpdate v-if="timelineNewPosts.length" v-bind:posts="timelineNewPosts" v-on:click="applyTimelineUpdate"></FeedUpdate>
 					<div v-if="timelinePosts.length">
 						<template v-for="(postData, index) in timelinePosts" v-bind:key="postData.hash_id">
@@ -131,6 +138,7 @@
 <script>
     import { defineComponent, ref, reactive, onMounted, computed, onUnmounted } from 'vue';
     import { useTimelineStore } from '@M/store/timeline/timeline.store.js';
+    import { usePinsStore } from '@M/store/timeline/pins.store.js';
     import { useGuestFeedStore } from '@M/store/timeline/guest-feed.store.js';
     import { useExplorePostsStore } from '@M/store/explore/posts.store.js';
     import { useAuthStore } from '@M/store/auth/auth.store.js';
@@ -176,6 +184,7 @@
             const explorePostsStore = useExplorePostsStore();
             const guestFeedStore = useGuestFeedStore();
             const authStore = useAuthStore();
+            const pinsStore = usePinsStore();
 
             const timelineNewPosts = computed(() => {
                 return timelineStore.update;
@@ -191,6 +200,10 @@
 
             const recommendedPosts = computed(() => {
                 return explorePostsStore.posts;
+            });
+
+            const globalPinnedPosts = computed(() => {
+                return pinsStore.posts;
             });
 
             const guestPosts = computed(() => {
@@ -217,6 +230,8 @@
                 if(! timelinePosts.value.length) {
                     await timelineStore.initialLoad();
                 }
+
+                pinsStore.fetchGlobalPins();
 
                 state.isLoading = false;
 
@@ -258,6 +273,8 @@
                     state.isLoading = true;
 
                     await timelineStore.initialLoad();
+
+                    pinsStore.fetchGlobalPins();
 
                     state.isLoading = false;
                 }
@@ -364,6 +381,7 @@
                 timelineNewPosts: timelineNewPosts,
                 recommendedPosts: recommendedPosts,
                 recommendedNewPosts: recommendedNewPosts,
+                globalPinnedPosts: globalPinnedPosts,
                 switchTab: switchTab,
                 handlePostDelete: (postData) => {
                     postDeleter(postData, (postId) => {

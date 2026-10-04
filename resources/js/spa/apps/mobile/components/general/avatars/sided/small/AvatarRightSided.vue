@@ -8,7 +8,7 @@
                 v-bind:rounded="rounded"></AvatarSmall>
             </div>
             <div class="leading-4 overflow-hidden">
-                <Name v-bind:name="name" v-bind:isVerified="verified"></Name>
+                <Name v-bind:name="name" v-bind:isVerified="verified" v-bind:showPin="showPin"></Name>
                 <p class="text-par-s text-lab-sc truncate mt-0.5">
                     {{ caption }}
                 </p>
@@ -28,6 +28,10 @@
                 default: ''
             },
             verified: {
+                type: Boolean,
+                default: false
+            },
+            showPin: {
                 type: Boolean,
                 default: false
             },

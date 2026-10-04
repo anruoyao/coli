@@ -3,7 +3,7 @@
         <div class="pt-4 max-w-full">
             <div class="flex overflow-hidden mb-2 px-4">
                 <div class="flex-1 pr-2">
-                    <PublicationHeader v-bind:postData="postData"></PublicationHeader>
+                    <PublicationHeader v-bind:postData="postData" v-bind:isPinned="isPinned"></PublicationHeader>
                 </div>
                 <div class="shrink-0">
                     <div class="relative leading-none">
@@ -178,6 +178,10 @@
 
     export default defineComponent({
         props: {
+            isPinned: {
+                type: Boolean,
+                default: false
+            },
             postData: {
                 type: Object,
                 default: {}
@@ -217,10 +221,15 @@
                 return postData.value.content;
             });
 
+            const isPinned = computed(() => {
+                return props.isPinned;
+            });
+
             return {
                 postContent: postContent,
                 PostTypeUtils: PostTypeUtils,
                 postData: postData,
+                isPinned: isPinned,
                 state: state,
                 openReactionMenu: openReactionMenu,
                 openCommentsMenu: openCommentsMenu,
