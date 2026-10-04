@@ -327,4 +327,21 @@ class NsfwDetectionTest extends TestCase
 
         Http::assertSentCount(1);
     }
+
+    /**
+     * 系统 actor（id=0）通知不触发 NotificationSuppress 监听器的
+     * MuteService TypeError（activeById(0) 为 null），历史上导致
+     * PostMarkedNsfwNotification 在队列中反复失败。
+     */
+    public function test_notification_suppress_listener_skips_system_actor(): void
+    {
+        $user = $this->makeUser(['status' => UserStatus::ACTIVE]);
+        $post = $this->makePost(['user_id' => $user->id]);
+        $notification = new PostMarkedNsfwNotification($post);
+
+        $result = (new \App\Listeners\User\Notification\HandleNotificationSuppress())
+            ->handle(new \Illuminate\Notifications\Events\NotificationSending($user, $notification, 'database'));
+
+        $this->assertTrue($result);
+    }
 }
