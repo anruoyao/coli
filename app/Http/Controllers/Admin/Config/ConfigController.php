@@ -61,6 +61,11 @@ class ConfigController extends Controller
         return view('admin::config.report-notifications.index');
     }
 
+    public function nsfwDetection()
+    {
+        return view('admin::config.nsfw-detection.index');
+    }
+
     public function api()
     {
         return view('admin::config.api.index');

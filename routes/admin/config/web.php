@@ -26,6 +26,8 @@ Route::get('/notifications', [App\Http\Controllers\Admin\Config\ConfigController
 
 Route::get('/report-notifications', [App\Http\Controllers\Admin\Config\ConfigController::class, 'reportNotifications'])->name('admin.config.report-notifications');
 
+Route::get('/nsfw-detection', [App\Http\Controllers\Admin\Config\ConfigController::class, 'nsfwDetection'])->name('admin.config.nsfw-detection');
+
 Route::get('/api', [App\Http\Controllers\Admin\Config\ConfigController::class, 'api'])->name('admin.config.api');
 
 Route::get('/verification', [App\Http\Controllers\Admin\Config\ConfigController::class, 'verification'])->name('admin.config.verification');

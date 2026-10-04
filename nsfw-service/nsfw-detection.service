@@ -1,0 +1,16 @@
+[Unit]
+Description=NSFW detection micro-service (NudeNet)
+After=network.target
+
+[Service]
+Type=simple
+User=www
+Group=www
+WorkingDirectory=/www/wwwroot/misskey.site/nsfw-service
+ExecStart=/www/wwwroot/misskey.site/nsfw-service/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8300 --workers 1
+Restart=always
+RestartSec=3
+Environment=TMPDIR=/var/tmp
+
+[Install]
+WantedBy=multi-user.target

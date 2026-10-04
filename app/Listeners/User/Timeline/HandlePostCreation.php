@@ -9,6 +9,7 @@ use App\Services\Censor\CensorService;
 use App\Events\User\Timeline\PostCreatedEvent;
 use App\Jobs\User\Timeline\ConvertAndCompressPostAudio;
 use App\Jobs\User\Timeline\ConvertAndCompressPostVideo;
+use App\Jobs\User\Timeline\DetectPostNsfwContent;
 use App\Notifications\User\Mention\PostMentionNotification;
 use App\Services\Notification\NotificationBatcher;
 
@@ -22,6 +23,12 @@ class HandlePostCreation
 
         else if($event->postData->type->isAudio()) {
             ConvertAndCompressPostAudio::dispatch($event->postData);
+        }
+
+        // 图片/GIF 帖：媒体此时均已 PROCESSED，发帖后异步 NSFW 检测
+        // 视频帖由转码完成的 MediaProcessedEvent 触发（DetectPostNsfwOnMediaProcessed）
+        else if($event->postData->type->isImage() || $event->postData->type->isGif()) {
+            DetectPostNsfwContent::dispatch($event->postData);
         }
 
         $this->notifyMentionedUsers($event->postData);

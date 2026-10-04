@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Settings\{AppSettings, FFMPegSettings, MailSettings, GoogleLoginSettings, BrandSettings, AuthSettings, CodeSettings, WalletSettings, UploadSettings};
+use App\Settings\{AppSettings, FFMPegSettings, MailSettings, GoogleLoginSettings, BrandSettings, AuthSettings, CodeSettings, WalletSettings, UploadSettings, NsfwDetectionSettings};
 use App\Settings\Acquiring\{PaypalSettings, StripeSettings, YooKassaSettings, RobokassaSettings};
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
@@ -33,6 +33,7 @@ class SettingsServiceProvider extends ServiceProvider
             $this->mergeCodeSettings();
             $this->mergeBrandSettings();
             $this->mergeUploadSettings();
+            $this->mergeNsfwDetectionSettings();
         } catch (\Throwable $th) {
             //
         }
@@ -98,6 +99,18 @@ class SettingsServiceProvider extends ServiceProvider
             'ffmpeg.timeout' => $ffmpegSettings->timeout,
             'ffmpeg.threads' => $ffmpegSettings->threads,
             'ffmpeg.temporary_directory' => $ffmpegSettings->temporary_directory,
+        ]);
+    }
+
+    private function mergeNsfwDetectionSettings(): void
+    {
+        $nsfwSettings = app(NsfwDetectionSettings::class);
+
+        config([
+            'features.nsfw_detection.enabled' => $nsfwSettings->enabled,
+            'features.nsfw_detection.threshold' => $nsfwSettings->threshold,
+            'features.nsfw_detection.trigger_labels' => $nsfwSettings->trigger_labels,
+            'features.nsfw_detection.notify_author' => $nsfwSettings->notify_author,
         ]);
     }
 

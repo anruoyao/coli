@@ -35,6 +35,7 @@ class Notifications
 	public const ACCOUNT_LINKED = 'important.account-linked';
 	public const WALLET_DEPOSIT = 'important.wallet-deposit';
 	public const PAYMENT_RECEIVED = 'important.payment-received';
+	public const POST_MARKED_NSFW = 'important.post-marked-nsfw';
 
 	// Marketing / platform notifications
 	public const MARKETING_PLATFORM = 'marketing.platform';
@@ -44,7 +45,8 @@ class Notifications
 		return [
 			self::ACCOUNT_LINKED,
 			self::WALLET_DEPOSIT,
-			self::PAYMENT_RECEIVED
+			self::PAYMENT_RECEIVED,
+			self::POST_MARKED_NSFW
 		];
 	}
 

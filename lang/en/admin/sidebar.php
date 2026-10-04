@@ -22,6 +22,7 @@ return [
 	'email_settings' => 'Email settings',
 	'notifications' => 'Notification settings',
 	'report_notifications' => 'Report notifications',
+	'nsfw_detection' => 'NSFW Detection',
 	'marketing' => 'Marketing campaigns',
 	'api_settings' => 'API settings',
 	'reported_content' => 'Reported content',

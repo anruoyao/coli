@@ -14,6 +14,7 @@ return [
 		'account_linked' => 'Your accounts have been successfully linked.',
 		'deposit_success' => 'Your deposit has been successfully completed.',
 		'payment_received' => 'New payment received.',
+		'post_marked_nsfw' => 'Your post has been marked as sensitive content.',
 	],
     'post' => [
 		'post_reacted' => 'reacted to your post',
@@ -30,6 +31,7 @@ return [
 	],
 	'important' => [
 		'account_linked' => 'has linked your account to their account',
+		'post_marked_nsfw' => 'Your post ":content" has been automatically marked as sensitive content by the system. If you believe this is a mistake, please contact the administrator.',
 	],
 	'wallet' => [
 		'deposit_success' => 'Your deposit has been successfully completed',

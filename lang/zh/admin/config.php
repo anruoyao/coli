@@ -8,6 +8,7 @@ return [
 	'ffmpeg_settings' => 'FFMPEG 设置',
 	'notifications_settings' => '通知设置',
 	'report_notifications_settings' => '举报通知配置',
+	'nsfw_detection_settings' => 'NSFW 自动识别配置',
 	'api_settings' => 'API 设置',
 	'verification_settings' => '认证设置',
     'custom_code_settings' => '自定义代码注入',
@@ -119,6 +120,16 @@ return [
         'report_log_action_email_toggled' => '启用/停用管理员邮箱',
         'report_log_action_email_deleted' => '删除管理员邮箱',
         'report_log_action_test_email_sent' => '发送测试邮件',
+        'nsfw_threshold' => '置信度阈值',
+        'nsfw_threshold_helper' => '0.10 - 0.99。检测标签的置信度分数达到或超过该值才判定命中。值越高越严格（误标越少、漏检越多），推荐 0.60。',
+        'nsfw_trigger_labels' => '触发标签集',
+        'nsfw_trigger_labels_helper' => '每行一个 NudeNet 检测标签（大写）。仅这些标签参与判定，其他标签（如 COVERED_*、BELLY、FEET、FACE）不会触发标记。',
+        'nsfw_labels_required' => '触发标签集不能为空。',
+        'nsfw_service_status' => '检测服务状态',
+        'nsfw_service_status_helper' => '检测微服务地址：:url。功能启用前请先点击测试，确认服务连通。',
+        'nsfw_test_connection' => '测试连通性',
+        'nsfw_notify_author' => '通知作者。开启/关闭。',
+        'nsfw_log_action_settings_updated' => '更新 NSFW 识别配置',
 	],
     'validation' => [
         'backup_processing' => '备份正在进行中。请稍后再试。',
@@ -202,6 +213,14 @@ return [
             'title' => '举报限流规则',
             'caption' => '同一用户或同一 IP 在 :window 小时内最多提交 :limit 次举报。限流状态持久化存储，系统重启后不丢失。',
         ],
+        'nsfw_detection_enabled' => [
+            'title' => 'NSFW 自动识别',
+            'caption' => '开启后，用户发布帖子中的图片 / GIF / 视频将自动进行 NSFW 检测；命中后帖子自动标记为敏感内容（浏览时显示遮罩），并向作者发送站内与邮件通知。视频在转码完成后检测。',
+        ],
+        'nsfw_notify_author' => [
+            'title' => '作者通知',
+            'caption' => '帖子被自动标记为敏感内容后，向作者发送站内通知和邮件通知（文案含误判申诉引导）。',
+        ],
     ],
     'flash' => [
         'report_email_added' => '管理员邮箱 :email 已添加。',
@@ -209,6 +228,9 @@ return [
         'report_email_deleted' => '管理员邮箱 :email 已移除。',
         'report_test_email_sent' => '测试邮件已发送至 :email。',
         'report_test_email_failed' => '测试邮件发送失败：:error',
+        'nsfw_test_ok' => '检测服务连接正常（模型：:model）。',
+        'nsfw_test_unhealthy' => '检测服务响应异常，请检查服务状态。',
+        'nsfw_test_failed' => '无法连接检测服务：:error',
     ],
 	'email_testing' => [
 		'form' => [

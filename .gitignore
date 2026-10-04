@@ -51,3 +51,5 @@ RELEASE_CHECKLIST.md
 /updates
 CANONICAL.md
 extractor.sh
+/nsfw-service/venv
+/nsfw-service/__pycache__

@@ -72,5 +72,19 @@ return [
         'logo' => env('TRANSLATION_SERVICE_LOGO'),
         'name' => env('TRANSLATION_SERVICE_NAME'),
         'url' => env('TRANSLATION_SERVICE_URL'),
-    ]
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | NSFW 检测微服务（nsfw-service，NudeNet）
+    |--------------------------------------------------------------------------
+    | 帖子媒体 NSFW 自动识别引擎。与本服务同机部署，仅监听 127.0.0.1。
+    | 功能开关/阈值/触发标签等业务配置在 NsfwDetectionSettings（后台可调），
+    | 经 SettingsServiceProvider 注入为 config('features.nsfw_detection.*')。
+    */
+    'nsfw_detection' => [
+        'url' => env('NSFW_DETECTION_URL', 'http://127.0.0.1:8300'),
+        'timeout' => env('NSFW_DETECTION_TIMEOUT', 30),
+        'connect_timeout' => env('NSFW_DETECTION_CONNECT_TIMEOUT', 3),
+    ],
 ];

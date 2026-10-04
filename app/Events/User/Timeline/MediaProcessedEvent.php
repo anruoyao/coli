@@ -39,6 +39,12 @@ class MediaProcessedEvent implements ShouldBroadcastNow
         $this->userId = $userId;
     }
 
+    // 供非广播监听器（如 NSFW 检测）获取媒体实例
+    public function getMedia(): Media
+    {
+        return $this->media;
+    }
+
     public function broadcastOn(): array
     {
         return [

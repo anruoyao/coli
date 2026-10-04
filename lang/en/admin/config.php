@@ -8,6 +8,7 @@ return [
 	'ffmpeg_settings' => 'FFMPEG Settings',
 	'notifications_settings' => 'Notifications Settings',
         'report_notifications_settings' => 'Report Notification Settings',
+        'nsfw_detection_settings' => 'NSFW Detection Settings',
 	'api_settings' => 'API Settings',
 	'verification_settings' => 'Verification Settings',
     'custom_code_settings' => 'Custom Code Injection',
@@ -119,6 +120,16 @@ return [
         'report_log_action_email_toggled' => 'Admin email enabled/disabled',
         'report_log_action_email_deleted' => 'Admin email deleted',
         'report_log_action_test_email_sent' => 'Test email sent',
+        'nsfw_threshold' => 'Confidence threshold',
+        'nsfw_threshold_helper' => '0.10 - 0.99. A detection label only triggers when its confidence score is at or above this value. Higher is stricter (fewer false positives, more misses). Recommended: 0.60.',
+        'nsfw_trigger_labels' => 'Trigger labels',
+        'nsfw_trigger_labels_helper' => 'One NudeNet detection label per line (uppercase). Only these labels trigger marking; others (e.g. COVERED_*, BELLY, FEET, FACE) never do.',
+        'nsfw_labels_required' => 'Trigger labels cannot be empty.',
+        'nsfw_service_status' => 'Detection service status',
+        'nsfw_service_status_helper' => 'Detection micro-service URL: :url. Run a connection test before enabling the feature.',
+        'nsfw_test_connection' => 'Test connection',
+        'nsfw_notify_author' => 'Notify the author. On/Off.',
+        'nsfw_log_action_settings_updated' => 'NSFW detection settings updated',
 	],
     'validation' => [
         'backup_processing' => 'A backup is already in progress. Please try again later.',
@@ -202,6 +213,14 @@ return [
             'title' => 'Report Rate Limit',
             'caption' => 'Each user and each IP address may submit up to :limit reports within :window hours. Limit state is stored persistently and survives restarts.',
         ],
+        'nsfw_detection_enabled' => [
+            'title' => 'NSFW Auto Detection',
+            'caption' => 'When enabled, images / GIFs / videos in newly published posts are automatically scanned for NSFW content. Posts with matches are automatically marked as sensitive (blurred for viewers) and the author receives an in-app and email notification. Videos are scanned after transcoding completes.',
+        ],
+        'nsfw_notify_author' => [
+            'title' => 'Author Notification',
+            'caption' => 'When a post is automatically marked as sensitive, send an in-app and email notification to the author (message includes appeal guidance).',
+        ],
     ],
     'flash' => [
         'report_email_added' => 'Admin email :email has been added.',
@@ -209,6 +228,9 @@ return [
         'report_email_deleted' => 'Admin email :email has been removed.',
         'report_test_email_sent' => 'Test email has been sent to :email.',
         'report_test_email_failed' => 'Test email failed: :error',
+        'nsfw_test_ok' => 'Detection service is reachable (model: :model).',
+        'nsfw_test_unhealthy' => 'Detection service responded abnormally. Check the service status.',
+        'nsfw_test_failed' => 'Cannot connect to detection service: :error',
     ],
 	'email_testing' => [
 		'form' => [

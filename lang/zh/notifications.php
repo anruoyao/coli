@@ -14,6 +14,7 @@ return [
 		'account_linked' => '您的账号已成功关联。',
 		'deposit_success' => '您的充值已成功完成。',
 		'payment_received' => '收到新付款。',
+		'post_marked_nsfw' => '您的帖子已被标记为敏感内容。',
 	],
     'post' => [
 		'post_reacted' => '对您的帖子进行了互动',
@@ -30,6 +31,7 @@ return [
 	],
 	'important' => [
 		'account_linked' => '已将您的账号关联到他们的账号',
+		'post_marked_nsfw' => '您的帖子「:content」因包含敏感内容已被系统自动标记。如认为此为误判，请联系管理员申诉。',
 	],
 	'wallet' => [
 		'deposit_success' => '您的充值已成功完成',
