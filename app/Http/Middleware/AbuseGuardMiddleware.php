@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ApiThrottleEvent;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -12,9 +13,13 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * 两层防护（配置见 config/security.php）：
  * 1. 按「用户 × 动作 × 时间窗」计数限流；新账号（注册 < new_user_window_hours）
- *    执行更严格的新人限额。
+ *    执行更严格的新人限额。支持可选第二桶（max_hard/decay_hard，长窗口硬上限），
+ *    两桶任一超限即拒绝（如视频上传：10 分钟 1 次 + 24 小时 10 次）。
  * 2. 同内容幂等去重：同一用户在同一窗口内对同一动作重复提交相同内容直接拒绝，
  *    拦截脚本连刷帖子 / 评论 / 私信。
+ *
+ * 拦截时返回统一 429 结构（Retry-After / X-RateLimit-* 头），
+ * 并记录 api_throttle_events 事件（后台限流监控页数据来源）。
  *
  * 挂载位置：routes/api.php 各已认证 API 子组的 auth:sanctum 之后
  * （组级中间件在 auth:sanctum 之前执行，拿不到 Sanctum 用户，见 UserOnlineMiddleware
@@ -51,12 +56,15 @@ class AbuseGuardMiddleware
             if (in_array($action, self::DUP_CONTENT_ACTIONS, true)) {
                 $duplicate = $this->guardDuplicateContent($request, $user->id, $action);
                 if ($duplicate) {
-                    return $this->tooManyResponse((int) config('security.duplicate_content_window_seconds', 10));
+                    $window = (int) config('security.duplicate_content_window_seconds', 10);
+
+                    return $this->tooManyResponse($window, null, 'abuse:duplicate-content', $action, $user->id);
                 }
             }
 
-            if (! $this->guardRateLimit($user->id, $user->created_at, $action, $rule)) {
-                return $this->tooManyResponse($rule['decay'] ?? 60);
+            $bucket = $this->guardRateLimit($user->id, $user->created_at, $action, $rule);
+            if ($bucket !== null) {
+                return $this->tooManyResponse($bucket['decay'], $bucket['max'], 'abuse:' . $action, $action, $user->id);
             }
         }
 
@@ -65,6 +73,11 @@ class AbuseGuardMiddleware
 
     /**
      * 判断请求是否命中某动作规则（路径前缀/精确匹配 + 可选方法过滤）。
+     *
+     * paths 配置为相对 /api/ 的路径（如 'post/editor/create'），而 $request->path()
+     * 带完整前缀（'api/post/editor/create'）——因此同时匹配带/不带 api/ 前缀两种
+     * 写法。历史版本只做裸前缀匹配导致 API 路由永远匹配不上（动作限流失效），
+     * 此处兼容两种写法。
      */
     private function matches(Request $request, array $rule): bool
     {
@@ -73,7 +86,9 @@ class AbuseGuardMiddleware
         $matched = false;
         foreach ($rule['paths'] ?? [] as $pathRule) {
             $pathRule = trim($pathRule, '/');
-            if ($path === $pathRule || str_starts_with($path, $pathRule)) {
+
+            if ($path === $pathRule || str_starts_with($path, $pathRule)
+                || $path === 'api/' . $pathRule || str_starts_with($path, 'api/' . $pathRule)) {
                 $matched = true;
                 break;
             }
@@ -91,27 +106,47 @@ class AbuseGuardMiddleware
     }
 
     /**
-     * 按用户 × 动作 × 时间窗计数，返回是否放行。
+     * 按用户 × 动作 × 时间窗计数（主桶 + 可选硬上限桶）。
+     * 全部桶通过返回 null（放行）；任一桶超限返回该桶（拒绝，含 max/decay 供响应头）。
      */
-    private function guardRateLimit($userId, $createdAt, string $action, array $rule): bool
+    private function guardRateLimit($userId, $createdAt, string $action, array $rule): ?array
     {
+        // User.created_at 无 datetime cast（可能为原始字符串），统一转 Carbon 再比较
+        $createdAt = $createdAt ? \Illuminate\Support\Carbon::parse($createdAt) : null;
+
         $isNewUser = $createdAt && $createdAt->gt(now()->subHours((int) config('security.new_user_window_hours', 24)));
 
-        $max   = ($isNewUser && isset($rule['new_user_max'])) ? $rule['new_user_max'] : $rule['max'];
-        $decay = ($isNewUser && isset($rule['new_user_decay'])) ? $rule['new_user_decay'] : $rule['decay'];
+        $buckets = [
+            [
+                'max'   => ($isNewUser && isset($rule['new_user_max'])) ? (int) $rule['new_user_max'] : (int) $rule['max'],
+                'decay' => ($isNewUser && isset($rule['new_user_decay'])) ? (int) $rule['new_user_decay'] : (int) $rule['decay'],
+                'key'   => self::CACHE_PREFIX . $action . ':u' . $userId,
+            ],
+        ];
 
-        $key = self::CACHE_PREFIX . $action . ':u' . $userId;
-
-        $count = (int) Cache::get($key, 0);
-        if ($count >= (int) $max) {
-            return false;
+        // 可选第二桶（长窗口硬上限）：新账号沿用同一硬限，不放宽
+        if (isset($rule['max_hard'], $rule['decay_hard'])) {
+            $buckets[] = [
+                'max'   => (int) $rule['max_hard'],
+                'decay' => (int) $rule['decay_hard'],
+                'key'   => self::CACHE_PREFIX . $action . ':u' . $userId . ':hard',
+            ];
         }
 
-        // 确保 key 存在并带 TTL（已存在时 add 为空操作，不重置过期时间）
-        Cache::add($key, 0, (int) $decay);
-        Cache::increment($key);
+        // 先检查所有桶：任一超限即拒绝（不增加计数）
+        foreach ($buckets as $bucket) {
+            if ((int) Cache::get($bucket['key'], 0) >= $bucket['max']) {
+                return $bucket;
+            }
+        }
 
-        return true;
+        // 全部通过：各桶计数 +1（确保 key 存在并带 TTL，已存在时 add 为空操作，不重置过期时间）
+        foreach ($buckets as $bucket) {
+            Cache::add($bucket['key'], 0, $bucket['decay']);
+            Cache::increment($bucket['key']);
+        }
+
+        return null;
     }
 
     /**
@@ -131,12 +166,35 @@ class AbuseGuardMiddleware
         return ! Cache::add($key, 1, $window); // add 失败说明窗口内已存在相同内容
     }
 
-    private function tooManyResponse(int $retryAfter): Response
+    /**
+     * 统一 429 响应：与全局 throttle 渲染 / IP 闸门结构一致，
+     * 携带 Retry-After / X-RateLimit-* 头，并记录限流事件供后台监控。
+     */
+    private function tooManyResponse(int $retryAfter, ?int $limit = null, ?string $category = null, ?string $action = null, ?int $userId = null): Response
     {
+        if ($category !== null && $userId !== null) {
+            record_throttle_event(
+                ApiThrottleEvent::DIMENSION_USER,
+                (string) $userId,
+                $category,
+                $action,
+                $limit,
+                $retryAfter
+            );
+        }
+
+        $headers = ['Retry-After' => $retryAfter];
+
+        if ($limit !== null) {
+            $headers['X-RateLimit-Limit'] = $limit;
+            $headers['X-RateLimit-Remaining'] = 0;
+            $headers['X-RateLimit-Reset'] = now()->addSeconds($retryAfter)->getTimestamp();
+        }
+
         return response()->json([
             'status'  => 'error',
             'code'    => 429,
-            'message' => 'Too many attempts. Please slow down and try again later.',
-        ], 429, ['Retry-After' => $retryAfter]);
+            'message' => __('api/error.throttle'),
+        ], 429, $headers);
     }
 }

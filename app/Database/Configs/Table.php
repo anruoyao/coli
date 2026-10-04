@@ -77,4 +77,5 @@ class Table
     public const REPORT_NOTIFICATION_EMAILS = 'report_notification_emails';
     public const REPORT_EMAIL_LOGS = 'report_email_logs';
     public const ADMIN_CONFIG_CHANGE_LOGS = 'admin_config_change_logs';
+    public const API_THROTTLE_EVENTS = 'api_throttle_events';
 }

@@ -25,6 +25,7 @@ return [
 	'marketing' => '营销活动',
 	'api_settings' => 'API 设置',
 	'reported_content' => '举报内容',
+     'throttle_monitor' => 'API 限流监控',
 	'profile_reports' => '资料举报',
 	'publications_reports' => '发布内容举报',
 	'languages' => '语言管理',

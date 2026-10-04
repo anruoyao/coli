@@ -37,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
         bcscale(2);
 
         $this->registerAuthRateLimiters();
+        $this->registerApiRateLimiters();
 
         View::composer('*', function($view) {
             $view->with('localeName', (new Languages())->getLocaleName());
@@ -79,5 +80,33 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('guest', fn (Request $request) => Limit::perMinute(
             (int) config('security.guest.rate_per_minute', 60)
         )->by($request->cookie('device_id') ?: $request->ip()));
+    }
+
+    /**
+     * 分类限流器（throttle:api.{category}）批量注册。
+     *
+     * key 维度回退链：登录用户（user_id）→ device_id Cookie → IP。
+     * 挂在 auth:sanctum 之后的路由组天然按用户计数（防同 IP 多用户互相挤爆），
+     * 公开组（translations/system/ads 等）自动落到 device/IP 维度。
+     * 额度表见 config/security.php 的 rate_limits。
+     */
+    private function registerApiRateLimiters(): void
+    {
+        foreach (config('security.rate_limits', []) as $category => $rule) {
+            // 额度在闭包内惰性读 config（非注册时捕获），支持测试与运行时动态覆盖
+            RateLimiter::for("api.{$category}", function (Request $request) use ($category) {
+                $rule   = (array) config("security.rate_limits.{$category}", []);
+                $max    = max(1, (int) ($rule['max'] ?? 60));
+                $decay  = max(1, (int) ($rule['decay'] ?? 1));
+
+                // 与 AbuseGuard 一致：兼容 web(session) 与 api(sanctum Bearer) 两套认证，
+                // Bearer 请求下 $request->user()（默认 web guard）为 null，须显式查 sanctum
+                $user = $request->user() ?: $request->user('sanctum');
+
+                return Limit::perMinutes($decay, $max)->by(
+                    $user?->id ?: ($request->cookie('device_id') ?: $request->ip())
+                );
+            });
+        }
     }
 }

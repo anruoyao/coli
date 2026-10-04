@@ -239,6 +239,38 @@ if (! function_exists('requests_log')) {
     }
 }
 
+if (! function_exists('throttle_log')) {
+    function throttle_log(string $message, array $context = []) {
+        Log::channel('throttle')->info($message, $context);
+    }
+}
+
+if (! function_exists('record_throttle_event')) {
+    /**
+     * 记录一次 API 限流命中（429）到 api_throttle_events 供后台监控页展示。
+     * 落库失败不阻断 429 响应（限流本身才是防线，事件只是可观测性）。
+     */
+    function record_throttle_event(
+        string $dimension,
+        string $identifier,
+        ?string $category = null,
+        ?string $action = null,
+        ?int $limit = null,
+        ?int $windowSeconds = null
+    ): void {
+        try {
+            \App\Models\ApiThrottleEvent::record($dimension, $identifier, $category, $action, $limit, $windowSeconds);
+        } catch (\Throwable $e) {
+            throttle_log('Failed to record throttle event', [
+                'error' => $e->getMessage(),
+                'dimension' => $dimension,
+                'identifier' => $identifier,
+                'category' => $category,
+            ]);
+        }
+    }
+}
+
 if (! function_exists('prune_user_tokens')) {
     /**
      * 每账号活跃 token 数量治理：清理过期，超出上限删除最旧（防 token 无限生成）。

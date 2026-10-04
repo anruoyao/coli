@@ -88,6 +88,12 @@ return [
             'level' => 'info'
         ],
 
+        'throttle' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/throttle.log'),
+            'level' => 'info'
+        ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/colibriplus.log'),

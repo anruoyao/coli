@@ -7,4 +7,5 @@ return [
 		'desc' => 'You may have used an invalid link or the page has been removed.',
 	],
 	'maintenance' => 'We are performing maintenance. Please try again later.',
+	'throttle' => 'Too many requests. Please slow down and try again later.',
 ];

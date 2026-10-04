@@ -124,6 +124,13 @@
                 :current="route_is('admin.reports.*')"
             text="{{ __('admin/sidebar.reported_content') }}"/>
 
+            <x-sidebar.navlist-item
+                href="{{ route('admin.throttle.index') }}"
+                iconName="speedometer"
+                iconType="solar"
+                :current="route_is('admin.throttle.*')"
+            text="{{ __('admin/sidebar.throttle_monitor') }}"/>
+
             <x-sidebar.navlist-div/>
 
             <x-sidebar.navlist-item

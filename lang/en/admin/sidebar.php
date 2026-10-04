@@ -25,6 +25,7 @@ return [
 	'marketing' => 'Marketing campaigns',
 	'api_settings' => 'API settings',
 	'reported_content' => 'Reported content',
+	'throttle_monitor' => 'API rate limiting',
 	'profile_reports' => 'Profile reports',
 	'publications_reports' => 'Publications reports',
 	'languages' => 'Languages',
