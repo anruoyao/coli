@@ -52,10 +52,13 @@ class NsfwDetectionTest extends TestCase
             'features.nsfw_detection.enabled' => true,
             'features.nsfw_detection.threshold' => 0.60,
             'features.nsfw_detection.trigger_labels' => [
-                'EXPOSED_GENITALIA_F',
-                'EXPOSED_GENITALIA_M',
+                // NudeNet 3.x 真实标签命名（X_EXPOSED 风格）
+                'FEMALE_GENITALIA_EXPOSED',
+                'MALE_GENITALIA_EXPOSED',
                 'FEMALE_BREAST_EXPOSED',
+                'MALE_BREAST_EXPOSED',
                 'BUTTOCKS_EXPOSED',
+                'ANUS_EXPOSED',
             ],
             'features.nsfw_detection.notify_author' => true,
         ]);
@@ -145,7 +148,7 @@ class NsfwDetectionTest extends TestCase
 
         // COVERED_* 不在触发标签集；FEMALE_BREAST_EXPOSED 低于阈值 0.60
         $this->fakeDetectionService([
-            ['label' => 'COVERED_BREAST_F', 'score' => 0.95, 'box' => [], 'frame' => 0],
+            ['label' => 'FEMALE_BREAST_COVERED', 'score' => 0.95, 'box' => [], 'frame' => 0],
             ['label' => 'FEMALE_BREAST_EXPOSED', 'score' => 0.42, 'box' => [], 'frame' => 0],
         ]);
 
@@ -189,7 +192,7 @@ class NsfwDetectionTest extends TestCase
         $this->makeMedia($post, ['type' => MediaType::VIDEO, 'status' => MediaStatus::PROCESSED, 'source_path' => 'nsfw-test/sample.mp4']);
 
         $this->fakeDetectionService([
-            ['label' => 'EXPOSED_GENITALIA_F', 'score' => 0.91, 'box' => [], 'frame' => 3],
+            ['label' => 'FEMALE_GENITALIA_EXPOSED', 'score' => 0.91, 'box' => [], 'frame' => 3],
         ]);
 
         $this->runJob($post);
@@ -281,7 +284,7 @@ class NsfwDetectionTest extends TestCase
         Livewire::test(NsfwDetectionLivewire::class)
             ->set('featureEnabled', true)
             ->set('threshold', '0.75')
-            ->set('triggerLabels', "FEMALE_BREAST_EXPOSED\nbuttocks_exposed,  \nEXPOSED_GENITALIA_F")
+            ->set('triggerLabels', "FEMALE_BREAST_EXPOSED\nbuttocks_exposed,  \nFEMALE_GENITALIA_EXPOSED")
             ->set('notifyAuthor', false)
             ->call('saveSettings')
             ->assertHasNoErrors();
@@ -295,7 +298,7 @@ class NsfwDetectionTest extends TestCase
 
         // 换行/逗号分隔、去空白、统一大写、去重
         $this->assertSame(
-            ['FEMALE_BREAST_EXPOSED', 'BUTTOCKS_EXPOSED', 'EXPOSED_GENITALIA_F'],
+            ['FEMALE_BREAST_EXPOSED', 'BUTTOCKS_EXPOSED', 'FEMALE_GENITALIA_EXPOSED'],
             $settings->trigger_labels
         );
 
