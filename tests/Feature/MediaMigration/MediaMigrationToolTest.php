@@ -221,6 +221,7 @@ class MediaMigrationToolTest extends TestCase
         $service->buildManifestForDisk($migration, 'public');
 
         // 模拟执行到一半被中断：只处理前两个文件
+        // （忠实模拟任务行为：复制文件 + 更新数据库引用，然后游标落库）
         $slice = iterator_to_array($service->readManifestSlice($migration->id, 0, 2));
 
         $this->assertCount(2, $slice);
@@ -231,6 +232,8 @@ class MediaMigrationToolTest extends TestCase
                 Storage::disk('public')->readStream($entry->p)
             );
         }
+
+        $service->updateDatabaseReferences('public', 'migration_target', array_column($slice, 'p'));
 
         $migration->cursor = 2;
         $migration->files_done = 2;
