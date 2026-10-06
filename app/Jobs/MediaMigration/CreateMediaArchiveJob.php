@@ -24,8 +24,9 @@ class CreateMediaArchiveJob implements ShouldQueue
 
     public function handle(MediaArchiveService $archiveService): void
     {
-        // 防并发锁（与手动重试/重复派发互斥）
-        $lock = Cache::lock("media-migration:job:{$this->migrationId}", 300);
+        // 防并发锁：TTL 覆盖整个任务时长（含 $timeout 3 小时），
+        // 防止队列 retry_after 重复投递导致两个进程同时写同一个 zip。
+        $lock = Cache::lock("media-migration:job:{$this->migrationId}", 60 * 60 * 4);
 
         if (! $lock->get()) {
             return;

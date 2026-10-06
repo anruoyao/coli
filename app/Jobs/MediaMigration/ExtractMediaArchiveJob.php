@@ -24,7 +24,8 @@ class ExtractMediaArchiveJob implements ShouldQueue
 
     public function handle(MediaArchiveService $archiveService): void
     {
-        $lock = Cache::lock("media-migration:job:{$this->migrationId}", 300);
+        // 防并发锁：TTL 覆盖整个任务时长（含 $timeout 3 小时）
+        $lock = Cache::lock("media-migration:job:{$this->migrationId}", 60 * 60 * 4);
 
         if (! $lock->get()) {
             return;

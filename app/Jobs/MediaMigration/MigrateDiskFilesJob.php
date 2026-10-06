@@ -41,7 +41,8 @@ class MigrateDiskFilesJob implements ShouldQueue
 
     public function handle(MediaMigrationService $service): void
     {
-        $lock = Cache::lock("media-migration:job:{$this->migrationId}", 300);
+        // 锁 TTL 略大于 $timeout，覆盖单文件超大导致的最长单批耗时
+        $lock = Cache::lock("media-migration:job:{$this->migrationId}", 660);
 
         if (! $lock->get()) {
             return;
