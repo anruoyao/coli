@@ -36,6 +36,9 @@ Schedule::command('presence:aggregate')->hourlyAt(5)->withoutOverlapping();
 // 聊天媒体回收：全员本地删除且超过宽限期的消息，回收其图片/视频/语音（含 S3）
 Schedule::command('chats:reclaim-media')->dailyAt('03:30')->withoutOverlapping();
 
+// 临时文件兜底清理：视频转码/缩略图等中间产物因任务中断残留时，按 mtime 超期清除
+Schedule::command('system:clear-tmp --hours=24')->dailyAt('04:00')->withoutOverlapping();
+
 Artisan::command('app:version', function () {
     $this->info(ColibriPlus::VERSION);
 });

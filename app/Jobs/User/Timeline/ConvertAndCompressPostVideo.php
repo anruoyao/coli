@@ -23,6 +23,9 @@ class ConvertAndCompressPostVideo implements ShouldQueue
 
     private $postData;
 
+    // 本次转码生成的压缩临时文件路径，失败时用于清理，防止 tmp 目录残留
+    private ?string $compressedTempPath = null;
+
     public function __construct(Post $postData)
     {
         $this->postData = $postData;
@@ -45,6 +48,7 @@ class ConvertAndCompressPostVideo implements ShouldQueue
 
             // Generate new video temporary path for compressed video marking it as compressed. [compressed.mp4]
             $videoTempNewPath = $videoUploadService->generateVideoTemporaryFilePath("compressed.{$videoUploadService->videoDefaultExtension}");
+            $this->compressedTempPath = $videoTempNewPath;
 
             $ffmpeg = $videoUploadService->getFFMpeg();
             $videoOldAbsLocalPath = storage_local_path($videoTempOldPath);
@@ -113,6 +117,11 @@ class ConvertAndCompressPostVideo implements ShouldQueue
         catch (Exception $e) {
             Log::error('Post video processing failed after 5 attempts. Error: ' . $e->getMessage());
 
+            // 清理本次已生成的压缩临时文件（重试会生成新文件，删除无副作用）。
+            // 注意：经队列序列化重试的实例会丢失运行时属性，failed() 钩子覆盖不了
+            // 所有失败路径，必须在此处直接清理。
+            $this->cleanupCompressedTempFile();
+
             $this->fail($e);
         }
     }
@@ -120,5 +129,21 @@ class ConvertAndCompressPostVideo implements ShouldQueue
     public function tries(): int
     {
         return 5;
+    }
+
+    /**
+     * 清理本次生成的压缩临时文件，避免 ffmpeg 产物永久残留在 storage/app/tmp/videos。
+     * 兜底：最终失败的清理由本方法在 catch 中完成，进程被杀等极端场景由调度任务
+     * system:clear-tmp 每日清理超期文件。
+     */
+    private function cleanupCompressedTempFile(): void
+    {
+        if ($this->compressedTempPath) {
+            $absPath = storage_local_path($this->compressedTempPath);
+
+            if (file_exists($absPath)) {
+                @unlink($absPath);
+            }
+        }
     }
 }

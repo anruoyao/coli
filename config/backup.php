@@ -38,7 +38,20 @@ return [
                 'exclude' => [
                     base_path('vendor'),
                     base_path('node_modules'),
+                    // git 对象库可从 GitHub 恢复，无需进备份
+                    base_path('.git'),
+                    // NSFW 检测服务的 Python 虚拟环境（数百 MB），可随时重装
+                    base_path('nsfw-service'),
+                    // 根目录的 App 安装包（体积大且本地已有原件）
+                    base_path('*.apk'),
+                    // 外部工具上传中断留下的碎片
+                    base_path('*.upload.tmp'),
+                    // 日志与临时文件不属于「恢复站点」必需内容
                     storage_path('framework'),
+                    storage_path('logs'),
+                    storage_path('app/tmp'),
+                    // 媒体迁移工具自产压缩包（可能数 GB），属于站点备份之外的独立产物
+                    storage_path('app/media-migration'),
                 ],
 
                 /*
