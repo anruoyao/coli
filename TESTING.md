@@ -29,11 +29,20 @@ sudo -u www vendor/bin/phpunit tests/Unit/Feedback/ReportRateLimiterTest.php --f
 
 ```bash
 cd /www/wwwroot/misskey.site
-# env DB_DATABASE=testing 覆盖 .env，只操作 testing 库（约 7 秒）
-timeout 90 env DB_DATABASE=testing sudo -u www php artisan migrate:fresh --force
+# env 必须放在 sudo 内部！`env X=x sudo -u www php ...` 中的 env 变量会被 sudo 的 env_reset 丢弃，
+# 导致 artisan 读 .env 连上生产库（2026-10-06 曾因此把 migrate:fresh 跑到生产库，靠 binlog 才恢复）。
+# 前提：bootstrap/cache/config.php（config 缓存）不存在，否则缓存固化了 .env 的 DB_DATABASE，环境变量无效。
+timeout 90 sudo -u www env DB_DATABASE=testing php artisan migrate:fresh --force
 ```
 
 无 MySQL 的本地环境**跑不了测试**（本地无 mysql/redis，验证依赖服务器）。
+
+**跑 phpunit 同理**：config 缓存存在时，phpunit.xml 的 `DB_DATABASE=testing` 会被缓存固化值覆盖，测试会直接连生产库！流程：
+```bash
+sudo -u www mv bootstrap/cache/config.php /tmp/   # 移走缓存
+sudo -u www vendor/bin/phpunit tests/Feature/Xxx --colors=never
+sudo -u www mv /tmp/config.php bootstrap/cache/config.php && /etc/init.d/php-fpm-83 reload  # 恢复
+```
 
 ## 4. 测试编写约定（重要）
 
