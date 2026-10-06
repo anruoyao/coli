@@ -154,4 +154,9 @@ class ConfigController extends Controller
     {
         return view('admin::config.sitemap.index');
     }
+
+    public function mediaMigration()
+    {
+        return view('admin::config.media-migration.index');
+    }
 }

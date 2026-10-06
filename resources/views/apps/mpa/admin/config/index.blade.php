@@ -81,6 +81,10 @@
                 <x-navbar.item href="{{ route('admin.config.upload') }}" icon="upload-04">
                     {{ __('admin/sidebar.upload_settings') }}
                 </x-navbar.item>
+
+                <x-navbar.item href="{{ route('admin.config.media-migration') }}" icon="cloud-01">
+                    {{ __('admin/sidebar.media_migration') }}
+                </x-navbar.item>
             </x-navbar>
         </div>
         <div class="col-span-1">

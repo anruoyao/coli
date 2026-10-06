@@ -30,6 +30,7 @@ class Table
     public const ONBOARDINGS = 'onboards';
     public const EMAIL_CONF = 'email_confirmations';
     public const MEDIA = 'media';
+    public const MEDIA_MIGRATIONS = 'media_migrations';
     public const CONFIRMATIONS = 'confirmations';
     public const DEVICES = 'devices';
     public const FOLLOWS = 'follows';

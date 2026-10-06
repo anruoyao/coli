@@ -43,6 +43,7 @@ return [
     'ffmpeg_settings' => 'FFMPEG Settings',
     'ffmpeg_testing' => 'FFMPEG Testing',
     'upload_settings' => 'Upload Limits',
+    'media_migration' => 'Media Migration',
     'acquiring_settings' => 'Acquiring Settings',
     'social_login' => 'Social Login',
     'wallet_settings' => 'Wallet Settings',

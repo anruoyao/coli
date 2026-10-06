@@ -43,3 +43,8 @@ Route::get('/code-injection', [App\Http\Controllers\Admin\Config\ConfigControlle
 Route::get('/backup', [App\Http\Controllers\Admin\Config\ConfigController::class, 'backup'])->name('admin.config.backup');
 
 Route::get('/sitemap', [App\Http\Controllers\Admin\Config\ConfigController::class, 'sitemap'])->name('admin.config.sitemap');
+
+Route::get('/media-migration', [App\Http\Controllers\Admin\Config\ConfigController::class, 'mediaMigration'])->name('admin.config.media-migration');
+
+Route::post('/media-migration/upload', [App\Http\Controllers\Admin\Config\MediaMigrationUploadController::class, 'upload'])
+	->name('admin.config.media-migration.upload');
