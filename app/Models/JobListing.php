@@ -11,6 +11,7 @@ use App\Support\Casts\ModelTimestampCast;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Base\SupportsHashIds;
 use App\Models\Traits\Bookmark\Bookmarkable;
+use App\Models\Traits\Timestamp\SyncCreatedAtOnSave;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class JobListing extends Model
@@ -19,6 +20,7 @@ class JobListing extends Model
     use Bookmarkable,
 		Viewable,
 		SupportsHashIds,
+		SyncCreatedAtOnSave,
 		HasFactory;
 
     protected $casts = [

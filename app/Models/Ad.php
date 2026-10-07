@@ -7,9 +7,12 @@ use App\Enums\Ad\AdStatus;
 use App\Enums\Ad\AdApproval;
 use Illuminate\Database\Eloquent\Model;
 use App\Support\Casts\ModelTimestampCast;
+use App\Models\Traits\Timestamp\SyncCreatedAtOnSave;
 
 class Ad extends Model
 {
+    use SyncCreatedAtOnSave;
+
     protected $guarded = [];
 
     protected $casts = [

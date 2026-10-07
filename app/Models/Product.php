@@ -12,6 +12,7 @@ use App\Enums\Product\ProductCondition;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\Base\SupportsHashIds;
 use App\Models\Traits\Bookmark\Bookmarkable;
+use App\Models\Traits\Timestamp\SyncCreatedAtOnSave;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Product extends Model
@@ -19,6 +20,7 @@ class Product extends Model
 	use Bookmarkable,
 		Viewable,
 		SupportsHashIds,
+		SyncCreatedAtOnSave,
 		HasFactory;
 	
 	public $casts = [
