@@ -244,9 +244,12 @@ class NativeAdTest extends TestCase
             $this->makePost($viewer);
         }
 
-        // A：刚展示过（冷却中）；B：从未展示
-        $freshAd = $this->makeAd($advertiser, ['last_show_at' => now()]);
-        $staleAd = $this->makeAd($advertiser);
+        // A：刚展示过（冷却中）；B：从未展示（标题不同以便断言区分）
+        $freshAd = $this->makeAd($advertiser, [
+            'title' => '冷却中的广告',
+            'last_show_at' => now(),
+        ]);
+        $staleAd = $this->makeAd($advertiser, ['title' => '轮换命中的广告']);
 
         app(AdPostSyncService::class)->sync($freshAd);
         app(AdPostSyncService::class)->sync($staleAd);
@@ -349,9 +352,9 @@ class NativeAdTest extends TestCase
         $this->assertLessThanOrEqual(1, $adOccurrences);
         $this->assertEquals($adPostCount, $adOccurrences);
 
-        // 广告主个人主页：完全不出现
+        // 广告主个人主页：完全不出现（注意路由是双重前缀 api/profile/profile/posts）
         $profileResponse = $this->actingAs($viewer, 'sanctum')
-            ->getJson('/api/profile/posts?id='.$advertiser->id.'&filter[cursor]=0&filter[type]=posts')
+            ->getJson('/api/profile/profile/posts?id='.$advertiser->id.'&filter[cursor]=0&filter[type]=posts')
             ->assertOk();
 
         $contents = array_column($profileResponse->json('data'), 'content');
