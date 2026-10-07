@@ -7,6 +7,7 @@ use App\Models\Post;
 use Tests\TestCase;
 use App\Models\Media;
 use App\Models\User;
+use App\Models\Currency;
 use App\Enums\Ad\AdStatus;
 use App\Enums\Ad\AdApproval;
 use App\Enums\Media\MediaType;
@@ -16,6 +17,7 @@ use App\Enums\User\UserStatus;
 use App\Settings\GuestSettings;
 use App\Actions\Ad\DeleteAdAction;
 use App\Services\Ad\AdPostSyncService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Feature\Marketing\Concerns\CreatesUsers;
 
@@ -30,7 +32,9 @@ use Tests\Feature\Marketing\Concerns\CreatesUsers;
  */
 class NativeAdTest extends TestCase
 {
-    use DatabaseTransactions, CreatesUsers;
+    use DatabaseTransactions, CreatesUsers {
+        CreatesUsers::makeUser as baseMakeUser;
+    }
 
     private const APP_KEY = 'clbPK-8f3k2m9xq4w7v1t6a5s0d2n8h4j6y1c';
 
@@ -42,6 +46,26 @@ class NativeAdTest extends TestCase
 
         // 槽位固定为 [3, 9]，与 config/ads.php 默认一致，保证断言可预测
         config(['ads.feed.enabled' => true, 'ads.feed.slots' => [3, 9]]);
+
+        // SPA shell / SEO 视图的 default_currency() 依赖 world_currencies 基础数据，
+        // 全新迁移的测试库默认没有任何币种（与 GuestTestCase 一致）
+        Currency::query()->create([
+            'alpha_3_code' => (string) config('app.default_currency', 'USD'),
+            'name'         => 'US Dollar',
+            'symbol'       => '$',
+            'symbol_native' => '$',
+            'status'       => true,
+        ]);
+        Cache::forget('world_currencies');
+    }
+
+    /**
+     * 注入查询按 whereHas user ACTIVE 过滤（防止封禁广告主继续投放），
+     * 而用户工厂默认 status=onboarding，本测试一律用 ACTIVE。
+     */
+    protected function makeUser(array $overrides = []): User
+    {
+        return $this->baseMakeUser(array_merge(['status' => UserStatus::ACTIVE->value], $overrides));
     }
 
     // ===================== 构造工具 =====================
