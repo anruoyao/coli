@@ -175,7 +175,41 @@ echo 1 > storage/frontend/build.num
 npm run build
 ```
 
-构建产物输出到 `public/dist`（或 `public/build`）目录。
+构建产物输出到 `public/build`。Vue 源码更新后必须重新构建；清理 Blade 缓存不会更新浏览器加载的 JavaScript。
+
+### 现有服务器更新与权限检查
+
+以下以宝塔环境的运行用户 `www` 为例，其他环境替换为实际部署用户。构建前检查输出目录权限：Vite 会删除旧产物，需要对输出目录及其子目录拥有写入和执行权限。
+
+```bash
+cd /www/wwwroot/misskey.site
+sudo -u www git fetch origin main
+sudo -u www git pull --ff-only origin main
+
+# 查看目录属主、权限；如有本地改动导致拉取失败，先处理改动，不要强制覆盖
+ls -ld public public/build public/build/assets storage/frontend
+```
+
+若以 `www` 构建时出现 `EACCES: permission denied, unlink .../public/build/assets/...`，先检查上述目录，再以 root 修复仅构建输出目录的权限：
+
+```bash
+mkdir -p public/build storage/frontend
+chown -R www:www public/build storage/frontend
+find public/build storage/frontend -type d -exec chmod u+rwx {} +
+find public/build storage/frontend -type f -exec chmod u+rw {} +
+
+# 修复后始终以同一用户构建，避免再次生成 root 属主的产物
+sudo -u www npm run build
+```
+
+只有构建成功后才执行后续步骤：
+
+```bash
+sudo -u www php artisan view:clear
+/etc/init.d/php-fpm-83 reload
+```
+
+浏览器强制刷新以加载新资源。构建会清理旧产物；失败可能留下不完整的输出目录，应及时修复并完成构建。不要通过 `chmod -R 777`、以 root 构建或禁用 Vite 清理输出目录来绕过权限问题。
 
 ***
 
