@@ -46,6 +46,7 @@ return [
 		'creative_placeholder' => '上传创意素材',
 		'creative_max' => '您只能上传一张图片。',
 		'creative_required' => '您必须为广告上传一张创意图片。',
+		'native_post_notice' => '广告会以帖子样式展示在信息流中。广告发布并审核通过后才会开始展示；待审核期间不会出现在信息流。',
 		'budget_edit' => '您无法编辑已发布广告的预算。',
 		'budget_insufficient' => '您的余额不足以分配此预算。请向您的钱包充值更多资金。',
 		'creative_helper' => '为广告上传一张创意图片。该图片将在广告中展示。推荐尺寸：:width x :height。您只能上传一张图片。',

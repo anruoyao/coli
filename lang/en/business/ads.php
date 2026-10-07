@@ -49,6 +49,7 @@ return [
 		'budget_edit' => 'You cannot edit the budget of an Ad that has already been published.',
 		'budget_insufficient' => 'You do not have enough balance to allocate this budget. Please deposit more funds to your wallet.',
 		'creative_helper' => 'Upload a creative image for your ad. The image will be displayed in the ad. Recommended size: :width x :height. You can attach one image only.',
+		'native_post_notice' => 'Your ad appears in feeds as a post. It starts showing after it is published and approved; ads pending review are not shown in feeds.',
 	],
 	'ad_from' => 'Ad from :date',
 	'spent' => 'Spent :amount of :total',

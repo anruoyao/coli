@@ -3,6 +3,10 @@
         @csrf
         <x-accordion.form title="{{ __('business/ads.form.base_info') }}">
 
+            <div class="mb-6 rounded-md border border-bord-pr bg-fill-pr p-4 text-par-s text-lab-sc">
+                {{ __('business/ads.form.native_post_notice') }}
+            </div>
+
             <div class="mb-6">
                 <x-form.text-input
                     wire:model="formData.title"

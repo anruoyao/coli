@@ -144,6 +144,16 @@ class NativeAdTest extends TestCase
         $this->assertEquals(1, $ad->post()->count());
     }
 
+    public function test_pending_ad_does_not_create_a_visible_shadow_post(): void
+    {
+        $advertiser = $this->makeUser();
+        $ad = $this->makeAd($advertiser, ['approval' => AdApproval::PENDING]);
+
+        app(AdPostSyncService::class)->sync($ad);
+
+        $this->assertDatabaseMissing('posts', ['ad_id' => $ad->id]);
+    }
+
     public function test_sync_hides_shadow_post_on_pause_and_restores_on_republish(): void
     {
         $advertiser = $this->makeUser();
