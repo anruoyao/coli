@@ -4,6 +4,7 @@
 		v-bind:name="postData.relations.user.name"
 		v-bind:caption="postData.relations.user.caption"
 		v-bind:showPin="isPinned"
+		v-bind:badgeText="postData.is_ad ? $t('labels.ad') : ''"
 	v-bind:verified="postData.relations.user.verified"></AvatarRightSided>
 </template>
 

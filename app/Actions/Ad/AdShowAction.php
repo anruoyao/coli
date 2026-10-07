@@ -5,6 +5,7 @@ namespace App\Actions\Ad;
 use App\Models\Ad;
 use App\Support\Money;
 use App\Enums\Ad\AdStatus;
+use App\Services\Ad\AdPostSyncService;
 
 class AdShowAction
 {
@@ -14,7 +15,7 @@ class AdShowAction
 	{
 		$this->adData = $adData;
 	}
-	
+
 	public function execute()
 	{
 		$this->adData->update([
@@ -24,10 +25,10 @@ class AdShowAction
 		if(empty($this->adData->last_charge_at)) {
 			$this->chargeOrFinishAd();
 		}
-		else {	
+		else {
 			// Only charge if last charge was MORE than X minutes ago
 			if(now()->subMinutes(config('ads.charge_interval'))->gt($this->adData->last_charge_at->getTimestamp())) {
-				$this->chargeOrFinishAd(); 
+				$this->chargeOrFinishAd();
 			}
 		}
 	}
@@ -38,6 +39,9 @@ class AdShowAction
 			$this->adData->update([
 				'status' => AdStatus::COMPLETED
 			]);
+
+			// 原生广告：预算耗尽完成后，软删除影子帖（信息流不再展示）
+			app(AdPostSyncService::class)->sync($this->adData);
 		}
 		else {
 			$this->adData->update([

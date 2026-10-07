@@ -19,7 +19,9 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use App\Enums\Post\PostStatus;
 use App\Database\Configs\Table;
+use App\Actions\Ad\AdShowAction;
 use App\Http\Controllers\Controller;
+use App\Services\Ad\AdFeedInjectionService;
 use App\Services\Comment\CommentThreadService;
 use App\Traits\Http\Api\SupportsApiResponses;
 use App\Http\Resources\User\Timeline\TimelineResource;
@@ -49,6 +51,7 @@ class FeedController extends Controller
         $processingPosts = $this->me->posts()->where('status', PostStatus::PROCESSING_VIDEO)->get();
 
         $feedORMQuery = Post::timelineFormatPosts()
+            ->excludeAds()
             ->when(! empty($this->filter['onset']), function($query) {
                 $query->where('id', '>', $this->filter['onset']);
             })->when((! $this->me->isRoot()), function($query) {
@@ -69,7 +72,17 @@ class FeedController extends Controller
         $timelinePosts = $feedORMQuery->simplePaginateManual(config('post.paginate_per'), $this->filter['page']);
 
         $timelinePosts = $processingPosts->merge($timelinePosts);
-        
+
+        // 原生广告：槽位注入影子帖 + 曝光计费（defer，沿用 charge_interval 去重语义）
+        $injectedAds = app(AdFeedInjectionService::class)->inject(
+            $timelinePosts,
+            isOnset: ! empty($this->filter['onset'])
+        );
+
+        foreach ($injectedAds as $adData) {
+            defer(fn () => (new AdShowAction($adData))->execute());
+        }
+
         return $this->responseSuccess([
             'data' => TimelineCollection::make($timelinePosts)
         ]);

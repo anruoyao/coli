@@ -7,6 +7,7 @@ use App\Enums\Ad\AdApproval;
 use App\Support\Views\Flash;
 use Illuminate\Http\Request;
 use App\Actions\Ad\DeleteAdAction;
+use App\Services\Ad\AdPostSyncService;
 use App\Http\Controllers\Controller;
 
 class AdController extends Controller
@@ -66,6 +67,9 @@ class AdController extends Controller
             'approval' => AdApproval::APPROVED
         ]);
 
+        // 原生广告：审批通过后投放影子帖
+        app(AdPostSyncService::class)->sync($adData);
+
         return back()->with('flashMessage', (new Flash(content: __('admin/flash.ad.approve_success')))->get());
     }
 
@@ -76,6 +80,9 @@ class AdController extends Controller
         $adData->update([
             'approval' => AdApproval::REJECTED
         ]);
+
+        // 原生广告：驳回后软删除影子帖
+        app(AdPostSyncService::class)->sync($adData);
 
         return back()->with('flashMessage', (new Flash(content: __('admin/flash.ad.reject_success')))->get());
     }

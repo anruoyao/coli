@@ -29,6 +29,8 @@ class GuestContentScope
                 'user',
                 'reactions',
                 'media',
+                // 原生广告影子帖：素材来自源广告（帖子自身无 media 行）
+                'ad.media',
                 'poll',
                 'linkSnapshot',
                 'quotedPost' => function ($query) {

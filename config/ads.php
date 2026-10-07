@@ -56,5 +56,12 @@ return [
 	'refresh_interval' => env('ADS_AD_REFRESH_INTERVAL', 30),
 
 	// Add charge interval in minutes.
-	'charge_interval' => env('ADS_CHARGE_INTERVAL', 10)
+	'charge_interval' => env('ADS_CHARGE_INTERVAL', 10),
+
+	// 原生广告（影子帖）信息流注入：
+	// 每页帖子集合在固定槽位（第 N 条帖子之后）插入广告帖，数组长度即每页广告上限。
+	'feed' => [
+		'enabled' => env('ADS_FEED_ENABLED', true),
+		'slots' => [3, 9]
+	]
 ];

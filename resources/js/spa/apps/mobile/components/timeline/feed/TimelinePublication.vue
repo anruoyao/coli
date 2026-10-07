@@ -53,6 +53,12 @@
                     <PublicationQuote v-if="quotedPost" v-bind:quotedPost="quotedPost" v-bind:key="postData.id"></PublicationQuote>
                     <PublicationQuotePlaceholder v-else></PublicationQuotePlaceholder>
                 </div>
+                <div v-if="adCta" class="overflow-hidden mb-3 px-4">
+                    <a v-bind:href="adCta.target_url" target="_blank" rel="nofollow sponsored noopener" class="inline-flex items-center gap-1.5 border border-bord-pr rounded-full px-4 py-2 text-par-s text-lab-pr">
+                        <span>{{ adCta.cta_text }}</span>
+                        <span class="size-4"><SvgIcon name="arrow-up-right"></SvgIcon></span>
+                    </a>
+                </div>
                 <div class="px-4" v-if="postReactions.length">
                     <ReactionsViewer v-on:add="addReaction" v-bind:reactions="postReactions"></ReactionsViewer>
                 </div>
@@ -254,6 +260,9 @@
                 }),
                 postReactions: computed(() => {
                     return postData.value.relations.reactions;
+                }),
+                adCta: computed(() => {
+                    return postData.value.is_ad ? postData.value.ad : null;
                 }),
                 canDeletePost: computed(() => {
                     return postData.value.meta.permissions.can_delete;

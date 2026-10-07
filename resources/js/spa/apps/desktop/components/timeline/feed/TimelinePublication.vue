@@ -15,6 +15,7 @@
                                             {{ postData.relations.user.name }}
                                         </span>
                                         <VerificationBadge v-if="postData.relations.user.verified"></VerificationBadge>
+                                        <span v-if="postData.is_ad" class="shrink-0 leading-none bg-fill-tr text-lab-sc text-cap-s px-1.5 py-1 rounded">{{ $t('labels.ad') }}</span>
                                     </span>
                                 </h3>
                                 <span class="text-par-n text-lab-sc truncate">
@@ -80,6 +81,12 @@
                     <div v-else-if="postLinkSnapshot" class="overflow-hidden mb-2">
                         <a v-bind:href="postLinkSnapshot.url" target="_blank">
                             <LinkSnapshot v-bind:linkSnapshot="postLinkSnapshot"></LinkSnapshot>
+                        </a>
+                    </div>
+                    <div v-if="adCta" class="overflow-hidden mb-3">
+                        <a v-bind:href="adCta.target_url" target="_blank" rel="nofollow sponsored noopener" class="inline-flex items-center gap-1.5 border border-bord-pr rounded-full px-4 py-2 text-par-s text-lab-pr hover:text-brand-900 hover:border-brand-900 smoothing">
+                            <span>{{ adCta.cta_text }}</span>
+                            <span class="size-icon-x-small"><SvgIcon name="arrow-up-right"></SvgIcon></span>
                         </a>
                     </div>
                     <div class="block" v-if="postReactions.length">
@@ -344,6 +351,9 @@
                 },
                 postUserCaption: computed(() => {
                     return postData.value.relations.user.caption;
+                }),
+                adCta: computed(() => {
+                    return postData.value.is_ad ? postData.value.ad : null;
                 }),
                 canDeletePost: computed(() => {
                     return postData.value.meta.permissions.can_delete;

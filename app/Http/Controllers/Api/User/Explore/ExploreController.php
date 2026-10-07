@@ -19,8 +19,10 @@ use App\Models\Post;
 use App\Models\User;
 use App\Enums\Post\PostStatus;
 use Illuminate\Http\Request;
+use App\Actions\Ad\AdShowAction;
 use App\Database\Configs\Table;
 use App\Http\Controllers\Controller;
+use App\Services\Ad\AdFeedInjectionService;
 use App\Traits\Http\Api\SupportsApiResponses;
 use App\Http\Resources\User\People\PeopleCollection;
 use App\Http\Resources\User\Timeline\TimelineCollection;
@@ -76,6 +78,7 @@ class ExploreController extends Controller
         $this->filter['onset'] = data_get_integer($filter, 'onset', 0);
 
         $feedORMQuery = Post::timelineFormatPosts()
+            ->excludeAds()
             ->when(! empty($this->filter['onset']), function($query) {
                 $query->where('id', '>', $this->filter['onset']);
             })->when((! $this->me->isRoot()), function($query) {
@@ -102,6 +105,16 @@ class ExploreController extends Controller
         $timelinePosts = $feedORMQuery->simplePaginateManual(config('post.paginate_per'), $this->filter['page']);
 
         $timelinePosts = $processingPosts->merge($timelinePosts);
+
+        // 原生广告：推荐流同样槽位注入影子帖 + 曝光计费
+        $injectedAds = app(AdFeedInjectionService::class)->inject(
+            $timelinePosts,
+            isOnset: ! empty($this->filter['onset'])
+        );
+
+        foreach ($injectedAds as $adData) {
+            defer(fn () => (new AdShowAction($adData))->execute());
+        }
 
         return $this->responseSuccess([
             'data' => TimelineCollection::make($timelinePosts)

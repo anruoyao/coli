@@ -15,12 +15,16 @@ class GuestPostResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        // 原生广告影子帖：媒体渲染取源广告素材，附加 CTA 信息（访客可看、不可互动）
+        $isAdPost = ! empty($this->ad_id);
+
         $data = [
             'id' => $this->id,
             'content' => e($this->content),
             'type' => $this->type,
             'text_language' => $this->text_language,
             'hash_id' => $this->hash_id,
+            'is_ad' => $isAdPost,
             'relations' => [
                 'user' => GuestUserPreviewResource::make($this->user),
                 'reactions' => GuestReactionSummary::map($this->reactions),
@@ -54,12 +58,22 @@ class GuestPostResource extends JsonResource
             ],
         ];
 
-        if ($this->type->isMedia()) {
-            $data['relations']['media'] = $this->media->map(function ($item) {
+        // 广告帖自身不建 media 行，素材来自源广告（ad.media 由注入服务预加载）
+        $mediaItems = $isAdPost ? $this->ad?->media : $this->media;
+
+        if ($this->type->isMedia() && $mediaItems) {
+            $data['relations']['media'] = $mediaItems->map(function ($item) {
                 return GuestMediaResource::make($item);
             })->values();
         } elseif ($this->type->isPoll()) {
             $data['relations']['poll'] = GuestPollResource::make($this->poll);
+        }
+
+        if ($isAdPost) {
+            $data['ad'] = [
+                'cta_text' => $this->ad?->cta_text,
+                'target_url' => $this->ad?->target_url,
+            ];
         }
 
         if ($this->quotedPost) {

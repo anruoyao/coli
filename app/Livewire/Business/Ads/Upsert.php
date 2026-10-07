@@ -135,6 +135,9 @@ class Upsert extends Component
 
         $this->adData->update($updateData);
 
+        // 原生广告：同步影子帖（发布创建 / 编辑更新文案，审批状态变化隐藏）
+        app(\App\Services\Ad\AdPostSyncService::class)->sync($this->adData);
+
         return redirect()->route('business.ads.index');
     }
 

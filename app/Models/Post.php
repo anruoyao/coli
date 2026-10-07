@@ -62,9 +62,20 @@ class Post extends Model
 
     public function scopeTimelineFormatPosts($query)
     {
-        return $query->active()->with(['user', 'reactions', 'quotedPost', 'linkSnapshot', 'comments' => function($query) {
+        return $query->active()->with(['user', 'reactions', 'quotedPost', 'linkSnapshot', 'ad.media', 'comments' => function($query) {
             $query->with('user:id,avatar')->limit(3);
         }]);
+    }
+
+    // 原生广告影子帖：与源广告的关联（媒体渲染取 ad.media，帖子自身不建 media 行）
+    public function ad()
+    {
+        return $this->belongsTo(Ad::class, 'ad_id', 'id');
+    }
+
+    public function scopeExcludeAds($query)
+    {
+        return $query->whereNull('ad_id');
     }
 
     public function user()

@@ -25,12 +25,6 @@
 					<template v-if="(index + 1) % 35 === 0">
 						<FollowRecommendation v-bind:key="index"></FollowRecommendation>
 					</template>
-
-					<!-- Show ad card every 10 posts -->
-					<template v-if="(index + 1) % 10 === 0">
-						<AdCard v-bind:key="index"></AdCard>
-						<Border height="h-2" opacity="opacity-30"></Border>
-					</template>
 				</template>
 			</div>
 			<div v-else class="py-32">
@@ -62,7 +56,6 @@
     import ContentTabs from '@M/components/general/tabs/content/ContentTabs.vue';
     import TabsLink from '@M/components/general/tabs/content/parts/TabsLink.vue';
     import FeedUpdate from '@M/components/timeline/update/FeedUpdate.vue';
-	import AdCard from '@M/components/ads/AdCard.vue';
     import FollowRecommendation from '@M/components/recommend/follow/FollowRecommendation.vue';
     import Soundbar from '@M/components/soundbar/Soundbar.vue';
 
@@ -170,7 +163,6 @@
             ContentTabs: ContentTabs,
             TabsLink: TabsLink,
             FeedUpdate: FeedUpdate,
-			AdCard: AdCard,
 			Soundbar: Soundbar,
 			FollowRecommendation: FollowRecommendation
         }

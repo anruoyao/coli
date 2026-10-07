@@ -18,6 +18,7 @@ namespace App\Http\Controllers\Business\Ads;
 use App\Enums\Ad\AdStatus;
 use Illuminate\Http\Request;
 use App\Actions\Ad\DeleteAdAction;
+use App\Services\Ad\AdPostSyncService;
 use App\Http\Controllers\Controller;
 
 class AdsController extends Controller
@@ -99,6 +100,9 @@ class AdsController extends Controller
 
         if($adData->status->isPublished()) {
             $adData->update(['status' => AdStatus::PAUSED]);
+
+            // 原生广告：暂停时软隐藏影子帖
+            app(AdPostSyncService::class)->sync($adData);
         }
 
         return redirect()->route('business.ads.show', $adId);
@@ -110,6 +114,9 @@ class AdsController extends Controller
 
         if($adData->status->isPaused()) {
             $adData->update(['status' => AdStatus::PUBLISHED]);
+
+            // 原生广告：恢复投放时恢复影子帖
+            app(AdPostSyncService::class)->sync($adData);
         }
 
         return redirect()->route('business.ads.show', $adId);

@@ -48,6 +48,12 @@ class Ad extends Model
         return $this->morphMany(Media::class, 'mediaable', 'mediaable_type', 'mediaable_id', 'id', 'id');
     }
 
+    // 原生广告：广告发布后自动生成的影子帖（以帖子形态混入信息流）
+    public function post()
+    {
+        return $this->hasOne(Post::class, 'ad_id', 'id');
+    }
+
     public function getPreviewImageUrlAttribute()
 	{
 		$media = $this->media;

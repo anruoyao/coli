@@ -8,7 +8,10 @@
                 v-bind:rounded="rounded"></AvatarSmall>
             </div>
             <div class="leading-4 overflow-hidden">
-                <Name v-bind:name="name" v-bind:isVerified="verified" v-bind:showPin="showPin"></Name>
+                <div class="flex items-center gap-1">
+                    <Name v-bind:name="name" v-bind:isVerified="verified" v-bind:showPin="showPin"></Name>
+                    <span v-if="badgeText" class="shrink-0 leading-none bg-fill-tr text-lab-sc text-cap-s px-1.5 py-1 rounded">{{ badgeText }}</span>
+                </div>
                 <p class="text-par-s text-lab-sc truncate mt-0.5">
                     {{ caption }}
                 </p>
@@ -58,6 +61,10 @@
             unreadIndicator: {
                 type: Boolean,
                 default: false
+            },
+            badgeText: {
+                type: String,
+                default: ''
             }
         },
         components: {

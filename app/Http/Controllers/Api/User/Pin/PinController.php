@@ -15,7 +15,8 @@ class PinController extends Controller
     public function getGlobalPinnedPosts(Request $request)
     {
         $pinedPosts = Pin::query()->globalPinnedPosts()->with(['pinnable' => function($query) {
-            $query->timelineFormatPosts();
+            // 原生广告影子帖不参与全局置顶
+            $query->timelineFormatPosts()->excludeAds();
         }])->latest()->get();
 
         return $this->responseSuccess([

@@ -187,7 +187,8 @@ class ProfileController extends Controller
         }
 
         if($contentType == 'posts' || $contentType == 'media') {
-            $profilePosts = $profileData->posts()->timelineFormatPosts()->when($cursorId, function($query) use ($cursorId) {
+            // 原生广告影子帖不在个人主页展示（仅信息流注入 + 详情直达）
+            $profilePosts = $profileData->posts()->timelineFormatPosts()->excludeAds()->when($cursorId, function($query) use ($cursorId) {
                 $query->where('id', '<', $cursorId);
             })->when(($contentType == 'media'), function($query) {
                 $query->whereNot('type', PostType::TEXT);

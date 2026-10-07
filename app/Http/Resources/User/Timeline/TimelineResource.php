@@ -31,12 +31,16 @@ class TimelineResource extends JsonResource
     {
         $isOwner = me()->id === $this->user_id;
 
+        // 原生广告影子帖：媒体渲染取源广告素材，附加 CTA 信息
+        $isAdPost = ! empty($this->ad_id);
+
         $apiData = [
             'id' => $this->id,
             'content' => e($this->content),
             'type' => $this->type,
             'text_language' => $this->text_language,
             'hash_id' => $this->hash_id,
+            'is_ad' => $isAdPost,
             'relations' => [
                 'user' => UserPreviewResource::make($this->user),
                 'reactions' => ReactionCollection::make($this->reactions),
@@ -73,14 +77,24 @@ class TimelineResource extends JsonResource
             ],
         ];
 
-        if($this->type->isMedia()) {
-            $apiData['relations']['media'] = $this->media->map(function($item) {
+        // 广告帖自身不建 media 行，素材来自源广告（ad.media 随 timelineFormatPosts 预加载）
+        $mediaItems = $isAdPost ? $this->ad?->media : $this->media;
+
+        if($this->type->isMedia() && $mediaItems) {
+            $apiData['relations']['media'] = $mediaItems->map(function($item) {
                 return MediaResource::make($item);
-            });
+            })->values();
         }
 
         else if($this->type->isPoll()) {
             $apiData['relations']['poll'] = PollResource::make($this->poll);
+        }
+
+        if($isAdPost) {
+            $apiData['ad'] = [
+                'cta_text' => $this->ad?->cta_text,
+                'target_url' => $this->ad?->target_url
+            ];
         }
 
         if($this->quotedPost) {

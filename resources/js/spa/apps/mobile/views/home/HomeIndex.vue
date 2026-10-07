@@ -40,12 +40,6 @@
 							<template v-if="(index + 1) % 35 === 0">
 								<FollowRecommendation v-bind:key="index"></FollowRecommendation>
 							</template>
-
-							<!-- Show ad card every 10 posts -->
-							<template v-if="(index + 1) % 10 === 0">
-								<AdCard v-bind:key="index"></AdCard>
-								<Border height="h-2" opacity="opacity-30"></Border>
-							</template>
 						</template>
 
 						<div v-if="state.isLoadingContent">
@@ -76,12 +70,6 @@
 								<!-- Show follow recommendation every 35 posts -->
 								<template v-if="(index + 1) % 35 === 0">
 									<FollowRecommendation v-bind:key="index"></FollowRecommendation>
-								</template>
-
-								<!-- Show ad card every 10 posts -->
-								<template v-if="(index + 1) % 10 === 0">
-									<AdCard v-bind:key="index"></AdCard>
-									<Border height="h-2" opacity="opacity-30"></Border>
 								</template>
 							</template>
 
@@ -150,7 +138,6 @@
     import TimelinePublicationSkeleton from '@M/components/timeline/feed/TimelinePublicationSkeleton.vue';
     import TimelineContainer from '@M/components/timeline/feed/TimelineContainer.vue';
     import StoriesFeed from '@M/components/stories/feed/StoriesFeed.vue';
-    import AdCard from '@M/components/ads/AdCard.vue';
     import FollowRecommendation from '@M/components/recommend/follow/FollowRecommendation.vue';
     import FeedUpdate from '@M/components/timeline/update/FeedUpdate.vue';
     import ContentTabs from '@M/components/general/tabs/content/ContentTabs.vue';
@@ -403,7 +390,6 @@
             TimelinePublicationSkeleton: TimelinePublicationSkeleton,
             TimelineContainer: TimelineContainer,
             StoriesFeed: StoriesFeed,
-            AdCard: AdCard,
             FollowRecommendation: FollowRecommendation,
             FeedUpdate: FeedUpdate,
             ContentTabs: ContentTabs,
