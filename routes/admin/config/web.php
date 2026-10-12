@@ -44,6 +44,8 @@ Route::get('/backup', [App\Http\Controllers\Admin\Config\ConfigController::class
 
 Route::get('/backup/{backupName}/download', [App\Http\Controllers\Admin\Config\ConfigController::class, 'downloadBackup'])->name('admin.config.backup.download');
 
+Route::post('/backup/upload', [App\Http\Controllers\Admin\Config\BackupUploadController::class, 'upload'])->name('admin.config.backup.upload');
+
 Route::get('/sitemap', [App\Http\Controllers\Admin\Config\ConfigController::class, 'sitemap'])->name('admin.config.sitemap');
 
 Route::get('/media-migration', [App\Http\Controllers\Admin\Config\ConfigController::class, 'mediaMigration'])->name('admin.config.media-migration');

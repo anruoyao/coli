@@ -14,6 +14,17 @@ return [
     'custom_code_settings' => '自定义代码注入',
     'backup_settings' => '备份设置',
     'backup_history' => '备份历史',
+    'restore' => [
+        'title' => '上传数据库备份并恢复',
+        'caption' => '仅支持本系统生成的 ZIP。上传后会校验数据库转储文件；恢复将覆盖当前数据库，请确认已有可用的紧急备份。',
+        'select' => '点击选择数据库备份 ZIP',
+        'upload' => '上传并校验',
+        'reset' => '重置',
+        'confirm' => '确定恢复该数据库备份？当前数据库将被覆盖，此操作不可逆。',
+        'running' => '数据库恢复进行中，请勿关闭页面或启动其他备份。',
+        'completed' => '数据库恢复完成，连接健康检查通过。',
+        'failed' => '数据库恢复失败：',
+    ],
     'upload_settings' => '上传限制',
 	'tabs' => [
         'system' => '系统',
