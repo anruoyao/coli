@@ -55,7 +55,11 @@
                         </x-table.td>
                         <x-table.td>
                             <div class="flex items-center justify-end gap-2">
-                                <x-ui.buttons.icon :disabled="$this->isDownloading" wire:click="downloadBackup('{{ $backupData['name'] }}')" iconName="download-01" iconType="line"></x-ui.buttons.icon>
+                                <a href="{{ route('admin.config.backup.download', ['backupName' => $backupData['name']]) }}" class="size-8 rounded-full inline-flex-center outline-hidden hover:bg-fill-tr cursor-pointer text-lab-pr3" aria-label="{{ __('labels.download') }}">
+                                    <span class="size-icon-normal">
+                                        <x-ui-icon name="download-01" type="line"></x-ui-icon>
+                                    </span>
+                                </a>
                                 <x-ui.buttons.icon :disabled="$this->isDownloading" wire:click="deleteBackup('{{ $backupData['path'] }}')" iconName="trash-04" color="danger" iconType="line"></x-ui.buttons.icon>
                             </div>
                         </x-table.td>

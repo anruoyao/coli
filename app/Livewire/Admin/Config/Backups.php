@@ -79,18 +79,6 @@ class Backups extends Component
         return view('livewire.admin.config.backups');
     }
 
-    public function downloadBackup(string $backupName)
-    {
-        return response()->streamDownload(function () use ($backupName) {
-            $stream = fopen(Storage::disk('local')->path("backups/{$backupName}"), 'rb');
-            fpassthru($stream);
-            fclose($stream);
-        }, $backupName, [
-            'Content-Type' => 'application/zip',
-            'Content-Length' => filesize(Storage::disk('local')->path("backups/{$backupName}")),
-        ]);
-    }
-
     private function checkBackupProcessing()
     {
         $this->isProcessing = cache()->has('system:backup:processing');

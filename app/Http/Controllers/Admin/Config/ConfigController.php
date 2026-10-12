@@ -7,6 +7,7 @@ use App\Support\Views\Flash;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ConfigController extends Controller
@@ -148,6 +149,21 @@ class ConfigController extends Controller
     public function backup()
     {
         return view('admin::config.backup.index');
+    }
+
+    public function downloadBackup(string $backupName)
+    {
+        abort_unless(preg_match('/\A[^\/\\\\]+\.zip\z/i', $backupName), 404);
+
+        $disk = Storage::disk('local');
+        $path = $disk->path("backups/{$backupName}");
+
+        abort_unless(is_file($path) && is_readable($path), 404);
+
+        return response()->download($path, $backupName, [
+            'Content-Type' => 'application/zip',
+            'Cache-Control' => 'private, no-store',
+        ]);
     }
 
     public function sitemap()
