@@ -64,6 +64,26 @@ class Nllb implements TranslationDriverInterface
         }
     }
 
+    public static function detectSource(string $text): string
+    {
+        if (preg_match('/[\x{3040}-\x{30ff}]/u', $text)) {
+            return 'ja';
+        }
+        if (preg_match('/[\x{ac00}-\x{d7af}]/u', $text)) {
+            return 'ko';
+        }
+        if (preg_match('/\p{Han}/u', $text)) {
+            return 'zh';
+        }
+
+        $detector = new \LanguageDetection\Language([
+            'en', 'ru', 'fr', 'de', 'es', 'pt', 'ar', 'it', 'tr', 'pl', 'uk', 'ga', 'gl',
+        ]);
+        $results = $detector->detect($text)->bestResults()->close();
+
+        return empty($results) ? 'en' : array_key_first($results);
+    }
+
     public static function languageCode(string $language): string
     {
         $language = strtolower(trim($language));
@@ -74,6 +94,7 @@ class Nllb implements TranslationDriverInterface
             'fr' => 'fra_Latn', 'de' => 'deu_Latn', 'es' => 'spa_Latn',
             'pt' => 'por_Latn', 'ar' => 'arb_Arab', 'it' => 'ita_Latn',
             'tr' => 'tur_Latn', 'pl' => 'pol_Latn', 'uk' => 'ukr_Cyrl',
+            'ga' => 'gle_Latn', 'gl' => 'glg_Latn',
             'auto' => 'auto',
         ];
 

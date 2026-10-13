@@ -33,6 +33,19 @@ class NllbDriverTest extends TestCase
         $this->assertSame('Hello', $result);
     }
 
+    public function test_short_chinese_and_supported_detection_never_produce_unmapped_codes(): void
+    {
+        $this->assertSame('zh', Nllb::detectSource('测试一下'));
+        $this->assertSame('zh', Nllb::detectSource('哈哈'));
+        $this->assertSame('ja', Nllb::detectSource('こんにちは'));
+        $this->assertSame('ko', Nllb::detectSource('안녕하세요'));
+        foreach (['test', 'Hello world', 'A short sentence.', '测试一下'] as $text) {
+            $this->assertNotSame('auto', Nllb::languageCode(Nllb::detectSource($text)));
+        }
+        $this->assertSame('gle_Latn', Nllb::languageCode('ga'));
+        $this->assertSame('glg_Latn', Nllb::languageCode('gl'));
+    }
+
     public function test_it_rejects_unknown_language_codes(): void
     {
         $this->expectExceptionMessage('Unsupported translation language.');

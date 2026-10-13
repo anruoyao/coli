@@ -9,7 +9,7 @@ use Throwable;
 use App\Http\Controllers\Controller;
 use App\Traits\Http\Api\SupportsApiResponses;
 use App\Services\Translation\TranslationService;
-use App\Services\Language\LangDetectionService;
+use App\Services\Translation\Drivers\Nllb;
 
 class TranslatorController extends Controller
 {
@@ -32,7 +32,7 @@ class TranslatorController extends Controller
             $service = app(TranslationService::class);
             $source = $validated['source'] ?? config('services.translation.default_source', 'auto');
             if ($source === 'auto' && config('services.translation.service') === 'nllb') {
-                $source = strtolower((new LangDetectionService($validated['text']))->detect());
+                $source = Nllb::detectSource(html_entity_decode($validated['text'], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
             }
             $target = $validated['target'] ?? config('services.translation.default_target', 'en');
             $translatedText = $service->from($source)->to($target)->translate($validated['text']);
