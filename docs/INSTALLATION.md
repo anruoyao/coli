@@ -693,6 +693,28 @@ NLLB 是可选的本地 CTranslate2 服务。2 核 4 GB 机器上的 `int8`、�
 
 NLLB-200 模型仓库使用 **CC-BY-NC-4.0**。部署前阅读并遵守该许可证，尤其是非商业使用限制；商业场景请取得许可或选择有合适授权的模型。模型和 tokenizer 必须在本机目录中加载，服务不会联网下载。
 
+### 0. 小内存主机配置 swap
+
+2 核 4GB 主机同时运行数据库、PHP、队列与 NLLB 时，建议预留 4GB swap 缓冲内存峰值。先运行 `swapon --show` 和 `df -h /` 检查现有 swap 与磁盘空间；以下仅在 `/swapfile-nllb` 不存在且至少有 4GB 空间时执行，不覆盖已有 swap 文件：
+
+```bash
+set -e
+sudo test ! -e /swapfile-nllb
+sudo fallocate -l 4G /swapfile-nllb
+sudo chmod 600 /swapfile-nllb
+sudo mkswap /swapfile-nllb
+sudo swapon /swapfile-nllb
+# 备份 /etc/fstab 后添加一次，确保重启生效。
+printf '/swapfile-nllb none swap sw 0 0\n' | sudo tee -a /etc/fstab
+sudo systemctl daemon-reload
+swapon --show
+free -m
+```
+
+swap 不能代替运行内存；大量换页会增加延迟。保持单 worker、单并发和 1–2 线程，并观察模型推理后的网站响应。2026-10-13 的部署使用 1 线程、int8、Beam 2，短句中英互译约 1.4–1.7 秒，这只是该主机当时的实测结果。
+
+重启后若网站返回 500，应检查 Laravel 日志和 Redis 的实际连接端口。此主机曾因系统 Redis 服务启动失败导致 `RedisException: Connection refused`；站点实际使用 `/www/server/redis/redis.conf`，应确保对应实例由正确的开机服务管理，避免系统 Redis 和宝塔 Redis 抢占同一端口。
+
 ### 1. 准备模型
 
 推荐用仓库的 `translation-service/prepare_model.py` 下载并转换[官方模型](https://huggingface.co/facebook/nllb-200-distilled-600M)，需要独立转换环境（包含 CPU PyTorch），运行环境不需要 torch。工具固定下载完整 revision SHA，自动创建 snapshot 和输出目录：这两个目录必须事先不存在且互不嵌套。转换时峰值内存和磁盘占用高于运行时，建议在资源充足的机器转换后复制产物到 2 核 4 GB 主机。以下从可信项目目录执行，示例项目路径 `/home/zyb/code/coli` 和运行用户 `www` 请按实际环境调整；不要从下载目录执行脚本，也不要依赖 `git clone` 已正确取得 Git LFS 权重。
