@@ -28,6 +28,8 @@ Route::get('/report-notifications', [App\Http\Controllers\Admin\Config\ConfigCon
 
 Route::get('/nsfw-detection', [App\Http\Controllers\Admin\Config\ConfigController::class, 'nsfwDetection'])->name('admin.config.nsfw-detection');
 
+Route::get('/translation', [App\Http\Controllers\Admin\Config\ConfigController::class, 'translation'])->name('admin.config.translation');
+
 Route::get('/api', [App\Http\Controllers\Admin\Config\ConfigController::class, 'api'])->name('admin.config.api');
 
 Route::get('/verification', [App\Http\Controllers\Admin\Config\ConfigController::class, 'verification'])->name('admin.config.verification');

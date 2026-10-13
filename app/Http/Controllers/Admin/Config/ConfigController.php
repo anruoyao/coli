@@ -67,6 +67,11 @@ class ConfigController extends Controller
         return view('admin::config.nsfw-detection.index');
     }
 
+    public function translation()
+    {
+        return view('admin::config.translation.index');
+    }
+
     public function api()
     {
         return view('admin::config.api.index');

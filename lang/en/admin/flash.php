@@ -79,6 +79,7 @@ return [
 	],
 	'config' => [
         'settings_success' => 'Settings updated successfully!',
+        'settings_error' => 'Settings were not saved because the translation runtime could not apply them.',
 	],
 	'cashout' => [
 		'deleted_success' => 'Cashout request deleted successfully!',

@@ -8,8 +8,8 @@ use App\Services\Translation\Drivers\Interfaces\TranslationDriverInterface;
 
 class Libretranslate implements TranslationDriverInterface
 {
-	private string $from = 'auto';
-	private string $to = 'en';
+    private string $from = 'auto';
+    private string $to = 'en';
 
     public function from(string $from): self
     {
@@ -24,25 +24,33 @@ class Libretranslate implements TranslationDriverInterface
 
         return $this;
     }
-    
+
     public function translate(string $text): string
     {
-		try {
-			$response = Http::post(config('services.translation.api_url') . '/translate', [
-				'q' => $text,
-				'source' => $this->from,
-				'target' => $this->to,
-			]);
-            
+        try {
+            $request = Http::connectTimeout((int) config('services.translation.connect_timeout', 2))
+                ->timeout((int) config('services.translation.timeout', 15));
+
+            $response = $request->post(rtrim((string) config('services.translation.api_url'), '/') . '/translate', [
+                'q' => $text,
+                'source' => $this->from,
+                'target' => $this->to,
+                'api_key' => config('services.translation.api_key', ''),
+            ]);
+            $response->throw();
             $responseData = $response->json();
 
             if (isset($responseData['error'])) {
                 throw new Exception($responseData['error']);
             }
 
-			return (string) $responseData['translatedText'];
-		} catch (Exception $e) {
-			throw new Exception('Failed to translate text: ' . $e->getMessage());
-		}
+            if (! isset($responseData['translatedText'])) {
+                throw new Exception('Translation service returned an invalid response.');
+            }
+
+            return (string) $responseData['translatedText'];
+        } catch (Exception $e) {
+            throw new Exception('Translation service is unavailable.', 0, $e);
+        }
     }
 }

@@ -13,9 +13,9 @@
 			}
 		},
 		translation_service: {
-			name: '{{ config('services.translation.name') }}',
-			url: '{{ config('services.translation.url') }}',
-			logo_url: '{{ config('services.translation.logo') }}'
+            name: @json(config('services.translation.service') === 'nllb' ? 'NLLB-200' : 'LibreTranslate'),
+            url: @json(config('services.translation.service') === 'nllb' ? 'https://huggingface.co/facebook/nllb-200-distilled-600M' : 'https://libretranslate.com'),
+            logo_url: @json(config('services.translation.service') === 'nllb' ? '' : config('services.translation.logo'))
 		},
 		routes: {
 			business_dashboard_index: "{{ route('business.dashboard.index') }}",

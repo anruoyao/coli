@@ -98,6 +98,9 @@
                 <x-navbar.item href="{{ route('admin.config.nsfw-detection') }}" icon="shield-02">
                     {{ __('admin/sidebar.nsfw_detection') }}
                 </x-navbar.item>
+                <x-navbar.item href="{{ route('admin.config.translation') }}" icon="globe-01">
+                    {{ __('admin/sidebar.translation_settings') }}
+                </x-navbar.item>
                 <x-navbar.item href="{{ route('admin.marketing.index') }}" icon="mail-01">
                     {{ __('admin/sidebar.marketing') }}
                 </x-navbar.item>

@@ -21,6 +21,7 @@ return [
         App\Settings\BrandSettings::class,
         App\Settings\GuestSettings::class,
         App\Settings\ReportNotificationSettings::class,
+        App\Settings\TranslationSettings::class,
     ],
 
     /*
