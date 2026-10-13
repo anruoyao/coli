@@ -9,10 +9,12 @@ const colibriTranslator = function() {
             }).sendTo('translate').then((response) => {
                 return response.data.data.translated_text;
             }).catch((error) => {
-                const message = error.response?.data?.message;
-                if (message) {
-                    alert(message);
-                }
+                const message = error.response?.data?.message || (
+                    typeof __t === 'function'
+                        ? __t('labels.translation_failed')
+                        : 'Translation failed. Please try again.'
+                );
+                alert(message);
 
                 return false;
             });

@@ -103,6 +103,7 @@ return [
 	'like' => 'Like',
 	'share_post' => 'Share post',
 	'show_untranslated' => 'Show original text',
+	'translation_failed' => 'Translation failed. Please try again.',
 	'downloads_count' => 'Downloads {count}',
 	'download' => 'Download',
 	'notifications' => 'Notifications',
