@@ -2,10 +2,9 @@ import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
 
 const colibriTranslator = function() {
     return {
-        translate: async (text, source = 'auto', target = window.BackendEmbeds?.locale || 'en') => {
+        translate: async (text, source = 'auto', target = window.BackendEmbeds?.locale || 'en', postId = null) => {
             return await colibriAPI().translator().with({
-                text: text,
-                source: source,
+                ...(postId ? { post_id: postId } : { text: text, source: source }),
                 target: target
             }).sendTo('translate').then((response) => {
                 return response.data.data.translated_text;

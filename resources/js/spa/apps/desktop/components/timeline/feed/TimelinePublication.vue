@@ -399,7 +399,7 @@
                     }
 
                     state.isTranslating = true;
-                    const translatedText = await colibriTranslator().translate(postContent.value);
+                    const translatedText = await colibriTranslator().translate(postData.value.content, 'auto', window.BackendEmbeds?.locale || 'en', postData.value.id);
 
                     if (translatedText) {
                         postTranslatedContent.value = translatedText;
