@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Settings\{AppSettings, FFMPegSettings, MailSettings, GoogleLoginSettings, BrandSettings, AuthSettings, CodeSettings, WalletSettings, UploadSettings, NsfwDetectionSettings};
+use App\Settings\{AppSettings, FFMPegSettings, MailSettings, GoogleLoginSettings, BrandSettings, AuthSettings, CodeSettings, WalletSettings, UploadSettings, NsfwDetectionSettings, TranslationSettings};
 use App\Settings\Acquiring\{PaypalSettings, StripeSettings, YooKassaSettings, RobokassaSettings};
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\ServiceProvider;
@@ -36,6 +36,12 @@ class SettingsServiceProvider extends ServiceProvider
             $this->mergeNsfwDetectionSettings();
         } catch (\Throwable $th) {
             //
+        }
+
+        try {
+            $this->mergeTranslationSettings();
+        } catch (\Throwable $th) {
+            // Use environment defaults until the translation migration is installed.
         }
     }
 
@@ -111,6 +117,31 @@ class SettingsServiceProvider extends ServiceProvider
             'features.nsfw_detection.threshold' => $nsfwSettings->threshold,
             'features.nsfw_detection.trigger_labels' => $nsfwSettings->trigger_labels,
             'features.nsfw_detection.notify_author' => $nsfwSettings->notify_author,
+        ]);
+    }
+
+    private function mergeTranslationSettings(): void
+    {
+        $settings = app(TranslationSettings::class);
+
+        config([
+            'services.translation.enabled' => $settings->enabled,
+            'services.translation.service' => $settings->driver,
+            'services.translation.api_url' => $settings->api_url,
+            'services.translation.api_key' => $settings->api_key,
+            'services.translation.default_source' => $settings->default_source,
+            'services.translation.default_target' => $settings->default_target,
+            'services.translation.timeout' => $settings->timeout,
+            'services.translation.connect_timeout' => $settings->connect_timeout,
+            'services.translation.max_text_length' => $settings->max_text_length,
+            'services.translation.threads' => $settings->threads,
+            'services.translation.compute_type' => $settings->compute_type,
+            'services.translation.beam_size' => $settings->beam_size,
+            'services.translation.max_input_tokens' => $settings->max_input_tokens,
+            'services.translation.max_output_tokens' => $settings->max_output_tokens,
+            'services.translation.max_concurrent_requests' => $settings->max_concurrent_requests,
+            'services.translation.global_rate_per_minute' => $settings->global_rate_per_minute,
+            'security.rate_limits.translator.max' => $settings->rate_per_minute,
         ]);
     }
 

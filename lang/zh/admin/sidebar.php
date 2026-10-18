@@ -23,6 +23,7 @@ return [
 	'notifications' => '通知设置',
 	'report_notifications' => '举报通知配置',
 	'nsfw_detection' => 'NSFW 自动识别',
+    'translation_settings' => '翻译服务配置',
 	'marketing' => '营销活动',
 	'api_settings' => 'API 设置',
 	'reported_content' => '举报内容',

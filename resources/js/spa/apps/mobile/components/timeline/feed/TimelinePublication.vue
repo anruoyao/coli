@@ -16,7 +16,14 @@
             <div class="max-w-full">
                 <template v-if="postHasContent">
                     <div class="overflow-hidden mb-4 px-4">
-                        <PublicationText v-bind:postContent="postContent"></PublicationText>
+                        <PublicationText v-bind:key="postContent" v-bind:postContent="postContent"></PublicationText>
+                        <button v-if="postData.meta.is_translatable" type="button"
+                            class="mt-2 min-h-8 text-par-s text-brand-900 disabled:opacity-50"
+                            v-bind:disabled="state.isTranslating"
+                            v-bind:aria-busy="state.isTranslating"
+                            v-on:click.stop="translate">
+                            {{ state.isTranslating ? $t('labels.translating') : state.isTranslated ? $t('labels.show_untranslated') : $t('dd.translate') }}
+                        </button>
                     </div>
                 </template>
                 <div v-if="postData.meta.is_ai_generated" class="overflow-hidden mb-3 px-4">
@@ -121,6 +128,13 @@
                         <ActionSheetItem v-bind:notLast="true" iconName="arrow-up-right" v-bind:textLabel="$t('dd.post.open_post')"></ActionSheetItem>
                     </RouterLink>
             
+                    <ActionSheetItem v-if="postHasContent && postData.meta.is_translatable"
+                        v-on:click="translate"
+                        v-bind:loading="state.isTranslating"
+                        v-bind:disabled="state.isTranslating"
+                        iconName="translate-01"
+                        v-bind:textLabel="state.isTranslating ? $t('labels.translating') : state.isTranslated ? $t('labels.show_untranslated') : $t('dd.translate')"></ActionSheetItem>
+
                     <ActionSheetItem
                         v-on:click="bookmarkPost"
                         v-bind:iconName="postData.meta.activity.bookmarked ? 'bookmark-minus' : 'bookmark'"
@@ -151,7 +165,7 @@
 </template>
 
 <script>
-    import { defineComponent, defineAsyncComponent, reactive, computed, ref } from 'vue';
+    import { defineComponent, defineAsyncComponent, reactive, computed, ref, watch } from 'vue';
     import { PostTypeUtils } from '@/kernel/enums/post/post.type.js';
     import { colibriEventBus } from '@/kernel/events/bus/index.js';
     import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
@@ -209,6 +223,8 @@
             };
 
             const state = reactive({
+                isTranslating: false,
+                isTranslated: false,
                 shareMenu: useMenu(),
                 commentsMenu: useMenu(),
                 reactionMenu: useMenu(),
@@ -223,15 +239,49 @@
                 return base_url(`publication/${postData.value.hash_id}`);
             });
 
-            const postContent = computed(() => {
-                return postData.value.content;
+            const postTranslatedContent = ref('');
+            const translationTarget = computed(() => window.BackendEmbeds?.locale || 'en');
+            let translationVersion = 0;
+
+            watch(() => [postData.value.id, postData.value.content, translationTarget.value], () => {
+                translationVersion++;
+                postTranslatedContent.value = '';
+                state.isTranslated = false;
+                state.isTranslating = false;
             });
+
+            const postContent = computed(() => {
+                return state.isTranslated ? postTranslatedContent.value : postData.value.content;
+            });
+
+            const translate = async () => {
+                if (state.isTranslating || ! guard()) return;
+                if (postTranslatedContent.value) {
+                    state.isTranslated = !state.isTranslated;
+                    return;
+                }
+
+                const version = translationVersion;
+                state.isTranslating = true;
+                try {
+                    const translatedText = await colibriTranslator().translate(
+                        postData.value.content, 'auto', translationTarget.value, postData.value.id
+                    );
+                    if (version === translationVersion && translatedText) {
+                        postTranslatedContent.value = translatedText;
+                        state.isTranslated = true;
+                    }
+                } finally {
+                    if (version === translationVersion) state.isTranslating = false;
+                }
+            };
 
             const isPinned = computed(() => {
                 return props.isPinned;
             });
 
             return {
+                translate: translate,
                 postContent: postContent,
                 PostTypeUtils: PostTypeUtils,
                 postData: postData,

@@ -79,6 +79,7 @@ return [
 	],
 	'config' => [
         'settings_success' => '设置更新成功！',
+        'settings_error' => '翻译运行时无法应用配置，设置未保存。',
 	],
 	'cashout' => [
 		'deleted_success' => '提现申请删除成功！',

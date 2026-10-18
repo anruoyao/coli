@@ -45,6 +45,15 @@ class Post extends Model
         'content' => ''
     ];
 
+    protected static function booted(): void
+    {
+        static::updated(function (Post $post) {
+            if ($post->wasChanged('content') || ($post->wasChanged('status') && $post->status !== PostStatus::ACTIVE)) {
+                PostTranslation::where('post_id', $post->id)->delete();
+            }
+        });
+    }
+
     public function scopeActive($query)
     {
         return $query->where('status', PostStatus::ACTIVE);

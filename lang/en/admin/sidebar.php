@@ -23,6 +23,7 @@ return [
 	'notifications' => 'Notification settings',
 	'report_notifications' => 'Report notifications',
 	'nsfw_detection' => 'NSFW Detection',
+    'translation_settings' => 'Translation Settings',
 	'marketing' => 'Marketing campaigns',
 	'api_settings' => 'API settings',
 	'reported_content' => 'Reported content',

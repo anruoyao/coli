@@ -55,7 +55,7 @@ return [
         // 搜索 / 翻译 / 资金类收紧（原 60 → 30）
         'explore'       => ['max' => env('SECURITY_RATE_EXPLORE', 30), 'decay' => 1],
         'autocompletes' => ['max' => env('SECURITY_RATE_AUTOCOMPLETE', 30), 'decay' => 1],
-        'translator'    => ['max' => env('SECURITY_RATE_TRANSLATOR', 30), 'decay' => 1],
+        'translator'    => ['max' => env('SECURITY_RATE_TRANSLATOR', 10), 'decay' => 1],
         'wallet'        => ['max' => env('SECURITY_RATE_WALLET', 30), 'decay' => 1],
         'tips'          => ['max' => env('SECURITY_RATE_TIPS', 30), 'decay' => 1],
 
