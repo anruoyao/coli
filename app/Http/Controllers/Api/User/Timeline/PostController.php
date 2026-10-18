@@ -216,6 +216,9 @@ class PostController extends Controller
 
         try {
             $postData = Post::activeById($postId)->firstOrFail();
+            $oldReaction = $postData->reactions()
+                ->whereJsonContains('users', me()->id)
+                ->first();
 
             $isReactionAdded = $reactionService
                 ->setUserId(me()->id)
@@ -225,6 +228,16 @@ class PostController extends Controller
                 
             if (! $postData->is_owner) {
                 if ($isReactionAdded) {
+                    if ($oldReaction && $oldReaction->unified_id !== strtolower($reactionUnifiedId)) {
+                        NotificationBatcher::revokeSocial(
+                            $postData->user,
+                            me()->id,
+                            'post',
+                            $postData->id,
+                            ['post.reacted']
+                        );
+                    }
+
                     // 聚合缓冲：进入 1h Digest 邮件
                     NotificationBatcher::add(
                         $postData->user_id,

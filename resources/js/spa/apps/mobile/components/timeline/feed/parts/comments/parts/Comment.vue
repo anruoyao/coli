@@ -46,7 +46,19 @@
                     <ReactionsViewer v-on:add="addReaction" v-bind:reactions="commentData.relations.reactions"></ReactionsViewer>
                 </div>
             </div>
-            <div v-if="! commentData.deleted && ! preview">
+            <div v-if="! commentData.deleted && ! preview" class="flex items-center gap-1">
+                <PrimaryIconButton
+                    iconSize="5"
+                    v-on:click.stop="toggleLike"
+                    v-bind:buttonColor="commentLiked ? 'text-brand-900' : 'text-lab-sc'"
+                    iconName="heart-rounded"
+                    v-bind:iconType="commentLiked ? 'solid' : 'line'"></PrimaryIconButton>
+                <PrimaryIconButton
+                    iconSize="5"
+                    v-on:click.stop="openReactionsPicker"
+                    buttonColor="text-lab-sc"
+                    iconName="face-smile"
+                    iconType="line"></PrimaryIconButton>
                 <MarginalTextButton
                     buttonColor="text-lab-sc/70"
                     v-on:click="reply"
@@ -89,6 +101,7 @@
     import { defineComponent, defineAsyncComponent, ref, reactive, computed } from 'vue';
     import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
     import { colibriEventBus } from '@/kernel/events/bus/index.js';
+    import { useAuthGate } from '@M/core/composables/useAuthGate.js';
     
     import AvatarExtraSmall from '@M/components/general/avatars/AvatarExtraSmall.vue';
     import Avatar2ExtraSmall from '@M/components/general/avatars/Avatar2ExtraSmall.vue';
@@ -126,6 +139,8 @@
             });
 
             const isReply = computed(() => props.variant === 'reply');
+            const likeUnifiedId = '2764-fe0f';
+            const { guard } = useAuthGate();
 
             // 回复目标用户名（父评论被删时关系可能为空）
             const replyToName = computed(() => {
@@ -137,7 +152,7 @@
             });
 
             const openReactionsPicker = function() {
-                if (props.preview) {
+                if (props.preview || ! guard()) {
                     return;
                 }
 
@@ -158,6 +173,24 @@
                 hasReactions: computed(() => {
                     return commentData.value.relations.reactions.length;
                 }),
+                commentLiked: computed(() => {
+                    return commentData.value.relations.reactions.some((reaction) => {
+                        return reaction.unified_id === likeUnifiedId && reaction.has_reacted;
+                    });
+                }),
+                toggleLike: () => {
+                    if (props.preview || ! guard()) return;
+                    colibriAPI().userTimeline().with({
+                        unified_id: likeUnifiedId,
+                        comment_id: commentData.value.id
+                    }).sendTo('comment/reaction/add').then((response) => {
+                        commentData.value.relations.reactions = response.data.data;
+                    }).catch((error) => {
+                        if (error.response) {
+                            toastError(error.response.data.message);
+                        }
+                    });
+                },
                 reply: () => {
                     colibriEventBus.emit('publication-comment:reply', {
                         commentData: commentData.value
@@ -184,6 +217,8 @@
                     context.emit('delete', commentData.value.id);
                 },
                 addReaction: (reactionId) => {
+                    if (! guard()) return;
+
                     closeReactionsPicker();
 
                     colibriAPI().userTimeline().with({

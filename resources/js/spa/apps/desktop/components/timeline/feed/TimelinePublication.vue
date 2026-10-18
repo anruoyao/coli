@@ -95,7 +95,15 @@
                     <div class="block mb-3 -ml-1">
                         <div class="flex items-center">
                             <div class="shrink-0 relative leading-zero">
-                                <PrimaryIconButton iconSize="icon-normal" v-on:click.stop="openReactionsPicker" iconName="heart-rounded" iconType="line"></PrimaryIconButton>
+                                <PrimaryIconButton
+                                    iconSize="icon-normal"
+                                    v-on:click.stop="toggleLike"
+                                    v-bind:buttonColor="postLiked ? 'text-brand-900' : 'text-lab-pr'"
+                                    iconName="heart-rounded"
+                                    v-bind:iconType="postLiked ? 'solid' : 'line'"></PrimaryIconButton>
+                            </div>
+                            <div class="shrink-0 relative leading-zero">
+                                <PrimaryIconButton iconSize="icon-normal" v-on:click.stop="openReactionsPicker" iconName="face-smile" iconType="line"></PrimaryIconButton>
                                 <PrimaryTransition v-if="state.isReactionPickerOpen">
                                     <div class="absolute left-0 bottom-8 origin-top-left z-20">
                                         <ReactionsPicker
@@ -262,6 +270,8 @@
 
             const { guard } = useAuthGate();
 
+            const likeUnifiedId = '2764-fe0f';
+
             const openReactionsPicker = function() {
                 if (! guard()) return;
 
@@ -340,6 +350,25 @@
                 postReactions: computed(() => {
                     return postData.value.relations.reactions;
                 }),
+                postLiked: computed(() => {
+                    return postData.value.relations.reactions.some((reaction) => {
+                        return reaction.unified_id === likeUnifiedId && reaction.has_reacted;
+                    });
+                }),
+                toggleLike: () => {
+                    if (! guard()) return;
+
+                    colibriAPI().userTimeline().with({
+                        unified_id: likeUnifiedId,
+                        post_id: postData.value.id
+                    }).sendTo('post/reaction/add').then((response) => {
+                        postData.value.relations.reactions = response.data.data;
+                    }).catch((error) => {
+                        if (error.response) {
+                            toastError(error.response.data.message);
+                        }
+                    });
+                },
                 lightboxImages: () => {
                     lightboxStore.add({
                         albumName: `${postData.value.relations.user.name} ${postData.value.relations.user.caption}`,

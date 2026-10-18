@@ -187,6 +187,10 @@ class CommentController extends Controller
             $commentData = Comment::find($commentId);
 
             if ($commentData) {
+                $oldReaction = $commentData->reactions()
+                    ->whereJsonContains('users', me()->id)
+                    ->first();
+
                 $isReactionAdded = $reactionService
                     ->setUserId(me()->id)
                     ->setReactable($commentData)
@@ -195,6 +199,16 @@ class CommentController extends Controller
 
                 if(! $commentData->is_owner) {
                     if ($isReactionAdded) {
+                        if ($oldReaction && $oldReaction->unified_id !== strtolower($reactionUnifiedId)) {
+                            NotificationBatcher::revokeSocial(
+                                $commentData->user,
+                                me()->id,
+                                'comment',
+                                $commentData->id,
+                                ['comment.reacted']
+                            );
+                        }
+
                         NotificationBatcher::add(
                             $commentData->user_id,
                             me()->id,

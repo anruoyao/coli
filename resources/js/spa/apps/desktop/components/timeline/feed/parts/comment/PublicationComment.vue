@@ -54,15 +54,24 @@
                         <ReactionsViewer v-on:add="addReaction" v-bind:reactions="commentData.relations.reactions"></ReactionsViewer>
                     </div>
                 </div>
-                <div v-if="! commentData.deleted && ! preview" class="flex items-center leading-none mt-2 gap-3">
+                <div v-if="! commentData.deleted && ! preview" class="flex items-center leading-none mt-2 gap-1">
                     <div class="shrink-0 relative">
-                        <MarginalTextButton
-                            buttonColor="text-lab-sc"
+                        <PrimaryIconButton
+                            iconSize="icon-small"
+                            v-on:click.stop="toggleLike"
+                            v-bind:buttonColor="commentLiked ? 'text-brand-900' : 'text-lab-sc'"
+                            iconName="heart-rounded"
+                            v-bind:iconType="commentLiked ? 'solid' : 'line'"></PrimaryIconButton>
+                    </div>
+                    <div class="shrink-0 relative">
+                        <PrimaryIconButton
+                            iconSize="icon-small"
                             v-on:click.stop="openReactionsPicker"
-                        v-bind:buttonText="$t('labels.like')"></MarginalTextButton>
-
+                            buttonColor="text-lab-sc"
+                            iconName="face-smile"
+                            iconType="line"></PrimaryIconButton>
                         <PrimaryTransition>
-                            <div class="absolute left-0 top-4 origin-top-left z-20">
+                            <div class="absolute left-0 top-6 origin-top-left z-20">
                                 <ReactionsPicker
                                     v-if="state.isReactionPickerOpen"
                                     v-on:add="addReaction"
@@ -167,6 +176,7 @@
             });
 
             const { guard } = useAuthGate();
+            const likeUnifiedId = '2764-fe0f';
 
             const isReply = computed(() => props.variant === 'reply');
 
@@ -202,6 +212,11 @@
                 hasReactions: computed(() => {
                     return commentData.value.relations.reactions.length;
                 }),
+                commentLiked: computed(() => {
+                    return commentData.value.relations.reactions.some((reaction) => {
+                        return reaction.unified_id === likeUnifiedId && reaction.has_reacted;
+                    });
+                }),
                 commentContent: computed(() => {
                     return state.isTranslated ? commentTranslatedContent.value : commentData.value.content;
                 }),
@@ -223,6 +238,20 @@
                 }),
                 deleteComment: () => {
                     context.emit('delete', commentData.value.id);
+                },
+                toggleLike: () => {
+                    if (! guard()) return;
+
+                    colibriAPI().userTimeline().with({
+                        unified_id: likeUnifiedId,
+                        comment_id: commentData.value.id
+                    }).sendTo('comment/reaction/add').then((response) => {
+                        commentData.value.relations.reactions = response.data.data;
+                    }).catch((error) => {
+                        if (error.response) {
+                            toastError(error.response.data.message);
+                        }
+                    });
                 },
                 addReaction: (reactionId) => {
                     if (! guard()) return;

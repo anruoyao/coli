@@ -72,7 +72,16 @@
                 <div class="pr-4 pl-3 mb-3">
                     <div class="flex items-center gap-1.5">
                         <div class="shrink-0 relative leading-zero">
-                            <PrimaryIconButton v-on:click.stop="openReactionMenu" buttonColor="text-lab-pr2" iconSize="6" iconName="heart-rounded" iconType="line"></PrimaryIconButton>
+                            <PrimaryIconButton
+                                v-on:click.stop="toggleLike"
+                                v-bind:buttonColor="postLiked ? 'text-brand-900' : 'text-lab-pr2'"
+                                iconName="heart-rounded"
+                                v-bind:iconType="postLiked ? 'solid' : 'line'"
+                                iconSize="6"
+                            ></PrimaryIconButton>
+                        </div>
+                        <div class="shrink-0 relative leading-zero">
+                            <PrimaryIconButton v-on:click.stop="openReactionMenu" buttonColor="text-lab-pr2" iconSize="6" iconName="face-smile" iconType="line"></PrimaryIconButton>
                         </div>
                         <div class="shrink-0 leading-zero relative">
                             <PrimaryIconButton v-on:click.stop="state.shareMenu.open" buttonColor="text-lab-pr2" iconSize="6" iconName="share-06" iconType="line"></PrimaryIconButton>
@@ -222,6 +231,8 @@
                 if (guard()) state.commentsMenu.open();
             };
 
+            const likeUnifiedId = '2764-fe0f';
+
             const state = reactive({
                 isTranslating: false,
                 isTranslated: false,
@@ -311,6 +322,25 @@
                 postReactions: computed(() => {
                     return postData.value.relations.reactions;
                 }),
+                postLiked: computed(() => {
+                    return postData.value.relations.reactions.some((reaction) => {
+                        return reaction.unified_id === likeUnifiedId && reaction.has_reacted;
+                    });
+                }),
+                toggleLike: () => {
+                    if (! guard()) return;
+
+                    colibriAPI().userTimeline().with({
+                        unified_id: likeUnifiedId,
+                        post_id: postData.value.id
+                    }).sendTo('post/reaction/add').then((response) => {
+                        postData.value.relations.reactions = response.data.data;
+                    }).catch((error) => {
+                        if (error.response) {
+                            toastError(error.response.data.message);
+                        }
+                    });
+                },
                 adCta: computed(() => {
                     return postData.value.is_ad ? postData.value.ad : null;
                 }),
