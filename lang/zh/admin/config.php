@@ -15,6 +15,8 @@ return [
     'custom_code_settings' => '自定义代码注入',
     'backup_settings' => '备份设置',
     'backup_history' => '备份历史',
+    'backup_failed' => '数据库备份失败：',
+    'backup_completed' => '数据库备份已完成。',
     'restore' => [
         'title' => '上传数据库备份并恢复',
         'caption' => '仅支持本系统生成的 ZIP。上传后会校验数据库转储文件；恢复将覆盖当前数据库，请确认已有可用的紧急备份。',

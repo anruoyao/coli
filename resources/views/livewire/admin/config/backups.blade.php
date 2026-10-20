@@ -13,6 +13,16 @@
         </div>
     @endif
 
+    @if($this->backupStatus === 'failed')
+        <div class="mb-4 rounded-xl px-4 py-3 bg-red-500/10 text-red-900">
+            {{ __('admin/config.backup_failed') }} {{ $this->backupError }}
+        </div>
+    @elseif($this->backupStatus === 'completed')
+        <div class="mb-4 rounded-xl px-4 py-3 bg-green-500/10 text-green-900">
+            {{ __('admin/config.backup_completed') }}
+        </div>
+    @endif
+
     <div wire:click="createBackup" @if($this->isProcessing) wire:poll.60s="loadBackups" @endif class="border-2 border-dashed border-bord-sc hover:border-bord-card smoothing cursor-pointer rounded-2xl px-4 py-6 mb-8">
         <div class="text-center">
             <div class="text-lab-pr flex justify-center mb-2">

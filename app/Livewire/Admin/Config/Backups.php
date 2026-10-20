@@ -18,6 +18,8 @@ class Backups extends Component
     public bool $hasError = false;
     public bool $isProcessing = false;
     public bool $isDownloading = false;
+    public ?string $backupStatus = null;
+    public string $backupError = '';
     public ?string $restoreStatus = null;
     public string $restoreError = '';
 
@@ -34,6 +36,10 @@ class Backups extends Component
 
     public function loadBackups()
     {
+        $state = cache()->get('system:backup:last');
+        $this->backupStatus = $state['status'] ?? null;
+        $this->backupError = $state['error'] ?? '';
+
         $this->backups = collect(Storage::disk('local')->files('backups'))
             ->map(fn ($file) => [
                 'name' => basename($file),
@@ -50,19 +56,26 @@ class Backups extends Component
     public function createBackup()
     {
         try {
-            if($this->isProcessing) {
+            if ($this->isProcessing) {
                 $this->error = __('admin/config.validation.backup_processing');
                 $this->hasError = true;
-            }
-            else {
-                cache()->forever('system:backup:processing', true);
 
-                CreateBackup::dispatch();
-
-                $this->checkBackupProcessing();
+                return;
             }
 
+            cache()->forget('system:backup:last');
+            cache()->forever('system:backup:processing', true);
+            $this->backupStatus = null;
+            $this->backupError = '';
+            CreateBackup::dispatch();
+
+            $this->error = '';
+            $this->hasError = false;
+            $this->checkBackupProcessing();
         } catch (Throwable $th) {
+            cache()->forget('system:backup:processing');
+            $this->backupStatus = 'failed';
+            $this->backupError = $th->getMessage();
             $this->error = $th->getMessage();
             $this->hasError = true;
         }

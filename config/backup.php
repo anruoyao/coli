@@ -40,6 +40,8 @@ return [
                     base_path('node_modules'),
                     // git 对象库可从 GitHub 恢复，无需进备份
                     base_path('.git'),
+                    // 根目录环境快照可能由 root 创建，www 用户无法读取，不能纳入备份
+                    base_path('.env.*'),
                     // NSFW 检测服务的 Python 虚拟环境（数百 MB），可随时重装
                     base_path('nsfw-service'),
                     // 根目录的 App 安装包（体积大且本地已有原件）

@@ -2,11 +2,11 @@
 
 namespace App\Jobs\System;
 
-use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
+use Throwable;
 
 class CreateBackup implements ShouldQueue
 {
@@ -20,6 +20,11 @@ class CreateBackup implements ShouldQueue
 
         if (! $lock->get()) {
             cache()->forget('system:backup:processing');
+            cache()->forever('system:backup:last', [
+                'status' => 'failed',
+                'error' => 'Another database operation is already running.',
+                'finished_at' => now()->toIso8601String(),
+            ]);
             $this->fail('Another database operation is already running.');
 
             return;
@@ -28,10 +33,20 @@ class CreateBackup implements ShouldQueue
         try {
             $exitCode = Artisan::call('backup:run');
             if ($exitCode !== 0) {
-                $this->fail('Database backup command failed.');
+                throw new \RuntimeException('Database backup command failed.');
             }
-        } catch (Exception $th) {
-            $this->fail($th->getMessage());
+
+            cache()->forever('system:backup:last', [
+                'status' => 'completed',
+                'finished_at' => now()->toIso8601String(),
+            ]);
+        } catch (Throwable $exception) {
+            cache()->forever('system:backup:last', [
+                'status' => 'failed',
+                'error' => $exception->getMessage(),
+                'finished_at' => now()->toIso8601String(),
+            ]);
+            $this->fail($exception->getMessage());
         } finally {
             cache()->forget('system:backup:processing');
             $lock->release();
