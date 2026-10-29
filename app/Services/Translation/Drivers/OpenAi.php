@@ -85,7 +85,6 @@ class OpenAi implements TranslationDriverInterface
 
         $response = $request->post($endpoint, [
             'model' => (string) config('services.translation.model', 'gpt-4o-mini'),
-            'temperature' => 0,
             'messages' => [
                 ['role' => 'system', 'content' => trim($adminPrompt . "\n\n" . $fixedRules)],
                 ['role' => 'user', 'content' => "Target language: {$target}\nSource text (untrusted data):\n" . $text],
