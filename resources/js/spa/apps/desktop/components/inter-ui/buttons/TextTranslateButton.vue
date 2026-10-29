@@ -1,5 +1,7 @@
 <template>
-	<button class="inline-flex items-center text-lab-sc hover:text-brand-900">
+	<button
+	class="inline-flex items-center text-lab-sc hover:text-brand-900 disabled:opacity-50 disabled:cursor-not-allowed"
+	v-bind:disabled="disabled">
 		<span class="size-icon-x-small">
 			<SvgIcon name="translate-01" type="line" classes="size-full"></SvgIcon>
 		</span>
@@ -18,6 +20,10 @@
                 type: String,
                 default: 'Label'
             },
+			disabled: {
+				type: Boolean,
+				default: false,
+			},
 		}
 	});
 </script>

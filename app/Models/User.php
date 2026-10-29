@@ -28,6 +28,15 @@ class User extends Authenticatable
 
     public $table = Table::USERS;
 
+    protected static function booted(): void
+    {
+        static::updated(function (User $user): void {
+            if ($user->wasChanged('bio') || ($user->wasChanged('status') && $user->status !== UserStatus::ACTIVE)) {
+                BioTranslation::where('user_id', $user->id)->delete();
+            }
+        });
+    }
+
     public static $snakeAttributes = true;
 
     protected $guarded = [];

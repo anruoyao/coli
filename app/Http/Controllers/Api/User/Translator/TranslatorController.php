@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Traits\Http\Api\SupportsApiResponses;
 use App\Services\Translation\TranslationService;
 use App\Services\Translation\PostTranslationService;
+use App\Services\Translation\BioTranslationService;
 use App\Services\Translation\Drivers\Nllb;
 use App\Services\Translation\TranslationLanguageCatalog;
 use App\Services\Translation\TranslationServiceBusyException;
@@ -22,11 +23,16 @@ class TranslatorController extends Controller
     {
         $languages = app(TranslationLanguageCatalog::class)->supportedTargets();
         $validated = $request->validate([
-            'text' => $request->filled('post_id') ? ['nullable', 'string'] : ['required', 'string', 'max:' . (int) config('services.translation.max_text_length', 2000)],
+            'text' => $request->filled('post_id') || $request->filled('profile_id') ? ['nullable', 'string'] : ['required', 'string', 'max:' . (int) config('services.translation.max_text_length', 2000)],
             'source' => ['nullable', 'string', Rule::in(array_merge(['auto'], $languages))],
             'target' => ['nullable', 'string', Rule::in($languages)],
             'post_id' => ['nullable', 'integer', 'min:1'],
+            'profile_id' => ['nullable', 'integer', 'min:1'],
         ]);
+
+        if (! empty($validated['post_id']) && ! empty($validated['profile_id'])) {
+            return $this->responseError(['message' => 'Choose one translation source.'], 422);
+        }
 
         if (! config('services.translation.enabled', true)) {
             return $this->responseError(['message' => 'Translation is disabled.'], 503);
@@ -36,6 +42,12 @@ class TranslatorController extends Controller
             $target = $validated['target'] ?? config('services.translation.default_target', 'en');
             if (! empty($validated['post_id'])) {
                 $translatedText = app(PostTranslationService::class)->translate((int) $validated['post_id'], $request->user('sanctum'), $target);
+
+                return $this->responseSuccess(['data' => ['translated_text' => $translatedText]]);
+            }
+
+            if (! empty($validated['profile_id'])) {
+                $translatedText = app(BioTranslationService::class)->translate((int) $validated['profile_id'], $request->user('sanctum'), $target);
 
                 return $this->responseSuccess(['data' => ['translated_text' => $translatedText]]);
             }
