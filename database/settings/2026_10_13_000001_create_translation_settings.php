@@ -22,6 +22,10 @@ return new class extends SettingsMigration
             ]);
 
             foreach ($defaults as $name => $value) {
+                if ($this->migrator->exists("translation.{$name}")) {
+                    continue;
+                }
+
                 if ($name === 'api_key') {
                     $this->migrator->addEncrypted("translation.{$name}", $value);
                 } else {

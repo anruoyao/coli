@@ -193,6 +193,18 @@ return [
             'timeout' => 60,
             'nice' => 0,
         ],
+        'translation' => [
+            'connection' => 'redis',
+            'queue' => ['translation'],
+            'balance' => 'simple',
+            'maxProcesses' => 4,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 128,
+            'tries' => 4,
+            'timeout' => 120,
+            'nice' => 10,
+        ],
     ],
 
     'environments' => [
@@ -202,11 +214,17 @@ return [
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
+            'translation' => [
+                'maxProcesses' => 4,
+            ],
         ],
 
         'local' => [
             'supervisor-1' => [
                 'maxProcesses' => 3,
+            ],
+            'translation' => [
+                'maxProcesses' => 2,
             ],
         ],
     ],

@@ -1,3 +1,23 @@
+@php
+    $translationDriver = config('services.translation.service', 'nllb');
+    $translationService = match ($translationDriver) {
+        'openai' => [
+            'name' => 'OpenAI-compatible API',
+            'url' => 'https://platform.openai.com/docs/api-reference/chat/create',
+            'logo_url' => '',
+        ],
+        'libretranslate' => [
+            'name' => 'LibreTranslate',
+            'url' => config('services.translation.url') ?: 'https://libretranslate.com',
+            'logo_url' => config('services.translation.logo'),
+        ],
+        default => [
+            'name' => 'NLLB-200',
+            'url' => 'https://huggingface.co/facebook/nllb-200-distilled-600M',
+            'logo_url' => '',
+        ],
+    };
+@endphp
 <script>
 	window.BackendEmbeds = {
 		assets: {
@@ -12,11 +32,7 @@
 				animated: @json(config('emojis.animated'))
 			}
 		},
-		translation_service: {
-            name: @json(config('services.translation.service') === 'nllb' ? 'NLLB-200' : 'LibreTranslate'),
-            url: @json(config('services.translation.service') === 'nllb' ? 'https://huggingface.co/facebook/nllb-200-distilled-600M' : 'https://libretranslate.com'),
-            logo_url: @json(config('services.translation.service') === 'nllb' ? '' : config('services.translation.logo'))
-		},
+		translation_service: @json($translationService),
 		routes: {
 			business_dashboard_index: "{{ route('business.dashboard.index') }}",
 			business_wallet_cashouts: "{{ route('business.wallet.cashouts') }}",

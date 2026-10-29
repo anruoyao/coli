@@ -23,18 +23,26 @@
             postContent: {
                 type: String,
                 default: ''
+            },
+            allowHtml: {
+                type: Boolean,
+                default: true
             }
         },
         setup: function(props) {
-            const MarkdownIT = new MarkdownParser({
-                html: true,
-                breaks: true,
-                linkify: true,
-            });
+            const MarkdownIT = computed(() => {
+                const parser = new MarkdownParser({
+                    html: props.allowHtml,
+                    breaks: true,
+                    linkify: true,
+                });
 
-            MarkdownIT.use(MarkdownMentionPlugin);
-            MarkdownIT.use(MarkdownUnderlinePlugin);
-            MarkdownIT.use(MarkdownHighlightPlugin);
+                parser.use(MarkdownMentionPlugin);
+                parser.use(MarkdownUnderlinePlugin);
+                parser.use(MarkdownHighlightPlugin);
+
+                return parser;
+            });
 
             const state = reactive({
                 textExpanded: false,
@@ -53,7 +61,7 @@
             return {
                 state: state,
                 markdownRenderer: () => {
-                    return MarkdownIT.renderInline(postContent.value);
+                    return MarkdownIT.value.renderInline(postContent.value);
                 },
                 publicationTextHolder: publicationTextHolder
             };

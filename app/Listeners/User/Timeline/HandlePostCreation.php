@@ -10,6 +10,7 @@ use App\Events\User\Timeline\PostCreatedEvent;
 use App\Jobs\User\Timeline\ConvertAndCompressPostAudio;
 use App\Jobs\User\Timeline\ConvertAndCompressPostVideo;
 use App\Jobs\User\Timeline\DetectPostNsfwContent;
+use App\Jobs\User\Translation\PreparePostTranslations;
 use App\Notifications\User\Mention\PostMentionNotification;
 use App\Services\Notification\NotificationBatcher;
 
@@ -31,9 +32,22 @@ class HandlePostCreation
             DetectPostNsfwContent::dispatch($event->postData);
         }
 
+        if ($this->shouldPrepareTranslations($event->postData)) {
+            PreparePostTranslations::dispatch($event->postData->id)->afterCommit();
+        }
+
         $this->notifyMentionedUsers($event->postData);
 
         $this->censorPost($event->postData);
+    }
+
+    private function shouldPrepareTranslations(Post $postData): bool
+    {
+        return (bool) config('services.translation.enabled', true)
+            && config('services.translation.service') === 'openai'
+            && (bool) config('services.translation.pretranslate_enabled', false)
+            && ! $postData->type->isVideo()
+            && ! $postData->type->isAudio();
     }
 
     private function censorPost(Post $postData)

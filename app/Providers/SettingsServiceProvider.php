@@ -141,6 +141,10 @@ class SettingsServiceProvider extends ServiceProvider
             'services.translation.max_output_tokens' => $settings->max_output_tokens,
             'services.translation.max_concurrent_requests' => $settings->max_concurrent_requests,
             'services.translation.global_rate_per_minute' => $settings->global_rate_per_minute,
+            'services.translation.model' => $settings->model,
+            'services.translation.system_prompt' => $settings->system_prompt,
+            'services.translation.pretranslate_enabled' => $settings->pretranslate_enabled,
+            'services.translation.openai_concurrency' => $settings->openai_concurrency,
             'security.rate_limits.translator.max' => $settings->rate_per_minute,
         ]);
     }

@@ -6,14 +6,24 @@ use App\Enums\Post\PostStatus;
 use App\Enums\Post\PostType;
 use App\Enums\User\UserStatus;
 use App\Http\Controllers\Api\User\Translator\TranslatorController;
+use App\Enums\Media\MediaStatus;
+use App\Enums\Media\MediaType;
 use App\Models\Block;
+use App\Models\Locale;
+use App\Models\Media;
 use App\Models\Post;
 use App\Models\PostTranslation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Route;
+use App\Events\User\Timeline\MediaProcessedEvent;
+use App\Jobs\User\Translation\PreparePostTranslations;
+use App\Jobs\User\Translation\TranslatePost;
+use App\Listeners\User\Timeline\PreparePostTranslationsOnMediaProcessed;
 use Tests\Feature\Marketing\Concerns\CreatesUsers;
 use Tests\TestCase;
 
@@ -32,6 +42,8 @@ class PostTranslationTest extends TestCase
             'services.translation.enabled' => true,
             'services.translation.api_url' => 'http://translation.test',
             'services.translation.max_text_length' => 2000,
+            'services.translation.lock_store' => 'array',
+            'services.translation.openai_concurrency' => 5,
             'cache.default' => 'array',
         ]);
         Route::post('/test-post-translation', [TranslatorController::class, 'translate'])->middleware('auth:sanctum');
@@ -114,10 +126,14 @@ class PostTranslationTest extends TestCase
 
     public function test_failed_inference_is_not_cached_and_releases_lock(): void
     {
-        Http::fake(['translation.test/translate' => Http::response([], 503)]);
+        Http::swap(new HttpFactory);
+        Http::preventStrayRequests();
+        Http::fakeSequence('translation.test/translate')
+            ->pushStatus(503)
+            ->push(['translated_text' => 'Hello']);
+
         $this->translate()->assertStatus(503);
         $this->assertSame(0, PostTranslation::where('post_id', $this->post->id)->count());
-        Http::fake(['translation.test/translate' => Http::response(['translated_text' => 'Hello'])]);
         $this->translate()->assertOk();
     }
 
@@ -148,6 +164,78 @@ class PostTranslationTest extends TestCase
         });
         $this->translate()->assertNotFound();
         $this->assertSame(0, PostTranslation::where('post_id', $this->post->id)->count());
+    }
+
+    public function test_cached_pretranslation_is_returned_without_calling_provider(): void
+    {
+        $hash = hash('sha256', $this->post->content);
+        PostTranslation::create([
+            'post_id' => $this->post->id,
+            'target_language' => 'en',
+            'content_hash' => $hash,
+            'source_language' => 'zh',
+            'translated_text' => 'Prepared translation',
+        ]);
+
+        $this->translate()->assertOk()->assertJsonPath('data.translated_text', 'Prepared translation');
+        Http::assertNothingSent();
+    }
+
+    public function test_prepare_job_dispatches_targets_from_active_locales(): void
+    {
+        config(['services.translation.service' => 'openai', 'services.translation.pretranslate_enabled' => true]);
+        Queue::fake();
+
+        Locale::query()->update(['status' => false]);
+        Locale::create([
+            'alpha_2_code' => 'en',
+            'name' => 'English',
+            'native_name' => 'English',
+            'status' => true,
+            'is_default' => false,
+        ]);
+        Locale::create([
+            'alpha_2_code' => 'fr',
+            'name' => 'French',
+            'native_name' => 'Francais',
+            'status' => true,
+            'is_default' => false,
+        ]);
+
+        (new PreparePostTranslations($this->post->id))->handle(
+            app(\App\Services\Translation\TranslationLanguageCatalog::class),
+            app(\App\Services\Translation\TranslationLanguageDetector::class),
+        );
+
+        Queue::assertPushed(TranslatePost::class, function (TranslatePost $job): bool {
+            return $job->postId === $this->post->id
+                && $job->target === 'en'
+                && $job->contentHash === hash('sha256', $this->post->content);
+        });
+        Queue::assertPushed(TranslatePost::class, fn (TranslatePost $job): bool => $job->target === 'fr');
+        Queue::assertPushed(TranslatePost::class, 2);
+    }
+
+    public function test_media_processed_listener_dispatches_translation_only_after_processing(): void
+    {
+        config(['services.translation.service' => 'openai', 'services.translation.pretranslate_enabled' => true]);
+        Queue::fake();
+
+        $media = Media::create([
+            'mediaable_type' => Post::class,
+            'mediaable_id' => $this->post->id,
+            'type' => MediaType::VIDEO,
+            'status' => MediaStatus::PROCESSED,
+            'source_path' => 'video.mp4',
+            'disk' => 'local',
+            'size' => 1,
+            'thumbnail_size' => 0,
+            'metadata' => [],
+        ]);
+
+        (new PreparePostTranslationsOnMediaProcessed())->handle(new MediaProcessedEvent($media, $this->post->user_id));
+
+        Queue::assertPushed(PreparePostTranslations::class, fn (PreparePostTranslations $job): bool => $job->postId === $this->post->id);
     }
 
     public function test_post_translation_requires_authentication(): void

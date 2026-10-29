@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin\Config;
 
 use App\Models\AdminConfigChangeLog;
+use App\Services\Translation\Drivers\OpenAi;
 use App\Settings\TranslationSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -44,6 +45,10 @@ class Translation extends Component
             'max_concurrent_requests' => $settings->max_concurrent_requests,
             'global_rate_per_minute' => $settings->global_rate_per_minute,
             'rate_per_minute' => $settings->rate_per_minute,
+            'model' => $settings->model,
+            'system_prompt' => $settings->system_prompt,
+            'pretranslate_enabled' => $settings->pretranslate_enabled,
+            'openai_concurrency' => $settings->openai_concurrency,
         ];
     }
 
@@ -52,10 +57,10 @@ class Translation extends Component
         $this->authorizeAdmin();
         $this->validate([
             'formData.enabled' => ['required', 'boolean'],
-            'formData.driver' => ['required', 'in:nllb,libretranslate'],
+            'formData.driver' => ['required', 'in:nllb,libretranslate,openai'],
             'formData.api_url' => ['required', 'url:http,https', 'max:255'],
             'formData.default_source' => ['required', Rule::in(self::LANGUAGES)],
-            'formData.default_target' => ['required', Rule::in(array_values(array_diff(self::LANGUAGES, ['auto'])) )],
+            'formData.default_target' => ['required', Rule::in(array_values(array_diff(self::LANGUAGES, ['auto'])))],
             'formData.timeout' => ['required', 'integer', 'min:1', 'max:120'],
             'formData.connect_timeout' => ['required', 'integer', 'min:1', 'max:30'],
             'formData.max_text_length' => ['required', 'integer', 'min:1', 'max:10000'],
@@ -68,6 +73,10 @@ class Translation extends Component
             'formData.max_concurrent_requests' => ['required', 'integer', 'min:1', 'max:4'],
             'formData.global_rate_per_minute' => ['required', 'integer', 'min:1', 'max:1200'],
             'formData.rate_per_minute' => ['required', 'integer', 'min:1', 'max:10000'],
+            'formData.model' => ['required', 'string', 'max:120'],
+            'formData.system_prompt' => ['required', 'string', 'min:1', 'max:4000'],
+            'formData.pretranslate_enabled' => ['required', 'boolean'],
+            'formData.openai_concurrency' => ['required', 'integer', 'min:1', 'max:5'],
         ]);
 
         $settings = app(TranslationSettings::class);
@@ -93,9 +102,8 @@ class Translation extends Component
                     $actual = $this->runtimeRequest(
                         (int) $this->formData['timeout'],
                         (int) $this->formData['connect_timeout']
-                    )->get(
-                        rtrim((string) config('services.translation.runtime_url'), '/') . '/runtime'
-                    )->throw()->json();
+                    )->get(rtrim((string) config('services.translation.runtime_url'), '/') . '/runtime')
+                        ->throw()->json();
                     foreach ($runtimeKeys as $key) {
                         if (array_key_exists($key, $actual)) {
                             $previousRuntime[$key] = $actual[$key];
@@ -107,10 +115,7 @@ class Translation extends Component
                 $response = $this->runtimeRequest(
                     (int) $this->formData['timeout'],
                     (int) $this->formData['connect_timeout']
-                )->put(
-                    rtrim((string) config('services.translation.runtime_url'), '/') . '/runtime',
-                    $runtime
-                )->throw();
+                )->put(rtrim((string) config('services.translation.runtime_url'), '/') . '/runtime', $runtime)->throw();
                 $body = $response->json();
                 if (($body['ready'] ?? false) === true) {
                     $runtimeApplied = true;
@@ -120,11 +125,16 @@ class Translation extends Component
                 }
             }
 
-            $old = $this->settingSnapshot($settings, [
-                'enabled', 'driver', 'api_url', 'default_source', 'default_target',
-                'timeout', 'connect_timeout', 'max_text_length', 'rate_per_minute', ...$runtimeKeys,
-            ]);
-            foreach (['enabled', 'driver', 'api_url', 'default_source', 'default_target', 'timeout', 'connect_timeout', 'max_text_length', 'rate_per_minute'] as $key) {
+            $keys = [
+                'enabled', 'driver', 'api_url', 'default_source', 'default_target', 'timeout',
+                'connect_timeout', 'max_text_length', 'rate_per_minute', 'model', 'system_prompt',
+                'pretranslate_enabled', 'openai_concurrency', ...$runtimeKeys,
+            ];
+            $old = $this->settingSnapshot($settings, $keys);
+            foreach ([
+                'enabled', 'driver', 'api_url', 'default_source', 'default_target', 'timeout', 'connect_timeout',
+                'max_text_length', 'rate_per_minute', 'model', 'system_prompt', 'pretranslate_enabled', 'openai_concurrency',
+            ] as $key) {
                 $value = $this->formData[$key];
                 $settings->{$key} = is_numeric($value) ? (int) $value : (is_bool($value) ? (bool) $value : trim((string) $value));
             }
@@ -135,13 +145,9 @@ class Translation extends Component
             if ($apiKey !== '') {
                 $settings->api_key = $apiKey;
             }
-            DB::transaction(function () use ($settings, $old, $runtimeKeys): void {
+            DB::transaction(function () use ($settings, $old, $keys): void {
                 $settings->save();
-
-                $new = $this->settingSnapshot($settings, [
-                    'enabled', 'driver', 'api_url', 'default_source', 'default_target',
-                    'timeout', 'connect_timeout', 'max_text_length', 'rate_per_minute', ...$runtimeKeys,
-                ]);
+                $new = $this->settingSnapshot($settings, $keys);
                 AdminConfigChangeLog::record('translation', 'settings_updated', [
                     'from' => $this->maskedAudit($old),
                     'to' => $this->maskedAudit($new),
@@ -151,16 +157,13 @@ class Translation extends Component
             $this->flashContent = __('admin/flash.config.settings_success');
             $this->formData['api_key'] = '';
             $this->formData['api_key_set'] = (string) ($settings->api_key ?? '') !== '';
-        } catch (\Throwable $e){
+        } catch (\Throwable) {
             if ($runtimeApplied) {
                 try {
                     $this->runtimeRequest(
                         (int) $this->formData['timeout'],
                         (int) $this->formData['connect_timeout']
-                    )->put(
-                        rtrim((string) config('services.translation.runtime_url'), '/') . '/runtime',
-                        $previousRuntime
-                    );
+                    )->put(rtrim((string) config('services.translation.runtime_url'), '/') . '/runtime', $previousRuntime);
                 } catch (\Throwable) {
                     // Best effort rollback; the saved settings remain unchanged.
                 }
@@ -176,9 +179,35 @@ class Translation extends Component
         $timeout = min(max((int) ($this->formData['timeout'] ?? 15), 1), 120);
         $connectTimeout = min(max((int) ($this->formData['connect_timeout'] ?? 2), 1), 30);
         try {
-            $this->runtimeRequest($timeout, $connectTimeout)
-                ->get(rtrim((string) config('services.translation.runtime_url'), '/') . '/runtime/health')
-                ->throw();
+            if (($this->formData['driver'] ?? '') === 'openai') {
+                validator($this->formData, [
+                    'api_url' => ['required', 'url:http,https', 'max:255'],
+                    'model' => ['required', 'string', 'max:120'],
+                    'system_prompt' => ['required', 'string', 'min:1', 'max:4000'],
+                ])->validate();
+                $settings = app(TranslationSettings::class);
+                $previous = config('services.translation');
+                config(['services.translation' => array_merge($previous, [
+                    'enabled' => true,
+                    'service' => 'openai',
+                    'api_url' => trim((string) $this->formData['api_url']),
+                    'api_key' => (string) (($this->formData['api_key'] ?? '') ?: $settings->api_key),
+                    'model' => trim((string) $this->formData['model']),
+                    'system_prompt' => trim((string) $this->formData['system_prompt']),
+                    'timeout' => $timeout,
+                    'connect_timeout' => $connectTimeout,
+                    'openai_concurrency' => min(max((int) ($this->formData['openai_concurrency'] ?? 5), 1), 5),
+                ])]);
+                try {
+                    app(OpenAi::class)->from('en')->to('en')->translate('Reply with OK.');
+                } finally {
+                    config(['services.translation' => $previous]);
+                }
+            } else {
+                $this->runtimeRequest($timeout, $connectTimeout)
+                    ->get(rtrim((string) config('services.translation.runtime_url'), '/') . '/runtime/health')
+                    ->throw();
+            }
             $this->flashType = 'success';
             $this->flashContent = __('admin/config.form.translation_connection_ok');
         } catch (\Throwable) {
@@ -194,9 +223,7 @@ class Translation extends Component
 
     private function runtimeRequest(int $timeout = 15, int $connectTimeout = 2)
     {
-        $request = Http::acceptJson()->asJson()
-            ->timeout($timeout)
-            ->connectTimeout($connectTimeout);
+        $request = Http::acceptJson()->asJson()->timeout($timeout)->connectTimeout($connectTimeout);
         $key = (string) (config('services.translation.runtime_key') ?? '');
         if ($key !== '') {
             $request = $request->withToken($key);
@@ -229,6 +256,10 @@ class Translation extends Component
     private function maskedAudit(array $values): array
     {
         unset($values['api_key']);
+        if (isset($values['system_prompt'])) {
+            $values['system_prompt_sha256'] = hash('sha256', $values['system_prompt']);
+            unset($values['system_prompt']);
+        }
 
         return $values;
     }

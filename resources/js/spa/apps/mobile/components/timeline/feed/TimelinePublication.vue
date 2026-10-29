@@ -16,7 +16,7 @@
             <div class="max-w-full">
                 <template v-if="postHasContent">
                     <div class="overflow-hidden mb-4 px-4">
-                        <PublicationText v-bind:key="postContent" v-bind:postContent="postContent"></PublicationText>
+                        <PublicationText v-bind:key="postContent" v-bind:postContent="postContent" v-bind:allowHtml="!state.isTranslated"></PublicationText>
                         <button v-if="postData.meta.is_translatable" type="button"
                             class="mt-2 min-h-8 text-par-s text-brand-900 disabled:opacity-50"
                             v-bind:disabled="state.isTranslating"

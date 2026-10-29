@@ -42,7 +42,7 @@
                                     v-on:click="translate"
                                 v-bind:buttonText="state.isTranslating ? $t('labels.translating') : $t('labels.translate_to', { language_name: userLocaleName })"></TextTranslateButton>
                             </div>
-                            <PublicationText v-bind:postContent="postContent"></PublicationText>
+                            <PublicationText v-bind:postContent="postContent" v-bind:allowHtml="!state.isTranslated"></PublicationText>
 
                             <div v-if="state.isTranslated" class="mt-2">
 								<TranslationService></TranslationService>

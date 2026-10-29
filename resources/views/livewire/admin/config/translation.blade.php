@@ -9,9 +9,10 @@
 
     <x-form.group>
         <x-form.label>{{ __('admin/config.form.translation_driver') }}</x-form.label>
-        <select wire:model="formData.driver" name="formData.driver" class="block w-full bg-input-pr px-4 h-12 rounded-xl">
+        <select wire:model.live="formData.driver" name="formData.driver" class="block w-full bg-input-pr px-4 h-12 rounded-xl">
             <option value="nllb">NLLB-200 + CTranslate2</option>
             <option value="libretranslate">LibreTranslate</option>
+            <option value="openai">OpenAI-compatible API</option>
         </select>
     </x-form.group>
 
@@ -22,6 +23,23 @@
     <x-form.group>
         <x-form.text-input labelText="{{ __('admin/config.form.translation_api_key') }}{{ !empty($formData['api_key_set']) ? ' ('.__('admin/config.form.translation_key_set').')' : '' }}" wire:model="formData.api_key" type="password" :isPassword="true" name="formData.api_key" />
     </x-form.group>
+
+    @if(($formData['driver'] ?? '') === 'openai')
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <x-form.group>
+                <x-form.text-input labelText="{{ __('admin/config.form.translation_model') }}" wire:model="formData.model" name="formData.model" />
+            </x-form.group>
+            <x-form.group>
+                <x-form.text-input labelText="{{ __('admin/config.form.translation_openai_concurrency') }}" wire:model="formData.openai_concurrency" type="number" name="formData.openai_concurrency" />
+            </x-form.group>
+        </div>
+        <x-form.group>
+            <x-form.switcher labelText="{{ __('admin/config.form.translation_pretranslate') }}" wire:model="formData.pretranslate_enabled" name="formData.pretranslate_enabled" />
+        </x-form.group>
+        <x-form.group>
+            <x-form.text-input :asText="true" labelText="{{ __('admin/config.form.translation_system_prompt') }}" wire:model="formData.system_prompt" name="formData.system_prompt" />
+        </x-form.group>
+    @endif
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <x-form.group>
@@ -39,13 +57,15 @@
         <x-form.group>
             <x-form.text-input labelText="{{ __('admin/config.form.translation_max_length') }}" wire:model="formData.max_text_length" type="number" name="formData.max_text_length" />
         </x-form.group>
-        <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_threads') }}" wire:model="formData.threads" type="number" name="formData.threads" /></x-form.group>
-        <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_compute_type') }}" wire:model="formData.compute_type" name="formData.compute_type" /></x-form.group>
-        <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_beam_size') }}" wire:model="formData.beam_size" type="number" name="formData.beam_size" /></x-form.group>
-        <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_max_input_tokens') }}" wire:model="formData.max_input_tokens" type="number" name="formData.max_input_tokens" /></x-form.group>
-        <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_max_output_tokens') }}" wire:model="formData.max_output_tokens" type="number" name="formData.max_output_tokens" /></x-form.group>
-        <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_concurrency') }}" wire:model="formData.max_concurrent_requests" type="number" name="formData.max_concurrent_requests" /></x-form.group>
-        <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_global_rate') }}" wire:model="formData.global_rate_per_minute" type="number" name="formData.global_rate_per_minute" /></x-form.group>
+        @if(($formData['driver'] ?? '') === 'nllb')
+            <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_threads') }}" wire:model="formData.threads" type="number" name="formData.threads" /></x-form.group>
+            <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_compute_type') }}" wire:model="formData.compute_type" name="formData.compute_type" /></x-form.group>
+            <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_beam_size') }}" wire:model="formData.beam_size" type="number" name="formData.beam_size" /></x-form.group>
+            <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_max_input_tokens') }}" wire:model="formData.max_input_tokens" type="number" name="formData.max_input_tokens" /></x-form.group>
+            <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_max_output_tokens') }}" wire:model="formData.max_output_tokens" type="number" name="formData.max_output_tokens" /></x-form.group>
+            <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_concurrency') }}" wire:model="formData.max_concurrent_requests" type="number" name="formData.max_concurrent_requests" /></x-form.group>
+            <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_global_rate') }}" wire:model="formData.global_rate_per_minute" type="number" name="formData.global_rate_per_minute" /></x-form.group>
+        @endif
         <x-form.group><x-form.text-input labelText="{{ __('admin/config.form.translation_user_rate') }}" wire:model="formData.rate_per_minute" type="number" name="formData.rate_per_minute" /></x-form.group>
     </div>
 

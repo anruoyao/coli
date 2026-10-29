@@ -25,6 +25,10 @@ class TranslationSettings extends Settings
     public int $max_concurrent_requests;
     public int $global_rate_per_minute;
     public int $rate_per_minute;
+    public string $model;
+    public string $system_prompt;
+    public bool $pretranslate_enabled;
+    public int $openai_concurrency;
 
     public static function group(): string
     {
@@ -51,6 +55,10 @@ class TranslationSettings extends Settings
             'max_concurrent_requests' => 1,
             'global_rate_per_minute' => 10,
             'rate_per_minute' => 10,
+            'model' => 'gpt-4o-mini',
+            'system_prompt' => 'Translate the source text naturally and accurately. Preserve its meaning, tone, names, and formatting. Return only the translation.',
+            'pretranslate_enabled' => false,
+            'openai_concurrency' => 5,
         ];
     }
 }
