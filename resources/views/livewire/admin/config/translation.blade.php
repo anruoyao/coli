@@ -17,17 +17,27 @@
     </x-form.group>
 
     <x-form.group>
-        <x-form.text-input labelText="{{ __('admin/config.form.translation_api_url') }}" wire:model="formData.api_url" name="formData.api_url" />
+        <x-form.text-input labelText="{{ __('admin/config.form.translation_api_url') }}" wire:model.blur="formData.api_url" name="formData.api_url" />
     </x-form.group>
 
     <x-form.group>
-        <x-form.text-input labelText="{{ __('admin/config.form.translation_api_key') }}{{ !empty($formData['api_key_set']) ? ' ('.__('admin/config.form.translation_key_set').')' : '' }}" wire:model="formData.api_key" type="password" :isPassword="true" name="formData.api_key" />
+        <x-form.text-input labelText="{{ __('admin/config.form.translation_api_key') }}{{ !empty($formData['api_key_set']) ? ' ('.__('admin/config.form.translation_key_set').')' : '' }}" wire:model.blur="formData.api_key" type="password" :isPassword="true" name="formData.api_key" />
     </x-form.group>
 
     @if(($formData['driver'] ?? '') === 'openai')
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <x-form.group>
-                <x-form.text-input labelText="{{ __('admin/config.form.translation_model') }}" wire:model="formData.model" name="formData.model" />
+                <x-form.text-input labelText="{{ __('admin/config.form.translation_model') }}" wire:model="formData.model" list="translation-model-options" name="formData.model" />
+                <datalist id="translation-model-options">
+                    @foreach($availableModels as $model)
+                        <option value="{{ $model }}"></option>
+                    @endforeach
+                </datalist>
+                @if($modelLookupMessage)
+                    <div class="mt-2 text-sm {{ $modelLookupType === 'error' ? 'text-red-900' : 'text-green-900' }}">{{ $modelLookupMessage }}</div>
+                @endif
+                <div wire:loading wire:target="formData.api_url,formData.api_key,queryModels" class="mt-2 text-sm text-lab-sc">{{ __('admin/config.form.translation_models_loading') }}</div>
+                <x-ui.buttons.pill size="sm" type="button" btnText="{{ __('admin/config.form.translation_models_refresh') }}" wire:click="queryModels" wire:loading.attr="disabled" wire:target="formData.api_url,formData.api_key,queryModels" />
             </x-form.group>
             <x-form.group>
                 <x-form.text-input labelText="{{ __('admin/config.form.translation_openai_concurrency') }}" wire:model="formData.openai_concurrency" type="number" name="formData.openai_concurrency" />

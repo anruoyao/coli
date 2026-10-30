@@ -4,6 +4,7 @@ namespace App\Livewire\Admin\Config;
 
 use App\Models\AdminConfigChangeLog;
 use App\Services\Translation\Drivers\OpenAi;
+use App\Services\Translation\OpenAiModelCatalog;
 use App\Settings\TranslationSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -13,6 +14,9 @@ use Livewire\Component;
 class Translation extends Component
 {
     public array $formData = [];
+    public array $availableModels = [];
+    public ?string $modelLookupMessage = null;
+    public string $modelLookupType = 'success';
     public ?string $flashContent = null;
     public string $flashType = 'success';
 
@@ -170,6 +174,56 @@ class Translation extends Component
             }
             $this->flashType = 'error';
             $this->flashContent = __('admin/flash.config.settings_error');
+        }
+    }
+
+    public function updated(string $propertyName, mixed $value): void
+    {
+        if (in_array($propertyName, ['formData.api_url', 'formData.api_key', 'formData.driver'], true)) {
+            $this->queryModels();
+        }
+    }
+
+    public function queryModels(): void
+    {
+        $this->authorizeAdmin();
+        $this->availableModels = [];
+        $this->modelLookupMessage = null;
+
+        if (($this->formData['driver'] ?? '') !== 'openai') {
+            return;
+        }
+
+        $apiUrl = trim((string) ($this->formData['api_url'] ?? ''));
+        if ($apiUrl === '' || ! filter_var($apiUrl, FILTER_VALIDATE_URL)) {
+            return;
+        }
+
+        $settings = app(TranslationSettings::class);
+        $apiKey = trim((string) ($this->formData['api_key'] ?? ''));
+        if ($apiKey === '') {
+            $apiKey = trim((string) ($settings->api_key ?? ''));
+        }
+        if ($apiKey === '') {
+            return;
+        }
+
+        try {
+            $this->availableModels = app(OpenAiModelCatalog::class)->list(
+                $apiUrl,
+                $apiKey,
+                min(max((int) ($this->formData['timeout'] ?? 15), 1), 120),
+                min(max((int) ($this->formData['connect_timeout'] ?? 2), 1), 30),
+            );
+            $this->modelLookupType = 'success';
+            $this->modelLookupMessage = $this->availableModels === []
+                ? __('admin/config.form.translation_models_empty')
+                : trans_choice('admin/config.form.translation_models_found', count($this->availableModels), [
+                    'count' => count($this->availableModels),
+                ]);
+        } catch (\Throwable) {
+            $this->modelLookupType = 'error';
+            $this->modelLookupMessage = __('admin/config.form.translation_models_failed');
         }
     }
 
