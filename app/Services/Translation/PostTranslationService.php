@@ -23,6 +23,28 @@ class PostTranslationService
         );
     }
 
+    public function translateWithSource(int $postId, User $viewer, string $target): array
+    {
+        $target = self::canonicalTarget($target);
+        $translatedText = $this->translate($postId, $viewer, $target);
+        $post = $this->visiblePost($postId, $viewer);
+        $translation = PostTranslation::query()
+            ->where('post_id', $postId)
+            ->where('target_language', $target)
+            ->where('content_hash', hash('sha256', $post->content))
+            ->first();
+
+        $sourceLanguage = $translation?->source_language;
+        if (! $sourceLanguage || $sourceLanguage === 'auto') {
+            $sourceLanguage = app(TranslationLanguageDetector::class)->detect($post->content);
+        }
+
+        return [
+            'translated_text' => $translatedText,
+            'source_language' => $sourceLanguage,
+        ];
+    }
+
     public function prepareTranslation(int $postId, string $target, string $expectedHash): void
     {
         $target = self::canonicalTarget($target);
@@ -83,12 +105,11 @@ class PostTranslationService
 
             $text = $post->content;
             abort_if(trim($text) === '' || mb_strlen($text) > (int) config('services.translation.max_text_length', 2000), 422, 'Text exceeds the configured translation length limit or is empty.');
-            $source = config('services.translation.service') === 'libretranslate'
-                ? 'auto'
-                : app(TranslationLanguageDetector::class)->detect($text);
+            $detectedSource = app(TranslationLanguageDetector::class)->detect($text);
+            $source = config('services.translation.service') === 'libretranslate' ? 'auto' : $detectedSource;
             $translated = app(TranslationService::class)->from($source)->to($target)->translate($text);
 
-            return DB::transaction(function () use ($postId, $target, $hash, $source, $translated, $reloadPost, $expectedHash): string {
+            return DB::transaction(function () use ($postId, $target, $hash, $detectedSource, $translated, $reloadPost, $expectedHash): string {
                 $post = $reloadPost();
                 if (! $post || ! hash_equals($hash, hash('sha256', $post->content))) {
                     if ($expectedHash !== null) {
@@ -100,7 +121,7 @@ class PostTranslationService
 
                 PostTranslation::updateOrCreate(
                     ['post_id' => $postId, 'target_language' => $target],
-                    ['content_hash' => $hash, 'source_language' => $source, 'translated_text' => $translated]
+                    ['content_hash' => $hash, 'source_language' => $detectedSource, 'translated_text' => $translated]
                 );
 
                 return $translated;

@@ -52,9 +52,11 @@ class BioTranslationTest extends TestCase
     {
         $this->translate(['text' => 'forged client text', 'source' => 'ru'])
             ->assertOk()
-            ->assertJsonPath('data.translated_text', 'Hello world');
+            ->assertJsonPath('data.translated_text', 'Hello world')
+            ->assertJsonPath('data.source_language', 'zh');
         Http::assertSent(fn ($request) => $request['text'] === $this->profile->bio && $request['source'] === 'zho_Hans');
 
+        BioTranslation::where('user_id', $this->profile->id)->update(['source_language' => 'auto']);
         $other = $this->makeUser(['status' => UserStatus::ACTIVE]);
         $this->actingAs($other, 'sanctum');
         Cache::flush();

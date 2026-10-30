@@ -22,6 +22,27 @@ class BioTranslationService
         );
     }
 
+    public function translateWithSource(int $profileId, User $viewer, string $target): array
+    {
+        $translatedText = $this->translate($profileId, $viewer, $target);
+        $profile = $this->visibleUser($profileId, $viewer);
+        $translation = BioTranslation::query()
+            ->where('user_id', $profileId)
+            ->where('target_language', PostTranslationService::canonicalTarget($target))
+            ->where('content_hash', hash('sha256', (string) $profile->bio))
+            ->first();
+
+        $sourceLanguage = $translation?->source_language;
+        if (! $sourceLanguage || $sourceLanguage === 'auto') {
+            $sourceLanguage = app(TranslationLanguageDetector::class)->detect((string) $profile->bio);
+        }
+
+        return [
+            'translated_text' => $translatedText,
+            'source_language' => $sourceLanguage,
+        ];
+    }
+
     private function translateBio(User $profile, User $viewer, string $target): string
     {
         $profileId = (int) $profile->id;
@@ -51,12 +72,11 @@ class BioTranslationService
             $text = (string) $profile->bio;
             abort_if(trim($text) === '' || mb_strlen($text) > (int) config('services.translation.max_text_length', 2000), 422, 'Profile bio is empty or exceeds the configured translation length limit.');
 
-            $source = config('services.translation.service') === 'libretranslate'
-                ? 'auto'
-                : app(TranslationLanguageDetector::class)->detect($text);
+            $detectedSource = app(TranslationLanguageDetector::class)->detect($text);
+            $source = config('services.translation.service') === 'libretranslate' ? 'auto' : $detectedSource;
             $translated = app(TranslationService::class)->from($source)->to($target)->translate($text);
 
-            return DB::transaction(function () use ($profileId, $viewer, $target, $hash, $source, $translated): string {
+            return DB::transaction(function () use ($profileId, $viewer, $target, $hash, $detectedSource, $translated): string {
                 $profile = $this->visibleUser($profileId, $viewer);
                 if (! hash_equals($hash, hash('sha256', (string) $profile->bio))) {
                     throw new HttpException(409, 'The profile bio changed during translation. Please try again.');
@@ -64,7 +84,7 @@ class BioTranslationService
 
                 BioTranslation::updateOrCreate(
                     ['user_id' => $profileId, 'target_language' => $target],
-                    ['content_hash' => $hash, 'source_language' => $source, 'translated_text' => $translated],
+                    ['content_hash' => $hash, 'source_language' => $detectedSource, 'translated_text' => $translated],
                 );
 
                 return $translated;

@@ -22,7 +22,7 @@
                             v-bind:disabled="state.isTranslating"
                             v-bind:aria-busy="state.isTranslating"
                             v-on:click.stop="translate">
-                            {{ state.isTranslating ? $t('labels.translating') : state.isTranslated ? $t('labels.show_untranslated') : $t('dd.translate') }}
+                            {{ state.isTranslating ? $t('labels.translating') : state.isTranslated ? (state.sourceLanguage ? $t('labels.translated_from', { language_name: state.sourceLanguage }) : $t('labels.show_untranslated')) : $t('dd.translate') }}
                         </button>
                     </div>
                 </template>
@@ -142,7 +142,7 @@
                         v-bind:loading="state.isTranslating"
                         v-bind:disabled="state.isTranslating"
                         iconName="translate-01"
-                        v-bind:textLabel="state.isTranslating ? $t('labels.translating') : state.isTranslated ? $t('labels.show_untranslated') : $t('dd.translate')"></ActionSheetItem>
+                        v-bind:textLabel="state.isTranslating ? $t('labels.translating') : state.isTranslated ? (state.sourceLanguage ? $t('labels.translated_from', { language_name: state.sourceLanguage }) : $t('labels.show_untranslated')) : $t('dd.translate')"></ActionSheetItem>
 
                     <ActionSheetItem
                         v-on:click="bookmarkPost"
@@ -236,6 +236,7 @@
             const state = reactive({
                 isTranslating: false,
                 isTranslated: false,
+                sourceLanguage: '',
                 shareMenu: useMenu(),
                 commentsMenu: useMenu(),
                 reactionMenu: useMenu(),
@@ -257,6 +258,7 @@
             watch(() => [postData.value.id, postData.value.content, translationTarget.value], () => {
                 translationVersion++;
                 postTranslatedContent.value = '';
+                state.sourceLanguage = '';
                 state.isTranslated = false;
                 state.isTranslating = false;
             });
@@ -279,7 +281,8 @@
                         postData.value.content, 'auto', translationTarget.value, postData.value.id
                     );
                     if (version === translationVersion && translatedText) {
-                        postTranslatedContent.value = translatedText;
+                        postTranslatedContent.value = translatedText.text || translatedText;
+                        state.sourceLanguage = translatedText.sourceLanguage || '';
                         state.isTranslated = true;
                     }
                 } finally {

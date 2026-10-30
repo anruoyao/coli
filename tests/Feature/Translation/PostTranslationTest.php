@@ -69,10 +69,11 @@ class PostTranslationTest extends TestCase
     {
         $this->translate(['text' => 'forged client text', 'source' => 'ru'])->assertOk();
         Http::assertSent(fn ($request) => $request['text'] === $this->post->content && $request['source'] === 'zho_Hans');
+        PostTranslation::where('post_id', $this->post->id)->update(['source_language' => 'auto']);
         $other = $this->makeUser(['status' => UserStatus::ACTIVE]);
         $this->actingAs($other, 'sanctum');
         Cache::flush();
-        $this->translate(['target' => 'en-us'])->assertOk()->assertJsonPath('data.translated_text', 'Hello world');
+        $this->translate(['target' => 'en-us'])->assertOk()->assertJsonPath('data.translated_text', 'Hello world')->assertJsonPath('data.source_language', 'zh');
         Http::assertSentCount(1);
         $this->assertSame(1, PostTranslation::where('post_id', $this->post->id)->count());
     }

@@ -35,7 +35,7 @@
                                 <TextTranslateButton
                                     v-if="state.isTranslated"
                                     v-on:click="cancelTranslation"
-                                v-bind:buttonText="$t('labels.show_untranslated')"></TextTranslateButton>
+                                v-bind:buttonText="sourceLanguage ? $t('labels.translated_from', { language_name: sourceLanguage }) : $t('labels.show_untranslated')"></TextTranslateButton>
 
                                 <TextTranslateButton
                                     v-else
@@ -176,7 +176,7 @@
                                 v-if="state.isTranslated"
                                 v-on:click="cancelTranslation"
                                 iconName="translate-01"
-                            v-bind:textLabel="$t('labels.show_untranslated')"></DropdownMenuItem>
+                            v-bind:textLabel="sourceLanguage ? $t('labels.translated_from', { language_name: sourceLanguage }) : $t('labels.show_untranslated')"></DropdownMenuItem>
 
                             <DropdownMenuItem
                                 v-else
@@ -258,6 +258,7 @@
                 isReactionPickerOpen: false,
                 isTranslating: false,
                 isTranslated: false,
+                sourceLanguage: '',
                 isSharePostOpen: false
             });
 
@@ -340,6 +341,7 @@
                 isTranslatable: computed(() => {
                     return postData.value.meta.is_translatable;
                 }),
+                sourceLanguage: computed(() => state.sourceLanguage),
                 postMedia: computed(() => {
                     return postData.value.relations.media;
                 }),
@@ -431,7 +433,8 @@
                     const translatedText = await colibriTranslator().translate(postData.value.content, 'auto', window.BackendEmbeds?.locale || 'en', postData.value.id);
 
                     if (translatedText) {
-                        postTranslatedContent.value = translatedText;
+                        postTranslatedContent.value = translatedText.text || translatedText;
+                        state.sourceLanguage = translatedText.sourceLanguage || '';
                         state.isTranslated = true;
                     }
 
@@ -439,6 +442,7 @@
                 },
                 cancelTranslation: () => {
                     state.isTranslated = false;
+                    state.sourceLanguage = '';
                     postTranslatedContent.value = '';
                 },
                 copyContent: () => {

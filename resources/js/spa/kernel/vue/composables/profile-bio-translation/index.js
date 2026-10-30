@@ -7,12 +7,14 @@ export function useProfileBioTranslation(profileData, guard) {
         isTranslated: false,
     });
     const translatedBio = ref('');
+    const sourceLanguage = ref('');
     const translationVersion = ref(0);
     const translationTarget = computed(() => window.BackendEmbeds?.locale || 'en');
 
     const reset = function() {
         translationVersion.value++;
         translatedBio.value = '';
+        sourceLanguage.value = '';
         state.isTranslated = false;
         state.isTranslating = false;
     };
@@ -45,7 +47,8 @@ export function useProfileBioTranslation(profileData, guard) {
             );
 
             if (version === translationVersion.value && translated) {
-                translatedBio.value = translated;
+                translatedBio.value = translated.text || translated;
+                sourceLanguage.value = translated.sourceLanguage || '';
                 state.isTranslated = true;
             }
         } finally {
@@ -55,6 +58,7 @@ export function useProfileBioTranslation(profileData, guard) {
 
     return {
         displayBio: computed(() => state.isTranslated ? translatedBio.value : profileData.value?.bio || ''),
+        sourceLanguage,
         state,
         toggleBioTranslation,
     };

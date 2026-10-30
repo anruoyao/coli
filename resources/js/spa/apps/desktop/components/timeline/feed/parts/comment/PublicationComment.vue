@@ -90,7 +90,7 @@
                             v-if="state.isTranslated"
                             buttonColor="text-lab-sc"
                             v-on:click="cancelTranslation"
-                        v-bind:buttonText="$t('labels.show_untranslated')"></MarginalTextButton>
+                        v-bind:buttonText="state.sourceLanguage ? $t('labels.translated_from', { language_name: state.sourceLanguage }) : $t('labels.show_untranslated')"></MarginalTextButton>
                         <MarginalTextButton
                             v-else
                             buttonColor="text-lab-sc"
@@ -112,7 +112,7 @@
                         <DropdownMenuItem v-on:click="openReactionsPicker" iconName="heart-rounded" v-bind:textLabel="$t('dd.add_reaction')"></DropdownMenuItem>
 
                         <template v-if="commentData.meta.is_translatable">
-                            <DropdownMenuItem v-if="state.isTranslated" v-on:click="cancelTranslation" iconName="translate-01" v-bind:textLabel="$t('labels.show_untranslated')"></DropdownMenuItem>
+                            <DropdownMenuItem v-if="state.isTranslated" v-on:click="cancelTranslation" iconName="translate-01" v-bind:textLabel="state.sourceLanguage ? $t('labels.translated_from', { language_name: state.sourceLanguage }) : $t('labels.show_untranslated')"></DropdownMenuItem>
                             <DropdownMenuItem v-else v-on:click="translate" iconName="translate-01" v-bind:textLabel="$t('dd.translate')"></DropdownMenuItem>
                         </template>
                         <DropdownMenuItem v-on:click="replyToComment" iconName="pencil-line" v-bind:textLabel="$t('dd.comment.reply_to_comment', {name: commentData.relations.user.name})"></DropdownMenuItem>
@@ -172,7 +172,8 @@
                 isDropdownOpen: false,
                 isReactionPickerOpen: false,
                 isTranslated: false,
-                isTranslating: false
+                isTranslating: false,
+                sourceLanguage: ''
             });
 
             const { guard } = useAuthGate();
@@ -280,7 +281,8 @@
                     const translatedText = await colibriTranslator().translate(commentData.value.content);
 
                     if (translatedText) {
-                        commentTranslatedContent.value = translatedText;
+                        commentTranslatedContent.value = translatedText.text || translatedText;
+                        state.sourceLanguage = translatedText.sourceLanguage || '';
                         state.isTranslated = true;
                     }
 
@@ -288,6 +290,7 @@
                 },
                 cancelTranslation: () => {
                     state.isTranslated = false;
+                    state.sourceLanguage = '';
                     commentTranslatedContent.value = '';
                 }
             }

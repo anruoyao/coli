@@ -24,7 +24,7 @@
 							<div class="block">
 								<div v-if="isTranslatable && state.isTranslated" class="leading-none my-1">
 									<TextTranslateButton v-on:click="cancelTranslation"
-									v-bind:buttonText="$t('labels.show_untranslated')"></TextTranslateButton>
+									v-bind:buttonText="state.sourceLanguage ? $t('labels.translated_from', { language_name: state.sourceLanguage }) : $t('labels.show_untranslated')"></TextTranslateButton>
 								</div>
 								<div v-if="isNotDeleted" class="text-par-l markdown-text leading-snug font-medium text-lab-pr2" v-html="$mdInline(messageContent)"></div>
 								<div v-else class="flex mt-1">
@@ -97,7 +97,7 @@
 						<DropdownMenuItem v-on:click="openReactionsPicker" iconName="heart-rounded" v-bind:textLabel="$t('dd.add_reaction')"></DropdownMenuItem>
 
 						<template v-if="isTranslatable">
-							<DropdownMenuItem v-if="state.isTranslated" v-on:click="cancelTranslation" iconName="translate-01" v-bind:textLabel="$t('dd.show_untranslated')"></DropdownMenuItem>
+							<DropdownMenuItem v-if="state.isTranslated" v-on:click="cancelTranslation" iconName="translate-01" v-bind:textLabel="state.sourceLanguage ? $t('labels.translated_from', { language_name: state.sourceLanguage }) : $t('dd.show_untranslated')"></DropdownMenuItem>
 							<DropdownMenuItem v-else v-on:click="translate" iconName="translate-01" v-bind:textLabel="$t('dd.translate')"></DropdownMenuItem>
 						</template>
 
@@ -158,7 +158,8 @@
 				isDropdownOpen: false,
 				isReactionPickerOpen: false,
 				isTranslating: false,
-				isTranslated: false
+				isTranslated: false,
+				sourceLanguage: ''
 			});
 
 			const messageTranslatedContent = ref('');
@@ -269,7 +270,8 @@
                     const translatedText = await colibriTranslator().translate(messageData.value.content);
 
                     if (translatedText) {
-                        messageTranslatedContent.value = translatedText;
+                        messageTranslatedContent.value = translatedText.text || translatedText;
+                        state.sourceLanguage = translatedText.sourceLanguage || '';
                         state.isTranslated = true;
                     }
 
@@ -277,6 +279,7 @@
                 },
 				cancelTranslation: () => {
                     state.isTranslated = false;
+                    state.sourceLanguage = '';
                     messageTranslatedContent.value = '';
                 },
 			};

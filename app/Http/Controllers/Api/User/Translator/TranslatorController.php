@@ -13,6 +13,7 @@ use App\Services\Translation\PostTranslationService;
 use App\Services\Translation\BioTranslationService;
 use App\Services\Translation\Drivers\Nllb;
 use App\Services\Translation\TranslationLanguageCatalog;
+use App\Services\Translation\TranslationLanguageDetector;
 use App\Services\Translation\TranslationServiceBusyException;
 
 class TranslatorController extends Controller
@@ -41,25 +42,31 @@ class TranslatorController extends Controller
         try {
             $target = $validated['target'] ?? config('services.translation.default_target', 'en');
             if (! empty($validated['post_id'])) {
-                $translatedText = app(PostTranslationService::class)->translate((int) $validated['post_id'], $request->user('sanctum'), $target);
+                $translation = app(PostTranslationService::class)->translateWithSource((int) $validated['post_id'], $request->user('sanctum'), $target);
 
-                return $this->responseSuccess(['data' => ['translated_text' => $translatedText]]);
+                return $this->responseSuccess(['data' => $translation]);
             }
 
             if (! empty($validated['profile_id'])) {
-                $translatedText = app(BioTranslationService::class)->translate((int) $validated['profile_id'], $request->user('sanctum'), $target);
+                $translation = app(BioTranslationService::class)->translateWithSource((int) $validated['profile_id'], $request->user('sanctum'), $target);
 
-                return $this->responseSuccess(['data' => ['translated_text' => $translatedText]]);
+                return $this->responseSuccess(['data' => $translation]);
             }
 
             $service = app(TranslationService::class);
             $source = $validated['source'] ?? config('services.translation.default_source', 'auto');
-            if ($source === 'auto' && config('services.translation.service') === 'nllb') {
-                $source = Nllb::detectSource(html_entity_decode($validated['text'], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-            }
-            $translatedText = $service->from($source)->to($target)->translate($validated['text']);
+            $detectedSource = $source === 'auto'
+                ? app(TranslationLanguageDetector::class)->detect($validated['text'])
+                : $source;
+            $driverSource = $source === 'auto' && config('services.translation.service') === 'nllb'
+                ? Nllb::detectSource(html_entity_decode($validated['text'], ENT_QUOTES | ENT_HTML5, 'UTF-8'))
+                : $source;
+            $translatedText = $service->from($driverSource)->to($target)->translate($validated['text']);
 
-            return $this->responseSuccess(['data' => ['translated_text' => $translatedText]]);
+            return $this->responseSuccess(['data' => [
+                'translated_text' => $translatedText,
+                'source_language' => $detectedSource,
+            ]]);
         } catch (\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface | \Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             throw $e;
         } catch (Throwable $e) {

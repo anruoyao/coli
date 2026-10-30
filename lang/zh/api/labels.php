@@ -103,6 +103,7 @@ return [
 	'like' => '点赞',
 	'share_post' => '分享帖子',
 	'show_untranslated' => '显示原文',
+	'translated_from' => '翻译自 {language_name}',
 	'translation_failed' => '翻译失败，请稍后重试。',
 	'downloads_count' => '下载 {count}',
 	'download' => '下载',

@@ -15,7 +15,7 @@
 			<TextTranslateButton
 				v-on:click="toggleBioTranslation"
 				v-bind:disabled="state.isTranslating"
-				v-bind:buttonText="state.isTranslating ? $t('labels.translating') : state.isTranslated ? $t('labels.show_untranslated') : $t('dd.translate')"></TextTranslateButton>
+				v-bind:buttonText="state.isTranslating ? $t('labels.translating') : state.isTranslated ? (sourceLanguage ? $t('labels.translated_from', { language_name: sourceLanguage }) : $t('labels.show_untranslated')) : $t('dd.translate')"></TextTranslateButton>
 		</div>
 		<div v-if="profileData.website" class="mb-6">
 			<a v-bind:href="profileData.website" target="_blank" class="text-brand-900 text-par-n font-medium hover:underline">
@@ -46,6 +46,7 @@
 			return {
 				profileData: profileData,
 				displayBio: translation.displayBio,
+				sourceLanguage: translation.sourceLanguage,
 				state: translation.state,
 				toggleBioTranslation: translation.toggleBioTranslation,
                 markdownRenderer: (text) => {

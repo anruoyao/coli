@@ -11,7 +11,25 @@ const colibriTranslator = function() {
                         : { text: text, source: source }),
                 target: target
             }).sendTo('translate').then((response) => {
-                return response.data.data.translated_text;
+                const data = response.data.data;
+                const sourceLanguage = data.source_language || '';
+                let sourceLanguageName = sourceLanguage;
+
+                if (sourceLanguage && typeof Intl.DisplayNames === 'function') {
+                    try {
+                        sourceLanguageName = new Intl.DisplayNames(
+                            [window.BackendEmbeds?.locale || 'en'],
+                            { type: 'language' },
+                        ).of(sourceLanguage.replaceAll('_', '-')) || sourceLanguage;
+                    } catch (error) {
+                        sourceLanguageName = sourceLanguage;
+                    }
+                }
+
+                return {
+                    text: data.translated_text,
+                    sourceLanguage: sourceLanguageName,
+                };
             }).catch((error) => {
                 const message = error.response?.data?.message || (
                     typeof __t === 'function'

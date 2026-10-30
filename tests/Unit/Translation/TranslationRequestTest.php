@@ -34,7 +34,7 @@ class TranslationRequestTest extends TestCase
     {
         Http::fake(['translation.test/translate' => Http::response(['translated_text' => '你好'])]);
         $this->postJson('/test-translation', ['text' => 'Hello', 'source' => 'en', 'target' => 'zh'])
-            ->assertOk()->assertJsonPath('data.translated_text', '你好');
+            ->assertOk()->assertJsonPath('data.translated_text', '你好')->assertJsonPath('data.source_language', 'en');
         Http::assertSent(fn ($request) => $request['source'] === 'eng_Latn' && $request['target'] === 'zho_Hans');
     }
 
@@ -43,7 +43,7 @@ class TranslationRequestTest extends TestCase
         config(['services.translation.default_source' => 'auto', 'services.translation.default_target' => 'en', 'services.translation.max_text_length' => 100]);
         Http::fake(['translation.test/translate' => Http::response(['translated_text' => 'Hello'])]);
         $this->postJson('/test-translation', ['text' => '你好，这是中文翻译测试。'])
-            ->assertOk()->assertJsonPath('data.translated_text', 'Hello');
+            ->assertOk()->assertJsonPath('data.translated_text', 'Hello')->assertJsonPath('data.source_language', 'zh');
         Http::assertSent(fn ($request) => $request['source'] === 'zho_Hans' && $request['target'] === 'eng_Latn');
     }
 

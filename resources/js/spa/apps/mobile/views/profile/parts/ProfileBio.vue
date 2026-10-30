@@ -11,7 +11,7 @@
 					<SvgIcon name="translate-01" type="line" classes="size-full"></SvgIcon>
 				</span>
 				<span class="text-cap-s ml-0.5 leading-none">
-					{{ state.isTranslating ? $t('labels.translating') : state.isTranslated ? $t('labels.show_untranslated') : $t('dd.translate') }}
+					{{ state.isTranslating ? $t('labels.translating') : state.isTranslated ? (sourceLanguage ? $t('labels.translated_from', { language_name: sourceLanguage }) : $t('labels.show_untranslated')) : $t('dd.translate') }}
 				</span>
 			</button>
 		</div>
@@ -37,6 +37,7 @@
 			return {
 				profileData: profileData,
 				displayBio: translation.displayBio,
+				sourceLanguage: translation.sourceLanguage,
 				state: translation.state,
 				toggleBioTranslation: translation.toggleBioTranslation
 			};
