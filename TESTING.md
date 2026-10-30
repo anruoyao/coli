@@ -87,5 +87,5 @@ QUEUE_CONNECTION=sync  DB_DATABASE=testing  PULSE/TELESCOPE=false
 ## 7. 服务器 MCP 操作注意
 
 - 通过 `DeferExecuteTool` 调 `mcp_ssh-mcp-server_execute-command`：参数结构 `{toolName, params:{cmdString, timeout}}`，**timeout 必须放 params 内**（放顶层会报 additional property not allowed）。
-- 部署/同步流程：本地改码 → 用户提交 GitHub → 服务器 `sudo -u www git fetch origin main && sudo -u www git reset --hard origin/main` → 迁移/config:cache/reload（含前端改动需 `npm run build`）。
-- 纯 PHP 文件改动轻量部署：`git reset` + `/etc/init.d/php-fpm-83 reload`（清 OPcache）。
+- 部署/同步流程：用户明确授权后，代理可创建提交并推送 GitHub。部署前先检查服务器工作区；干净时执行 `sudo -u www git pull --ff-only origin main`，再按改动执行迁移、重建必要缓存并 reload。若有服务器本地改动，停止检查，不要强制覆盖。前端源码改动还需构建资源（`npm run build`）。
+- 纯 PHP 文件改动轻量部署：快进拉取后执行 `php artisan view:clear && php artisan view:cache`，再运行 `/etc/init.d/php-fpm-83 reload`（清 OPcache）。

@@ -44,3 +44,8 @@ See `TESTING.md` for the detailed test workflow and fixture conventions. Importa
 - The documented test environment requires MySQL and Redis services that may not be available locally; don't assume tests can run with the default local setup.
 - Use `DatabaseTransactions` rather than `RefreshDatabase` in database tests: this project's schema has many tables and per-test fresh migrations are prohibitively slow. The testing database must already have its schema migrated.
 - API feature tests may need `config(['security.app_key.enabled' => false])` because the API route group can hide unauthorized requests with a 404. Fixtures that are queried through `User::activeById()` must use `UserStatus::ACTIVE`.
+
+## Git and Deployment Authorization
+
+- Create commits and push to GitHub when the user explicitly authorizes those actions.
+- Before deployment, inspect the server worktree and use `git pull --ff-only`; stop if local server changes exist.
