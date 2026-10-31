@@ -40,9 +40,18 @@ class BookmarkController extends Controller
 
     private function getPostBookmarks()
     {
-        $bookmarkedPosts = Post::timelineFormatPosts()->whereHas('bookmarks', function($query) {
-            $query->where('user_id', me()->id);
-        })->take(300)->get();
+        $userId = me()->id;
+        $bookmarkedPosts = Post::timelineFormatPosts()
+            ->whereHas('bookmarks', function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->withMax(['bookmarks as bookmarked_at' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }], 'created_at')
+            ->orderByDesc('bookmarked_at')
+            ->orderByDesc('posts.id')
+            ->take(300)
+            ->get();
 
         return $this->responseSuccess([
             'data' => TimelineResource::collection($bookmarkedPosts)
