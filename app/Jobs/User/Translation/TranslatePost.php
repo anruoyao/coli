@@ -4,6 +4,7 @@ namespace App\Jobs\User\Translation;
 
 use App\Models\Post;
 use App\Services\Translation\PostTranslationService;
+use App\Services\Translation\TranslationConfigRefresher;
 use App\Services\Translation\TranslationServiceBusyException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Bus\Queueable;
@@ -41,8 +42,10 @@ class TranslatePost implements ShouldBeUnique, ShouldQueue
         return [15, 60, 300, 900];
     }
 
-    public function handle(PostTranslationService $translations): void
+    public function handle(PostTranslationService $translations, TranslationConfigRefresher $configRefresher): void
     {
+        $configRefresher->refresh();
+
         if (! config('services.translation.enabled', true) || config('services.translation.service') !== 'openai') {
             return;
         }

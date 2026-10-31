@@ -23,6 +23,8 @@ use Illuminate\Support\Facades\Route;
 use App\Events\User\Timeline\MediaProcessedEvent;
 use App\Jobs\User\Translation\PreparePostTranslations;
 use App\Jobs\User\Translation\TranslatePost;
+use App\Services\Translation\TranslationConfigRefresher;
+use Mockery;
 use App\Listeners\User\Timeline\PreparePostTranslationsOnMediaProcessed;
 use Tests\Feature\Marketing\Concerns\CreatesUsers;
 use Tests\TestCase;
@@ -203,9 +205,13 @@ class PostTranslationTest extends TestCase
             'is_default' => false,
         ]);
 
+        $configRefresher = Mockery::mock(TranslationConfigRefresher::class);
+        $configRefresher->shouldReceive('refresh')->once();
+
         (new PreparePostTranslations($this->post->id))->handle(
             app(\App\Services\Translation\TranslationLanguageCatalog::class),
             app(\App\Services\Translation\TranslationLanguageDetector::class),
+            $configRefresher,
         );
 
         Queue::assertPushed(TranslatePost::class, function (TranslatePost $job): bool {

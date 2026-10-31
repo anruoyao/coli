@@ -32,7 +32,7 @@ class HandlePostCreation
             DetectPostNsfwContent::dispatch($event->postData);
         }
 
-        if ($this->shouldPrepareTranslations($event->postData)) {
+        if (! $event->postData->type->isVideo() && ! $event->postData->type->isAudio()) {
             PreparePostTranslations::dispatch($event->postData->id)->afterCommit();
         }
 
@@ -41,14 +41,6 @@ class HandlePostCreation
         $this->censorPost($event->postData);
     }
 
-    private function shouldPrepareTranslations(Post $postData): bool
-    {
-        return (bool) config('services.translation.enabled', true)
-            && config('services.translation.service') === 'openai'
-            && (bool) config('services.translation.pretranslate_enabled', false)
-            && ! $postData->type->isVideo()
-            && ! $postData->type->isAudio();
-    }
 
     private function censorPost(Post $postData)
     {

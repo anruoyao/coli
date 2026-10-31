@@ -5,6 +5,7 @@ namespace App\Jobs\User\Translation;
 use App\Enums\Post\PostStatus;
 use App\Models\Post;
 use App\Services\Translation\PostTranslationService;
+use App\Services\Translation\TranslationConfigRefresher;
 use App\Services\Translation\TranslationLanguageCatalog;
 use App\Services\Translation\TranslationLanguageDetector;
 use Illuminate\Bus\Queueable;
@@ -17,6 +18,13 @@ class PreparePostTranslations implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $tries = 4;
+
+    public function backoff(): array
+    {
+        return [15, 60, 300];
+    }
+
     public function __construct(public int $postId)
     {
         $this->onQueue('translation');
@@ -25,7 +33,10 @@ class PreparePostTranslations implements ShouldQueue
     public function handle(
         TranslationLanguageCatalog $catalog,
         TranslationLanguageDetector $detector,
+        TranslationConfigRefresher $configRefresher,
     ): void {
+        $configRefresher->refresh();
+
         if (! $this->enabled()) {
             return;
         }

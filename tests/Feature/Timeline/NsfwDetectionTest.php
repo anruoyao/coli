@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Notification;
 use App\Services\Nsfw\NsfwDetectionService;
 use App\Jobs\User\Timeline\DetectPostNsfwContent;
+use App\Jobs\User\Translation\PreparePostTranslations;
 use App\Listeners\User\Timeline\HandlePostCreation;
 use App\Listeners\User\Timeline\DetectPostNsfwOnMediaProcessed;
 use App\Events\User\Timeline\PostCreatedEvent;
@@ -260,12 +261,18 @@ class NsfwDetectionTest extends TestCase
     public function test_post_creation_listener_dispatches_detection_for_image_posts(): void
     {
         Queue::fake();
+        config([
+            'services.translation.enabled' => false,
+            'services.translation.service' => 'nllb',
+            'services.translation.pretranslate_enabled' => false,
+        ]);
 
         $imagePost = $this->makePost(['type' => PostType::IMAGE]);
         $videoPost = $this->makePost(['type' => PostType::VIDEO]);
 
         (new HandlePostCreation())->handle(new PostCreatedEvent($imagePost));
 
+        Queue::assertPushed(PreparePostTranslations::class, fn (PreparePostTranslations $job): bool => $job->postId === $imagePost->id);
         Queue::assertPushed(DetectPostNsfwContent::class);
 
         // 视频帖不走发帖挂载（由转码完成的 MediaProcessedEvent 触发）
@@ -273,6 +280,7 @@ class NsfwDetectionTest extends TestCase
 
         (new HandlePostCreation())->handle(new PostCreatedEvent($videoPost));
 
+        Queue::assertNotPushed(PreparePostTranslations::class);
         Queue::assertNotPushed(DetectPostNsfwContent::class);
     }
 
