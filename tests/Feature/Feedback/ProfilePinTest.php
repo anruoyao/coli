@@ -26,6 +26,7 @@ use Tests\TestCase;
 class ProfilePinTest extends TestCase
 {
     use DatabaseTransactions, CreatesUsers {
+        DatabaseTransactions::beginDatabaseTransaction as beginIsolatedDatabaseTransaction;
         CreatesUsers::makeUser as baseMakeUser;
     }
 
@@ -41,7 +42,7 @@ class ProfilePinTest extends TestCase
     {
         $this->assertSame('testing', DB::connection()->getDatabaseName());
 
-        parent::beginDatabaseTransaction();
+        $this->beginIsolatedDatabaseTransaction();
     }
 
     protected function makeUser(array $overrides = []): User
