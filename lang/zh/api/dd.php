@@ -18,6 +18,8 @@ return [
 		'mention_author' => '提及 {name}',
 		'bookmark' => '收藏',
 		'unbookmark' => '取消收藏',
+        'profile_pin' => '置顶到个人主页',
+        'profile_unpin' => '取消个人主页置顶',
 		'share' => '分享',
 		'copy_link' => '复制链接',
 		'report_post' => '举报帖子',

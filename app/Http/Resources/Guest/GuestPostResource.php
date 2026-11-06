@@ -44,7 +44,10 @@ class GuestPostResource extends JsonResource
                 'timestamp' => $this->created_at?->getTimestamp(),
             ],
             'meta' => [
+                'profile_pinned' => $this->profile_pinned,
+                'profile_pinned_at' => $this->profile_pinned_at?->toIso8601String(),
                 'permissions' => [
+                    'can_pin' => false,
                     'can_like' => false,
                     'can_comment' => false,
                     'can_edit' => false,

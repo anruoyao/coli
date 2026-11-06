@@ -60,7 +60,12 @@ class TimelineResource extends JsonResource
                 'timestamp' => $this->created_at->getTimestamp()
             ],
             'meta' => [
+                'profile_pinned' => $this->profile_pinned,
+                'profile_pinned_at' => $this->profile_pinned_at?->toIso8601String(),
                 'permissions' => [
+                    'can_pin' => me()->can('pin', $this->resource)
+                        && $this->status === \App\Enums\Post\PostStatus::ACTIVE
+                        && (! $this->is_sensitive || $this->profile_pinned),
                     'can_like' => true,
                     'can_comment' => true,
                     'can_edit' => auth_check() ? me()->can('update', $this->resource) : false,

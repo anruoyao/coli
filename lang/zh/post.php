@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'pin_limit' => '个人主页最多置顶 :limit 条帖子，请先取消一条置顶。',
+    'pin_inactive' => '只能置顶已发布且状态正常的帖子。',
     'validation' => [
         'add_post_text' => '请添加一些文字来分享您的想法。',
         'add_poll_text' => '每个投票都需要一个问题，请添加一个。',

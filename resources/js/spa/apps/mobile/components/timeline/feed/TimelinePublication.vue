@@ -152,6 +152,9 @@
             </div>
             <div class="mb-4">
                 <ActionSheetGroup>
+                    <ActionSheetItem v-if="postData.meta.permissions.can_pin" v-on:click="toggleProfilePin"
+                        v-bind:loading="pinPending[postData.id]" v-bind:disabled="pinPending[postData.id]"
+                        iconName="pin-02" v-bind:textLabel="postData.meta.profile_pinned ? $t('dd.post.profile_unpin') : $t('dd.post.profile_pin')"></ActionSheetItem>
                     <ActionSheetItem v-on:click="state.shareMenu.open" iconName="share-06" v-bind:textLabel="$t('dd.post.share')"></ActionSheetItem>
                     <ActionSheetItem v-on:click="copyLink" iconName="copy-06" v-bind:textLabel="$t('dd.post.copy_link')"></ActionSheetItem>
                     <ActionSheetItem
@@ -182,6 +185,7 @@
     import { useLightboxStore } from '@M/store/lightbox/lightbox.store.js';
     import { useMenu } from '@/kernel/vue/composables/menu/index.js';
     import { useAuthGate } from '@M/core/composables/useAuthGate.js';
+    import { useProfilePin } from '@/kernel/vue/composables/profile-pin/index.js';
 
 	// Mobile components
 	import PublicationHeader from '@M/components/timeline/feed/parts/PublicationHeader.vue';
@@ -246,6 +250,7 @@
             const postData = computed(() => {
                 return props.postData;
             });
+            const { pending: pinPending, toggleProfilePin } = useProfilePin(postData);
 
             const postLink = computed(() => {
                 return base_url(`publication/${postData.value.hash_id}`);
@@ -291,10 +296,12 @@
             };
 
             const isPinned = computed(() => {
-                return props.isPinned;
+                return props.isPinned || postData.value.meta.profile_pinned;
             });
 
             return {
+                pinPending,
+                toggleProfilePin,
                 translate: translate,
                 postContent: postContent,
                 PostTypeUtils: PostTypeUtils,

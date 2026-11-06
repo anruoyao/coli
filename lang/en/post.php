@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'pin_limit' => 'You can pin up to :limit posts to your profile. Unpin a post first.',
+    'pin_inactive' => 'Only published posts can be pinned.',
     'validation' => [
         'add_post_text' => 'Please add some words to share your thoughts.',
         'add_poll_text' => 'Every poll needs a question. Please add one.',

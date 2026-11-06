@@ -96,6 +96,9 @@ class SeoResolver
                     ->active()
                     ->where('user_id', $user->id)
                     ->where('is_sensitive', false)
+                    ->excludeAds()
+                    ->orderByDesc('profile_pinned')
+                    ->orderByDesc('profile_pinned_at')
                     ->orderByDesc('id')
                     ->limit(5)
                     ->get(),

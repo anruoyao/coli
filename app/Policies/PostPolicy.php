@@ -7,6 +7,13 @@ use App\Models\User;
 
 class PostPolicy
 {
+    public function pin(User $user, Post $postData): bool
+    {
+        return $user->id === $postData->user_id
+            && $user->status === \App\Enums\User\UserStatus::ACTIVE
+            && empty($postData->ad_id);
+    }
+
     public function update(User $user, Post $postData) {
         // 原生广告影子帖：文案/素材只能从广告管理页修改，防止绕过审批直接改帖
         if(! empty($postData->ad_id)) {

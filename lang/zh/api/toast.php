@@ -16,6 +16,8 @@ return [
 	'post' => [
 		'bookmarked' => '帖子已收藏！',
 		'unbookmarked' => '帖子已取消收藏！',
+        'profile_pinned' => '帖子已置顶到个人主页！',
+        'profile_unpinned' => '已取消个人主页置顶！',
 		'content_copied' => '帖子内容已复制！',
 		'link_copied' => '帖子链接已复制！',
 	],

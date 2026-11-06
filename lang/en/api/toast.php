@@ -16,6 +16,8 @@ return [
 	'post' => [
 		'bookmarked' => 'The post has been bookmarked!',
 		'unbookmarked' => 'The post has been unbookmarked!',
+        'profile_pinned' => 'Post pinned to your profile!',
+        'profile_unpinned' => 'Post unpinned from your profile!',
 		'content_copied' => 'Post content copied!',
 		'link_copied' => 'Post link copied!',
 	],

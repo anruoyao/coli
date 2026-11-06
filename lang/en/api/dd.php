@@ -18,6 +18,8 @@ return [
 		'mention_author' => 'Mention {name}',
 		'bookmark' => 'Bookmark',
 		'unbookmark' => 'Unbookmark',
+        'profile_pin' => 'Pin to profile',
+        'profile_unpin' => 'Unpin from profile',
 		'share' => 'Share',
 		'copy_link' => 'Copy link',
 		'report_post' => 'Report post',

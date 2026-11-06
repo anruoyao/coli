@@ -15,7 +15,8 @@
 
 namespace App\Http\Controllers\Api\User\Profile;
 
-use App\Enums\Post\PostType;
+use App\Models\Post;
+use App\Services\Profile\ProfilePostService;
 use App\Enums\User\FollowStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\User\People\PeopleCollection;
@@ -182,25 +183,30 @@ class ProfileController extends Controller
         if($isBlocked) {
             // Return empty timeline.
             return $this->responseSuccess([
-                'data' => TimelineCollection::make([])
+                'data' => TimelineCollection::make([]),
+                'pinned' => [],
+                'meta' => ['next_cursor' => null, 'has_more' => false]
             ]);
         }
 
         if($contentType == 'posts' || $contentType == 'media') {
-            // 原生广告影子帖不在个人主页展示（仅信息流注入 + 详情直达）
-            $profilePosts = $profileData->posts()->timelineFormatPosts()->excludeAds()->when($cursorId, function($query) use ($cursorId) {
-                $query->where('id', '<', $cursorId);
-            })->when(($contentType == 'media'), function($query) {
-                $query->whereNot('type', PostType::TEXT);
-            })->latest()->take(config('post.paginate_per'))->get();
+            $page = app(ProfilePostService::class)->page(
+                Post::timelineFormatPosts()->where('user_id', $profileId),
+                $contentType,
+                (int) $cursorId
+            );
 
             return $this->responseSuccess([
-                'data' => TimelineCollection::make($profilePosts)
+                'data' => TimelineCollection::make($page['posts']),
+                'pinned' => TimelineCollection::make($page['pinned']),
+                'meta' => $page['meta'],
             ]);
         }
         else {
             return $this->responseSuccess([
-                'data' => TimelineCollection::make([])
+                'data' => TimelineCollection::make([]),
+                'pinned' => [],
+                'meta' => ['next_cursor' => null, 'has_more' => false]
             ]);
         }
     }

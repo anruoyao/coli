@@ -36,6 +36,7 @@ class Post extends Model
         'is_sensitive' => 'boolean',
         'edited' => 'boolean',
         'profile_pinned' => 'boolean',
+        'profile_pinned_at' => 'datetime',
         'global_pinned' => 'boolean',
         'is_ai_generated' => 'boolean',
         'created_at' => ModelTimestampCast::class
@@ -47,6 +48,13 @@ class Post extends Model
 
     protected static function booted(): void
     {
+        static::saving(function (Post $post) {
+            if ($post->status !== PostStatus::ACTIVE) {
+                $post->profile_pinned = false;
+                $post->profile_pinned_at = null;
+            }
+        });
+
         static::updated(function (Post $post) {
             if ($post->wasChanged('content') || ($post->wasChanged('status') && $post->status !== PostStatus::ACTIVE)) {
                 PostTranslation::where('post_id', $post->id)->delete();

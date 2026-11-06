@@ -21,7 +21,7 @@
                                 <span class="text-par-n text-lab-sc truncate">
                                     {{ postUserCaption }} · {{ postData.date.time_ago }}
                                 </span>
-                                <span v-if="isPinned" class="size-icon-x-small inline-block text-brand-900 ml-1">
+                                <span v-if="isPinned || postData.meta.profile_pinned" class="size-icon-x-small inline-block text-brand-900 ml-1">
                                     <SvgIcon name="pin-02"></SvgIcon>
                                 </span>
                             </RouterLink>
@@ -199,6 +199,9 @@
                             v-bind:iconName="postData.meta.activity.bookmarked ? 'bookmark-minus' : 'bookmark'"
                         v-bind:textLabel="postData.meta.activity.bookmarked ? $t('dd.post.unbookmark') : $t('dd.post.bookmark')"></DropdownMenuItem>
 
+                        <DropdownMenuItem v-if="postData.meta.permissions.can_pin" v-on:click="toggleProfilePin"
+                            v-bind:disabled="pinPending[postData.id]" iconName="pin-02"
+                            v-bind:textLabel="postData.meta.profile_pinned ? $t('dd.post.profile_unpin') : $t('dd.post.profile_pin')"></DropdownMenuItem>
                         <DropdownMenuItem v-on:click="sharePost" iconName="share-06" v-bind:textLabel="$t('dd.post.share')"></DropdownMenuItem>
                         <DropdownMenuItem v-on:click="copyLink" iconName="copy-06" v-bind:textLabel="$t('dd.post.copy_link')"></DropdownMenuItem>
                         <DropdownMenuItem v-if="postHasContent" v-on:click="copyContent" iconName="type-01" v-bind:textLabel="$t('dd.copy_text')"></DropdownMenuItem>
@@ -223,6 +226,7 @@
     import { useLightboxStore } from '@D/store/lightbox/lightbox.store.js';
     import { colibriTranslator } from '@/kernel/services/translator/index.js';
     import { useAuthGate } from '@D/core/composables/useAuthGate.js';
+    import { useProfilePin } from '@/kernel/vue/composables/profile-pin/index.js';
 
     import AvatarSmall from '@D/components/general/avatars/AvatarSmall.vue';
     import DropdownButton from '@D/components/general/dropdowns/parts/DropdownButton.vue';
@@ -267,6 +271,7 @@
                 return props.postData;
             });
 
+            const { pending: pinPending, toggleProfilePin } = useProfilePin(postData);
             const lightboxStore = useLightboxStore();
 
             const { guard } = useAuthGate();
@@ -294,6 +299,8 @@
             });
 
             return {
+                pinPending,
+                toggleProfilePin,
                 toggleMenu: () => {
                     state.isMenuOpen = !state.isMenuOpen;
                 },
