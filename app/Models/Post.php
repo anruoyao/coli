@@ -49,7 +49,7 @@ class Post extends Model
     protected static function booted(): void
     {
         static::saving(function (Post $post) {
-            if ($post->status !== PostStatus::ACTIVE) {
+            if ($post->status !== PostStatus::ACTIVE || $post->is_sensitive) {
                 $post->profile_pinned = false;
                 $post->profile_pinned_at = null;
             }

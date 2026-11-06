@@ -1,4 +1,4 @@
-import { ref, reactive, onMounted, onUnmounted, inject } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, inject, watch } from 'vue';
 import { useInfiniteScroll } from '@/kernel/vue/composables/infinite-scroll/index.js';
 import { colibriAPI } from '@/kernel/services/api-client/native/index.js';
 import { colibriEventBus } from '@/kernel/events/bus/index.js';
@@ -32,6 +32,7 @@ export function useProfilePosts(contentType, authStore) {
             state.noMoreContent = !meta?.has_more;
         } catch (error) {
             if (currentGeneration === generation) {
+                state.noMoreContent = true;
                 toastError(error.response?.data?.message || error.message);
             }
         } finally {
@@ -60,10 +61,13 @@ export function useProfilePosts(contentType, authStore) {
     };
 
     const onPinChanged = ({ user_id }) => {
-        if (contentType === 'posts' && profileData.value?.id === user_id) reload();
+        if (contentType === 'posts' && Number(profileData.value?.id) === Number(user_id)) reload();
     };
 
     useInfiniteScroll({ callback: fetchPosts });
+    watch(() => profileData.value?.id, (id, previousId) => {
+        if (previousId && id !== previousId) reload();
+    });
     onMounted(fetchPosts);
     colibriEventBus.on('profile:pin-changed', onPinChanged);
     colibriEventBus.on('auth:login-succeeded', reload);

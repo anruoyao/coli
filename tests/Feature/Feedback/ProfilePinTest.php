@@ -221,6 +221,24 @@ class ProfilePinTest extends TestCase
         $this->assertNull($post->profile_pinned_at);
     }
 
+    public function test_sensitive_classification_clears_profile_pin_and_frees_a_slot(): void
+    {
+        $owner = $this->makeUser();
+        $posts = array_map(fn () => $this->makePost($owner), range(1, 4));
+
+        foreach (array_slice($posts, 0, 3) as $post) {
+            $this->pin($owner, $post)->assertOk();
+        }
+
+        $posts[0]->update(['is_sensitive' => true]);
+
+        $this->assertFalse((bool) $posts[0]->refresh()->profile_pinned);
+        $this->assertNull($posts[0]->profile_pinned_at);
+        $this->pin($owner, $posts[3])->assertOk();
+        $this->profilePosts($owner, $owner)->assertOk()
+            ->assertJsonMissing(['id' => $posts[0]->id, 'profile_pinned' => true]);
+    }
+
     public function test_deleting_a_pinned_post_removes_it_from_the_profile(): void
     {
         $owner = $this->makeUser();
