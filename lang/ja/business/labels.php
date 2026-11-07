@@ -1,0 +1,37 @@
+<?php
+
+return [
+    'business_account' => 'ビジネスアカウント',
+    'balance' => '残高',
+    'overview' => '概要',
+    'ads' => '広告',
+    'marketplace' => 'マーケットプレイス',
+    'jobs' => '求人',
+    'wallet' => 'ウォレット',
+    'business_account' => 'ビジネスアカウント',
+    'information' => '情報',
+    'help' => 'ヘルプ',
+    'for_developers' => 'API ドキュメント',
+    'privacy_policy' => 'プライバシーポリシー',
+    'terms_of_use' => '利用規約',
+    'language' => '言語',
+    'about_account' => 'アカウントについて',
+    'account_settings' => 'アカウント設定',
+    'more' => 'その他',
+    'campaign' => 'キャンペーン',
+    'product' => '商品',
+    'job' => '求人',
+    'service' => 'サービス',
+    'type_labels' => [
+        'physical' => '物理商品',
+        'digital' => 'デジタル商品',
+        'service' => 'サービス',
+        'subscription' => 'サブスクリプション',
+        'membership' => 'メンバーシップ',
+        'event_ticket' => 'イベントチケット',
+        'gift_card' => 'ギフトカード',
+        'vacancy' => '求人',
+        'project' => 'プロジェクト',
+    ],
+    'product_contacts' => '連絡先'
+];

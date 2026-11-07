@@ -11,13 +11,14 @@ use App\Enums\NotificationType;
 use Laravel\Sanctum\HasApiTokens;
 use App\Services\World\WorldService;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use App\Models\Traits\User\FetchesDrafts;
 use App\Support\Casts\ModelTimestampCast;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Models\Traits\Pagination\SupportsManualPagination;
 
-class User extends Authenticatable
+class User extends Authenticatable implements HasLocalePreference
 {
     use FetchesDrafts,
         SupportsManualPagination,
@@ -59,6 +60,11 @@ class User extends Authenticatable
         'password',
         'remember_token'
     ];
+
+    public function preferredLocale(): ?string
+    {
+        return $this->language ?: null;
+    }
 
     public function getCreatedAt()
     {

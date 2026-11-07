@@ -3,6 +3,7 @@
 @section('email_content')
     @php
         $zh = str_starts_with($locale, 'zh');
+        $ja = str_starts_with($locale, 'ja');
         $settingsUrl = url('/settings/email-notifications');
 
         // 标题字号/字重映射（与后台配置的 title_size / title_weight 对应）
@@ -36,7 +37,7 @@
     @if(!empty($posts))
         <div style="height: 22px; line-height: 22px; font-size: 1px;">&nbsp;</div>
         <div style="font-size: 11px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; color: #999999; margin: 0 0 10px 0;">
-            {{ $zh ? '站内帖子' : 'FROM THE COMMUNITY' }}
+            {{ $zh ? '站内帖子' : ($ja ? 'コミュニティから' : 'FROM THE COMMUNITY') }}
         </div>
 
         @foreach($posts as $post)
@@ -67,7 +68,7 @@
                                 @endif
                                 <td style="vertical-align: middle;">
                                     <span style="font-size: 12px; color: #777777;">
-                                        {{ $post['author_name'] ?: ($zh ? '社区成员' : 'Community member') }}
+                                        {{ $post['author_name'] ?: ($zh ? '社区成员' : ($ja ? 'コミュニティメンバー' : 'Community member')) }}
                                     </span>
                                 </td>
                             </tr>
@@ -75,14 +76,14 @@
 
                         {{-- 统计行 --}}
                         <div style="font-size: 11px; color: #999999; margin: 6px 0 0 0;">
-                            {{ number_format($post['reactions_count']) }} {{ $zh ? '个赞同' : 'reactions' }}
+                            {{ number_format($post['reactions_count']) }} {{ $zh ? '个赞同' : ($ja ? 'リアクション' : 'reactions') }}
                             &nbsp;·&nbsp;
-                            {{ number_format($post['comments_count']) }} {{ $zh ? '条评论' : 'comments' }}
+                            {{ number_format($post['comments_count']) }} {{ $zh ? '条评论' : ($ja ? 'コメント' : 'comments') }}
                         </div>
 
                         {{-- 阅读全文 --}}
                         <div style="font-size: 12px; font-weight: 600; color: #333333; margin: 10px 0 0 0;">
-                            {{ $zh ? '阅读全文' : 'Read full post' }} &rarr;
+                            {{ $zh ? '阅读全文' : ($ja ? '投稿を読む' : 'Read full post') }} &rarr;
                         </div>
                     </div>
                 </a>
@@ -96,17 +97,21 @@
         <div style="text-align: center;">
             <a href="{{ $destinationUrl }}"
                style="background-color: #333333; text-align: center; padding: 8px 25px; margin: 0; border-radius: 6px; text-decoration: none; color: #f3f3f3; font-size: 13px; font-weight: 400; display: inline-block;">
-                {{ $zh ? '查看详情' : 'View details' }}
+                {{ $zh ? '查看详情' : ($ja ? '詳細を見る' : 'View details') }}
             </a>
         </div>
     @endif
 
     <div style="height: 24px; line-height: 24px; font-size: 1px;">&nbsp;</div>
     <p style="font-size: 13px; padding: 0; margin: 0; color: #555555;">
-        {{ $zh ? '如果不想再收到此类邮件，可在通知设置的「平台通知」中关闭。' : "If you no longer wish to receive these emails, you can turn off \"Platform notifications\" in your notification settings." }}
+        {{ $zh
+            ? '如果不想再收到此类邮件，可在通知设置的「平台通知」中关闭。'
+            : ($ja
+                ? 'これらのメールを受け取りたくない場合は、通知設定の「プラットフォーム通知」でオフにできます。'
+                : "If you no longer wish to receive these emails, you can turn off \"Platform notifications\" in your notification settings.") }}
         <br>
         <a href="{{ $settingsUrl }}" style="color: #333333; text-decoration: underline; font-size: 12px;">
-            {{ $zh ? '前往通知设置' : 'Go to notification settings' }}
+            {{ $zh ? '前往通知设置' : ($ja ? '通知設定へ移動' : 'Go to notification settings') }}
         </a>
     </p>
 @endsection

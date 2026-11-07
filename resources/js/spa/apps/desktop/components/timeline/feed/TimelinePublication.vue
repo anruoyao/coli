@@ -313,7 +313,19 @@
                 isSensitive: computed(() => {
                     return postData.value.meta.is_sensitive;
                 }),
-                userLocaleName: embedder('locale_name'),
+                userLocaleName: computed(() => {
+                    const locale = window.BackendEmbeds?.locale || 'en';
+
+                    if (typeof Intl.DisplayNames === 'function') {
+                        try {
+                            return new Intl.DisplayNames([locale], { type: 'language' }).of(locale) || embedder('locale_name');
+                        } catch (error) {
+                            return embedder('locale_name');
+                        }
+                    }
+
+                    return embedder('locale_name');
+                }),
                 addReaction: (reactionId) => {
                     if (! guard()) return;
 

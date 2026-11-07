@@ -20,7 +20,11 @@ use Illuminate\Support\Collection;
  */
 class DigestPayloadBuilder
 {
+    private string $locale;
+
     private bool $isZh;
+
+    private bool $isJa;
 
     private int $entityLimit;
     private int $actorLimit;
@@ -31,7 +35,16 @@ class DigestPayloadBuilder
 
     public function __construct(private User $user, private Collection $batches)
     {
-        $this->isZh = app()->getLocale() === 'zh' || $this->user->language === 'zh';
+        $language = strtolower((string) ($this->user->language ?: app()->getLocale()));
+
+        $this->locale = match (true) {
+            str_starts_with($language, 'zh') => 'zh',
+            str_starts_with($language, 'ja') => 'ja',
+            default => 'en',
+        };
+
+        $this->isZh = $this->locale === 'zh';
+        $this->isJa = $this->locale === 'ja';
         $this->entityLimit = (int) config('notifications.digest.entities_per_mail', 5);
         $this->actorLimit = (int) config('notifications.digest.actors_per_entity', 6);
         $this->commentLimit = (int) config('notifications.digest.comments_per_entity', 3);
@@ -75,7 +88,7 @@ class DigestPayloadBuilder
         }
 
         return [
-            'is_zh' => $this->isZh,
+            'locale' => $this->locale,
             'subject' => $this->buildSubject(),
             'sections' => $sections,
             'followers' => $followers,
@@ -169,7 +182,11 @@ class DigestPayloadBuilder
             case 'comment':
                 $comment = Comment::find($entityId);
                 return $comment
-                    ? ($this->isZh ? '对评论的互动' : 'Interaction on a comment') . '「' . Str::limit(html_entity_decode($comment->content), 30) . '」'
+                    ? match (true) {
+                        $this->isZh => '对评论的互动',
+                        $this->isJa => 'コメントへのインタラクション',
+                        default => 'Interaction on a comment',
+                    } . '「' . Str::limit(html_entity_decode($comment->content), 30) . '」'
                     : $this->fallbackTitle('comment');
 
             case 'story':
@@ -183,6 +200,15 @@ class DigestPayloadBuilder
 
     private function fallbackTitle(string $type): string
     {
+        if ($this->isJa) {
+            return match ($type) {
+                'post' => 'あなたの投稿',
+                'comment' => 'あなたのコメント',
+                'story' => 'あなたのストーリー',
+                default => 'あなたのコンテンツ',
+            };
+        }
+
         return $this->isZh
             ? match ($type) {
                 'post' => '你的帖子',
@@ -202,14 +228,20 @@ class DigestPayloadBuilder
     {
         $n = $this->batches->pluck('actor_id')->unique()->count();
 
-        return $this->isZh
-            ? "过去3小时内，{$n}位用户与你的内容进行了互动"
-            : "{$n} users interacted with your content in the past 3 hours";
+        return match (true) {
+            $this->isZh => "过去3小时内，{$n}位用户与你的内容进行了互动",
+            $this->isJa => "過去3時間に{$n}人のユーザーがあなたのコンテンツにインタラクションしました",
+            default => "{$n} users interacted with your content in the past 3 hours",
+        };
     }
 
     private function actorName(int $actorId): string
     {
-        return $this->actorOf($actorId)?->name ?? ($this->isZh ? '用户' : 'User');
+        return $this->actorOf($actorId)?->name ?? match (true) {
+            $this->isZh => '用户',
+            $this->isJa => 'ユーザー',
+            default => 'User',
+        };
     }
 
     private function actorOf(int $actorId): ?User

@@ -48,25 +48,39 @@
 		},
 		setup: function(props) {
 			const authStore = useAuthStore();
-			const isZh = computed(() => (navigator.language || 'en').toLowerCase().indexOf('zh') !== -1);
+			const browserLocale = (window.BackendEmbeds?.locale || navigator.language || 'en').toLowerCase();
+			const isZh = computed(() => browserLocale.indexOf('zh') !== -1);
+			const isJa = computed(() => browserLocale.indexOf('ja') !== -1);
 			const suspended = computed(() => props.status === 'suspended');
 
 			const supportEmail = ref(window.__SUPPORT_EMAIL__ || '');
 
 			const title = computed(() => {
-				if (suspended.value) return isZh.value ? '账号已被停用' : 'Account suspended';
-				return isZh.value ? '账号已被封禁' : 'Account blocked';
+				if (suspended.value) {
+					if (isZh.value) return '账号已被停用';
+					return isJa.value ? 'アカウントは停止されました' : 'Account suspended';
+				}
+				if (isZh.value) return '账号已被封禁';
+				return isJa.value ? 'アカウントはブロックされました' : 'Account blocked';
 			});
 
 			const defaultDesc = computed(() => {
-				return isZh.value
-					? '您的账号因违反社区规范已被' + (suspended.value ? '停用' : '封禁') + '，无法继续使用平台。如有疑问，请联系客服申诉。'
-					: 'Your account has been ' + (suspended.value ? 'suspended' : 'blocked') + ' for violating our community guidelines. Contact support if you have questions.';
+				if (isZh.value) {
+					return '您的账号因违反社区规范已被' + (suspended.value ? '停用' : '封禁') + '，无法继续使用平台。如有疑问，请联系客服申诉。';
+				}
+				if (isJa.value) {
+					return 'アカウントはコミュニティガイドライン違反により' + (suspended.value ? '停止' : 'ブロック') + 'され、プラットフォームを利用できません。ご不明な点はサポートまでお問い合わせください。';
+				}
+				return 'Your account has been ' + (suspended.value ? 'suspended' : 'blocked') + ' for violating our community guidelines. Contact support if you have questions.';
 			});
 
-			const contactText = computed(() => isZh.value ? '联系客服申诉' : 'Contact support');
-			const logoutText = computed(() => isZh.value ? '退出登录' : 'Log out');
-			const supportSubject = computed(() => isZh.value ? ('账号' + (suspended.value ? '停用' : '封禁') + '申诉') : 'Account appeal');
+			const contactText = computed(() => isZh.value ? '联系客服申诉' : (isJa.value ? 'サポートに問い合わせる' : 'Contact support'));
+			const logoutText = computed(() => isZh.value ? '退出登录' : (isJa.value ? 'ログアウト' : 'Log out'));
+			const supportSubject = computed(() => {
+				if (isZh.value) return '账号' + (suspended.value ? '停用' : '封禁') + '申诉';
+				if (isJa.value) return 'アカウント' + (suspended.value ? '停止' : 'ブロック') + 'の異議申し立て';
+				return 'Account appeal';
+			});
 
 			const logout = async () => {
 				await authStore.logoutUser();

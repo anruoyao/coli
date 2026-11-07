@@ -5,18 +5,18 @@
 				<img v-bind:src="$embedder('assets.logos.url')" alt="Logo" class="w-full">
 			</div>
 
-			<h2 class="text-title-1 font-bold text-lab-pr2 mb-3">{{ isZh ? '系统维护中' : 'Maintenance in progress' }}</h2>
+			<h2 class="text-title-1 font-bold text-lab-pr2 mb-3">{{ isZh ? '系统维护中' : (isJa ? 'メンテナンス中' : 'Maintenance in progress') }}</h2>
 
 			<p class="text-par-n text-lab-sc leading-relaxed mb-2">
-				{{ message || (isZh ? '我们正在进行维护，请稍后再试。感谢您的耐心等待。' : 'We are performing maintenance. Please try again later. Thank you for your patience.') }}
+				{{ message || (isZh ? '我们正在进行维护，请稍后再试。感谢您的耐心等待。' : (isJa ? 'メンテナンスを実施しています。しばらくしてからもう一度お試しください。ご不便をおかけして申し訳ありません。' : 'We are performing maintenance. Please try again later. Thank you for your patience.')) }}
 			</p>
 
 			<p v-if="until" class="text-par-s text-lab-tr">
-				{{ isZh ? ('预计恢复：' + until) : ('Expected recovery: ' + until) }}
+				{{ isZh ? ('预计恢复：' + until) : (isJa ? ('復旧予定：' + until) : ('Expected recovery: ' + until)) }}
 			</p>
 
 			<p class="mt-6 text-par-s text-lab-tr">
-				{{ isZh ? '服务恢复后将自动继续使用，无需刷新' : 'The site will resume automatically once maintenance ends.' }}
+				{{ isZh ? '服务恢复后将自动继续使用，无需刷新' : (isJa ? 'メンテナンス終了後、自動的に再開します。' : 'The site will resume automatically once maintenance ends.') }}
 			</p>
 		</div>
 	</div>
@@ -41,10 +41,13 @@
 			}
 		},
 		setup: function() {
-			const isZh = ref((navigator.language || 'en').toLowerCase().indexOf('zh') !== -1);
+			const browserLocale = (window.BackendEmbeds?.locale || navigator.language || 'en').toLowerCase();
+			const isZh = ref(browserLocale.indexOf('zh') !== -1);
+			const isJa = ref(browserLocale.indexOf('ja') !== -1);
 
 			return {
-				isZh
+				isZh,
+				isJa
 			};
 		}
 	});
