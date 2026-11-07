@@ -15,6 +15,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\Languages;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -39,7 +40,7 @@ class UserLanguageMiddleware
             $locale = session()->get('selected_locale');
         }
 
-        App::setLocale($locale);
+        App::setLocale(Languages::normalizeCode($locale) ?: config('app.locale'));
 
         return $next($request);
     }

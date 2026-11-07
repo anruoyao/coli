@@ -8,9 +8,11 @@ use App\Enums\User\UserStatus;
 use App\Support\DateFormatter;
 use App\Database\Configs\Table;
 use App\Enums\NotificationType;
+use App\Support\Languages;
 use Laravel\Sanctum\HasApiTokens;
 use App\Services\World\WorldService;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use App\Models\Traits\User\FetchesDrafts;
 use App\Support\Casts\ModelTimestampCast;
@@ -64,6 +66,14 @@ class User extends Authenticatable implements HasLocalePreference
     public function preferredLocale(): ?string
     {
         return $this->language ?: null;
+    }
+
+    protected function language(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value): ?string => $value === null ? null : Languages::normalizeCode($value),
+            set: fn (?string $value): ?string => $value === null ? null : Languages::normalizeCode($value),
+        );
     }
 
     public function getCreatedAt()

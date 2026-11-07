@@ -13,6 +13,21 @@ class Languages
     private $currentLocale;
 
     /**
+     * Normalize client locale codes (zh-Hans, en-US, ja-JP) to stored locale codes.
+     */
+    public static function normalizeCode(?string $lang): string
+    {
+        $lang = strtolower(trim((string) $lang));
+
+        return match ($lang) {
+            'zh', 'zh-cn', 'zh-hans' => 'zh',
+            'en', 'en-us', 'en-gb' => 'en',
+            'ja', 'ja-jp' => 'ja',
+            default => $lang,
+        };
+    }
+
+    /**
      * Create a new class instance.
      */
     public function __construct()
@@ -53,6 +68,8 @@ class Languages
 
     public function switchLanguage(string $lang): void
     {
+        $lang = self::normalizeCode($lang);
+
         if($this->languageExists($lang)) {
             $this->setUserLocale($lang);
 
@@ -64,7 +81,7 @@ class Languages
 
     public function languageExists(string $lang): bool
     {
-        return $this->languages->where('status', true)->contains('alpha_2_code', $lang);
+        return $this->languages->where('status', true)->contains('alpha_2_code', self::normalizeCode($lang));
     }
 
     public function getDefaultLanguageAlpha2Code(): string
