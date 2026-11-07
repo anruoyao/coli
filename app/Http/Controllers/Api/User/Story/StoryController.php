@@ -89,10 +89,10 @@ class StoryController extends Controller
 
         if(empty($storyMedia)) {
             return $this->responseError([
-                'message' => 'Media file is required before creating a story.',
+                'message' => __('api/error.story_media_required'),
                 'errors' => [
                     'media' => [
-                        'Media file is required before creating a story.'
+                        __('api/error.story_media_required')
                     ]
                 ]
             ]);

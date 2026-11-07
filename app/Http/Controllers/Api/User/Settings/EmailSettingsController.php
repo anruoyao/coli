@@ -195,14 +195,18 @@ class EmailSettingsController extends Controller
         ]);
         
         // TODO: send email
-        defer(function () use ($emailAddress, $confirmationCode) {
-            Mail::to($emailAddress)->send(new ConfirmationCodeMail([
-                'title' => __('auth.hi_there'),
-                'code' => $confirmationCode,
-                'subTitle' => __('email.code.email.sub_title'),
-                'description' => __('email.code.email.description'),
-                'ignoreEmail' => __('email.code.email.ignore_email')
-            ]));
+        $locale = \App\Support\Languages::normalizeCode($this->me->language ?: app()->getLocale()) ?: config('app.locale');
+
+        $mailData = [
+            'title' => __('auth.hi_there', locale: $locale),
+            'code' => $confirmationCode,
+            'subTitle' => __('email.code.email.sub_title', locale: $locale),
+            'description' => __('email.code.email.description', locale: $locale),
+            'ignoreEmail' => __('email.code.email.ignore_email', locale: $locale)
+        ];
+
+        defer(function () use ($emailAddress, $locale, $mailData) {
+            Mail::to($emailAddress)->locale($locale)->send(new ConfirmationCodeMail($mailData));
         });
     }
 

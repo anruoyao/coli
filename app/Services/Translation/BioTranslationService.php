@@ -70,7 +70,7 @@ class BioTranslationService
             }
 
             $text = (string) $profile->bio;
-            abort_if(trim($text) === '' || mb_strlen($text) > (int) config('services.translation.max_text_length', 2000), 422, 'Profile bio is empty or exceeds the configured translation length limit.');
+            abort_if(trim($text) === '' || mb_strlen($text) > (int) config('services.translation.max_text_length', 2000), 422, __('api/error.translation_text_too_long'));
 
             $detectedSource = app(TranslationLanguageDetector::class)->detect($text);
             $source = config('services.translation.service') === 'libretranslate' ? 'auto' : $detectedSource;

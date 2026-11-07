@@ -57,10 +57,10 @@ class PostPollController extends Controller
 
         else{
             return $this->responseValidationError([
-                'message' => 'Can not attach poll to this type of post.',
+                'message' => __('api/error.poll_attachment_unsupported'),
                 'errors' => [
                     'poll' => [
-                        'Can not attach poll to this type of post.'
+                        __('api/error.poll_attachment_unsupported')
                     ]
                 ]
             ]);
@@ -132,10 +132,10 @@ class PostPollController extends Controller
         }
         else{
             return $this->responseError([
-                'message' => 'Can not find poll choice with such Id.',
+                'message' => __('api/error.poll_choice_not_found'),
                 'errors' => [
                     'choice_id' => [
-                        'Can not find poll choice with such Id.'
+                        __('api/error.poll_choice_not_found')
                     ]
                 ]
             ], Response::HTTP_NOT_FOUND);

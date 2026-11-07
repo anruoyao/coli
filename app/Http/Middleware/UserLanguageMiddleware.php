@@ -26,22 +26,41 @@ class UserLanguageMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = config('app.locale');
-
-        if(auth_check()) {
-            $locale = me()->language;
-        }
-        
-        else if (Cookie::has('selected_locale')) {
-            $locale = Cookie::get('selected_locale');
-        }
-
-        else if (session()->has('selected_locale')) {
-            $locale = session()->get('selected_locale');
-        }
-
-        App::setLocale(Languages::normalizeCode($locale) ?: config('app.locale'));
+        App::setLocale($this->resolveLocale($request));
 
         return $next($request);
+    }
+
+    private function resolveLocale(Request $request): string
+    {
+        $fallback = Languages::normalizeCode(config('app.locale')) ?: 'zh';
+
+        if (auth_check()) {
+            return Languages::normalizeCode(me()->language) ?: $fallback;
+        }
+
+        $languages = new Languages();
+
+        // 游客请求（注册、验证码、找回密码）没有账户可依据：依次使用显式
+        // language 参数、已选择的语言 Cookie/Session，最后回退到设备语言头。
+        $candidates = [
+            $request->input('language'),
+            Cookie::get('selected_locale'),
+            session()->get('selected_locale'),
+        ];
+
+        foreach (explode(',', (string) $request->header('Accept-Language', '')) as $part) {
+            $candidates[] = explode(';', $part)[0];
+        }
+
+        foreach ($candidates as $candidate) {
+            $code = Languages::normalizeCode($candidate);
+
+            if ($code !== '' && $languages->languageExists($code)) {
+                return $code;
+            }
+        }
+
+        return $fallback;
     }
 }

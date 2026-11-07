@@ -29,7 +29,7 @@ class ForgotSuccess extends Component
             if(empty($this->emailResendTimeout) || $this->emailResendTimeout <= now()) {
                 $userData = User::where('email', $this->confirmationData->email)->first();
 
-                Mail::to($this->confirmationData->email)->queue(new ResetPasswordMail([
+                Mail::to($this->confirmationData->email)->locale(app()->getLocale())->queue(new ResetPasswordMail([
                     'name' => $userData->name,
                     'link' => route('user.auth.reset', ['token' => $this->confirmationData->token])
                 ]));

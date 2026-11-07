@@ -71,10 +71,10 @@ class PostGifController extends Controller
 
         else{
             return $this->responseValidationError([
-                'message' => 'Can not attach to this type of post Gif.',
+                'message' => __('api/error.gif_attachment_unsupported'),
                 'errors' => [
                     'gif' => [
-                        'Can not attach to this type of post Gif.'
+                        __('api/error.gif_attachment_unsupported')
                     ]
                 ]
             ]);

@@ -16,6 +16,7 @@
 namespace App\Actions\User;
 
 use App\Models\User;
+use App\Support\Languages;
 use App\Enums\F2AType;
 use App\Models\Wallet;
 use Illuminate\Support\Str;
@@ -41,7 +42,7 @@ class CreateUserAction
             'password' => '',
             'avatar' => null,
             'cover' => config('user.cover'),
-            'language' => config('user.language'),
+            'language' => Languages::normalizeCode(app()->getLocale()) ?: config('user.language'),
             'gender' => config('user.gender'),
             'verified' => config('user.verified'),
             'tips' => config('user.tips'),

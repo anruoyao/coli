@@ -32,11 +32,11 @@ class TranslatorController extends Controller
         ]);
 
         if (! empty($validated['post_id']) && ! empty($validated['profile_id'])) {
-            return $this->responseError(['message' => 'Choose one translation source.'], 422);
+            return $this->responseError(['message' => __('api/error.translation_source_required')], 422);
         }
 
         if (! config('services.translation.enabled', true)) {
-            return $this->responseError(['message' => 'Translation is disabled.'], 503);
+            return $this->responseError(['message' => __('api/error.translation_disabled')], 503);
         }
 
         try {
@@ -73,16 +73,16 @@ class TranslatorController extends Controller
             $cause = $e->getPrevious();
             $requestException = $e instanceof RequestException ? $e : ($cause instanceof RequestException ? $cause : null);
             if ($requestException instanceof RequestException && $requestException->response->status() === 413) {
-                return $this->responseError(['message' => 'Text exceeds the configured translation token limit.'], 422);
+                return $this->responseError(['message' => __('api/error.translation_text_too_long')], 422);
             }
             if ($e instanceof TranslationServiceBusyException || ($requestException instanceof RequestException && in_array($requestException->response->status(), [429, 503]))) {
                 $status = $e instanceof TranslationServiceBusyException ? 429 : $requestException->response->status();
 
-                return $this->responseError(['message' => 'Translation service is busy. Please try again shortly.'], $status)
+                return $this->responseError(['message' => __('api/error.translation_busy')], $status)
                     ->header('Retry-After', '5');
             }
 
-            return $this->responseError(['message' => 'Translation service is temporarily unavailable.'], 503);
+            return $this->responseError(['message' => __('api/error.translation_unavailable')], 503);
         }
     }
 }

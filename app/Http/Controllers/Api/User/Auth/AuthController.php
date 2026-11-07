@@ -19,6 +19,7 @@ use App\Models\EmailConfirmation;
 use App\Models\User;
 use App\Services\Auth\RegistrationVerificationService;
 use App\Services\Blacklist\BlacklistService;
+use App\Support\Languages;
 use App\Traits\Http\Api\SupportsApiResponses;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -122,7 +123,7 @@ class AuthController extends Controller
                 'password'         => $password,
                 'status'           => UserStatus::ACTIVE,
                 'email_verified_at'=> now(),
-                'language'         => $request->get('language', config('user.language')),
+                'language'         => Languages::normalizeCode($request->get('language')) ?: (Languages::normalizeCode(app()->getLocale()) ?: config('user.language')),
             ]))->execute();
         } catch (QueryException $e) {
             // users 唯一索引兜底：应用层 Rule::unique 与 INSERT 之间存在竞态窗口
@@ -190,7 +191,7 @@ class AuthController extends Controller
         $userData = User::where('email', $email)->first();
 
         try {
-            Mail::to($email)->queue(new ResetPasswordMail([
+            Mail::to($email)->locale(app()->getLocale())->queue(new ResetPasswordMail([
                 'name' => $userData->name,
                 'link' => route('user.auth.reset', ['token' => $emailToken])
             ]));

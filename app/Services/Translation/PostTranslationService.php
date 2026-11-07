@@ -104,7 +104,7 @@ class PostTranslationService
             }
 
             $text = $post->content;
-            abort_if(trim($text) === '' || mb_strlen($text) > (int) config('services.translation.max_text_length', 2000), 422, 'Text exceeds the configured translation length limit or is empty.');
+            abort_if(trim($text) === '' || mb_strlen($text) > (int) config('services.translation.max_text_length', 2000), 422, __('api/error.translation_text_too_long'));
             $detectedSource = app(TranslationLanguageDetector::class)->detect($text);
             $source = config('services.translation.service') === 'libretranslate' ? 'auto' : $detectedSource;
             $translated = app(TranslationService::class)->from($source)->to($target)->translate($text);

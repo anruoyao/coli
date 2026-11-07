@@ -37,7 +37,7 @@ class Forgot extends Component
             'token' => $emailToken
         ]);
 
-        Mail::to($this->emailAddress)->queue(new ResetPasswordMail([
+        Mail::to($this->emailAddress)->locale(app()->getLocale())->queue(new ResetPasswordMail([
             'name' => $userData->name,
             'link' => route('user.auth.reset', ['token' => $emailToken])
         ]));

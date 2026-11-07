@@ -13,7 +13,7 @@ class HandleUserRegistration
      */
     public function handle(UserRegisteredEvent $event): void
     {
-        Mail::to($event->data['email'])->queue(new VerifyEmailMail([
+        Mail::to($event->data['email'])->locale(app()->getLocale())->queue(new VerifyEmailMail([
             'link' => $event->data['link'],
             'title' => __('auth.hi_there')
         ]));

@@ -164,10 +164,10 @@ class CommentController extends Controller
         }
 
         return $this->responseError([
-            'message' => 'Comment with such ID does not exist.',
+            'message' => __('api/error.comment_not_found'),
             'errors' => [
                 'id' => [
-                    'Comment with such ID does not exist.'
+                    __('api/error.comment_not_found')
                 ]
             ]
         ]);

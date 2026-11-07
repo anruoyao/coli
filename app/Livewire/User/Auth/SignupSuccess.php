@@ -26,7 +26,7 @@ class SignupSuccess extends Component
     {
         if($this->confirmationData) {
             if(empty($this->emailResendTimeout) || $this->emailResendTimeout <= now()) {
-                Mail::to($this->confirmationData->email)->queue(new VerifyEmailMail([
+                Mail::to($this->confirmationData->email)->locale(app()->getLocale())->queue(new VerifyEmailMail([
                     'link' => route('user.auth.confirm-signup', ['token' => $this->confirmationData->token]),
                     'title' => __('auth.hi_there')
                 ]));

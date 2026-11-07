@@ -16,6 +16,7 @@
 namespace App\Http\Controllers\User\Auth;
 
 use App\Actions\User\CreateUserAction;
+use App\Support\Languages;
 use App\Events\User\Auth\UserLoggedInEvent;
 use App\Http\Controllers\Controller;
 use App\Models\EmailConfirmation;
@@ -99,7 +100,8 @@ class AuthController extends Controller
 
         $insertData = [
             'email' => $confirmationData->email,
-            'username' => $tempUsername
+            'username' => $tempUsername,
+            'language' => Languages::normalizeCode(app()->getLocale()) ?: config('user.language'),
         ];
 
         try {

@@ -19,10 +19,10 @@ class Languages
     {
         $lang = strtolower(trim((string) $lang));
 
-        return match ($lang) {
-            'zh', 'zh-cn', 'zh-hans' => 'zh',
-            'en', 'en-us', 'en-gb' => 'en',
-            'ja', 'ja-jp' => 'ja',
+        return match (true) {
+            str_starts_with($lang, 'zh') => 'zh',
+            str_starts_with($lang, 'en') => 'en',
+            str_starts_with($lang, 'ja') => 'ja',
             default => $lang,
         };
     }

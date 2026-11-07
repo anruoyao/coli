@@ -457,7 +457,7 @@ class ChatController extends Controller
                         $messageData->delete();
 
                         return $this->responseError([
-                            'message' => '媒体上传失败，请重试'
+                            'message' => __('api/error.media_upload_failed')
                         ], 502);
                     }
 

@@ -479,7 +479,7 @@ class GroupController extends Controller
         }
 
         return $this->responseError([
-            'message' => 'Failed to update group avatar'
+            'message' => __('api/error.group_avatar_update_failed')
         ]);
     }
 

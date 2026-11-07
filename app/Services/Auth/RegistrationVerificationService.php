@@ -15,6 +15,7 @@ namespace App\Services\Auth;
 
 use App\Mail\User\Settings\ConfirmationCodeMail;
 use App\Models\EmailConfirmation;
+use App\Support\Languages;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Throwable;
@@ -74,41 +75,49 @@ class RegistrationVerificationService
      * 生成并发送注册验证码。
      * 同一邮箱只保留最新一条待验证记录；邮件发送失败时回滚记录并抛出异常。
      */
-    public function issue(string $email): void
+    public function issue(string $email, ?string $locale = null): void
     {
-        // 清理该邮箱历史记录（已消费/过期的旧码一并删除，保证「一邮箱一有效码」）
-        EmailConfirmation::where('email', $email)->delete();
-
-        $code = $this->generateUniqueCode();
-        $now = now();
-
-        $confirmation = EmailConfirmation::create([
-            'email' => $email,
-            // token 列为 NOT NULL（网页链接流程使用），这里放占位 UUID
-            'token' => (string) Str::uuid(),
-            'code' => $code,
-            'attempts' => 0,
-            'expires_at' => $now->copy()->addSeconds($this->expiresInSeconds()),
-            'last_sent_at' => $now,
-        ]);
+        $locale = Languages::normalizeCode($locale ?: app()->getLocale());
+        $previousLocale = app()->getLocale();
+        app()->setLocale($locale);
 
         try {
-            // 复用设置页 6 位验证码邮件模板；queue 保证不阻塞 API 响应
-            // （线上走 Horizon，测试环境 sync 驱动立即发送）
-            Mail::to($email)->queue(new ConfirmationCodeMail([
-                'title' => __('auth.hi_there'),
-                'code' => $code,
-                'subTitle' => __('email.code.registration.sub_title', ['app_name' => config('app.name')]),
-                'description' => __('email.code.registration.description', [
-                    'minutes' => (int) config('security.auth.verification_code_expires_minutes', 10),
-                ]),
-                'ignoreEmail' => __('email.code.registration.ignore_email'),
-            ]));
-        } catch (Throwable $e) {
-            // 发信失败：删除待验证记录，避免用户被冷却卡死无法立即重试
-            $confirmation->delete();
+            // 清理该邮箱历史记录（已消费/过期的旧码一并删除，保证「一邮箱一有效码」）
+            EmailConfirmation::where('email', $email)->delete();
 
-            throw $e;
+            $code = $this->generateUniqueCode();
+            $now = now();
+
+            $confirmation = EmailConfirmation::create([
+                'email' => $email,
+                // token 列为 NOT NULL（网页链接流程使用），这里放占位 UUID
+                'token' => (string) Str::uuid(),
+                'code' => $code,
+                'attempts' => 0,
+                'expires_at' => $now->copy()->addSeconds($this->expiresInSeconds()),
+                'last_sent_at' => $now,
+            ]);
+
+            try {
+                // 复用设置页 6 位验证码邮件模板；queue 保证不阻塞 API 响应
+                // （线上走 Horizon，测试环境 sync 驱动立即发送）
+                Mail::to($email)->locale($locale)->queue(new ConfirmationCodeMail([
+                    'title' => __('auth.hi_there'),
+                    'code' => $code,
+                    'subTitle' => __('email.code.registration.sub_title', ['app_name' => config('app.name')]),
+                    'description' => __('email.code.registration.description', [
+                        'minutes' => (int) config('security.auth.verification_code_expires_minutes', 10),
+                    ]),
+                    'ignoreEmail' => __('email.code.registration.ignore_email'),
+                ]));
+            } catch (Throwable $e) {
+                // 发信失败：删除待验证记录，避免用户被冷却卡死无法立即重试
+                $confirmation->delete();
+
+                throw $e;
+            }
+        } finally {
+            app()->setLocale($previousLocale);
         }
     }
 
