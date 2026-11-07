@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Locale;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Cookie;
 
@@ -25,6 +26,43 @@ class Languages
             str_starts_with($lang, 'ja') => 'ja',
             default => $lang,
         };
+    }
+
+    /**
+     * Resolve the request locale for authenticated users and guests alike.
+     *
+     * Guest order: explicit language parameter → selected-locale cookie/session
+     * → Accept-Language header → application fallback.
+     */
+    public static function resolveRequest(Request $request): string
+    {
+        $fallback = self::normalizeCode(config('app.locale')) ?: 'zh';
+
+        if (auth_check()) {
+            return self::normalizeCode(me()->language) ?: $fallback;
+        }
+
+        $languages = new self();
+
+        $candidates = [
+            $request->input('language'),
+            Cookie::get('selected_locale'),
+            session()->get('selected_locale'),
+        ];
+
+        foreach (explode(',', (string) $request->header('Accept-Language', '')) as $part) {
+            $candidates[] = explode(';', $part)[0];
+        }
+
+        foreach ($candidates as $candidate) {
+            $code = self::normalizeCode($candidate);
+
+            if ($code !== '' && $languages->languageExists($code)) {
+                return $code;
+            }
+        }
+
+        return $fallback;
     }
 
     /**

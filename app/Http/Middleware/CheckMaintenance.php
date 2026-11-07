@@ -4,7 +4,9 @@ namespace App\Http\Middleware;
 
 use Closure;
 use App\Settings\MaintenanceSettings;
+use App\Support\Languages;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -30,6 +32,10 @@ class CheckMaintenance
         if (! $settings->enabled) {
             return $next($request);
         }
+
+        // 该中间件先于 UserLanguageMiddleware 执行，需单独解析语言，
+        // 保证维护公告与 API 兜底文案跟随设备语言。
+        App::setLocale(Languages::resolveRequest($request));
 
         // 白名单：后台登录入口（admin/login 位于前端 web.php 内，必须可登录才能进后台关维护）、
         // 文件下载（配合 App 强制更新）、版本检测（App 启动时区分「维护」与「无更新」）、
