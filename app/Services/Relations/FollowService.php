@@ -4,6 +4,7 @@ namespace App\Services\Relations;
 
 use App\Enums\User\FollowStatus;
 use App\Models\{Follow, User};
+use Illuminate\Support\Facades\DB;
 use Exception;
 
 class FollowService
@@ -41,33 +42,38 @@ class FollowService
 
     public function follow(): Follow
     {
-        // 已存在任何状态的关注/请求记录时直接复用，避免产生重复行
-        $existing = Follow::where([
-            'follower_id' => $this->followerData->id,
-            'following_id' => $this->followingData->id
-        ])->first();
-
-        if($existing) {
-            return $existing;
-        }
-
-        if($this->followingData->permitSettings->followers->onlyApproved()) {
-            return Follow::create([
+        return DB::transaction(function (): Follow {
+            $query = Follow::where([
                 'follower_id' => $this->followerData->id,
                 'following_id' => $this->followingData->id,
-                'status' => FollowStatus::REQUESTED
             ]);
-        }
-        else {
-            $this->followingData->increment('followers_count', 1);
-            $this->followerData->increment('following_count', 1);
+            $existing = (clone $query)->lockForUpdate()->first();
 
-            return Follow::create([
+            if ($existing) {
+                return $existing;
+            }
+
+            $status = $this->followingData->permitSettings->followers->onlyApproved()
+                ? FollowStatus::REQUESTED
+                : FollowStatus::FOLLOWING;
+
+            $inserted = DB::table((new Follow())->getTable())->insertOrIgnore([
                 'follower_id' => $this->followerData->id,
                 'following_id' => $this->followingData->id,
-                'status' => FollowStatus::FOLLOWING
+                'status' => $status->value,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
-        }
+
+            $follow = (clone $query)->lockForUpdate()->firstOrFail();
+
+            if ($inserted === 1 && $status === FollowStatus::FOLLOWING) {
+                $this->followingData->increment('followers_count');
+                $this->followerData->increment('following_count');
+            }
+
+            return $follow;
+        }, 3);
     }
 
     public function accept(): void
@@ -108,13 +114,11 @@ class FollowService
             'status' => FollowStatus::FOLLOWING
         ])->delete();
 
-        // 仅删除 FOLLOWING 记录时才回退计数；取消的是关注请求则不涉及计数
         if($deleted) {
             User::where('id', $this->followingData->id)->where('followers_count', '>', 0)->decrement('followers_count');
             User::where('id', $this->followerData->id)->where('following_count', '>', 0)->decrement('following_count');
         }
 
-        // 同时清理挂起中的关注请求（取消请求）
         Follow::where([
             'follower_id' => $this->followerData->id,
             'following_id' => $this->followingData->id,
