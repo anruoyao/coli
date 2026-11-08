@@ -46,7 +46,7 @@ class JobController extends Controller
             // We need to improve this in the future.
             
             if(! $jobData->approval->isApproved()) {
-                if(! me()->isRoot() && ! me()->id == $jobData->user_id) {
+                if (! me()->isRoot() && (int) me()->id !== (int) $jobData->user_id) {
                     return $this->responseResourceNotFoundError('Job', $jobHashId);
                 }
             }
