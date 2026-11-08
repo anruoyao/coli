@@ -4,6 +4,7 @@ namespace App\Services\Payment\Handlers;
 
 use Throwable;
 use App\Models\Payment;
+use Illuminate\Support\Facades\DB;
 use App\Enums\Payment\PaymentStatus;
 use App\Enums\Wallet\TransactionType;
 use App\Services\Wallet\WalletService;
@@ -14,85 +15,90 @@ use App\Notifications\System\Deposit\DepositSuccessNotification;
 
 class DepositPaymentHandler implements PaymentHandlerInterface
 {
-	private Payment $paymentData;
+private Payment $paymentData;
 
-	public function __construct(Payment $paymentData)
-	{
-		$this->paymentData = $paymentData;
-	}
+public function __construct(Payment $paymentData)
+{
+$this->paymentData = $paymentData;
+}
 
-	public function handleSuccess(): void
-	{
-		try {
-			if ($this->paymentData->status->isPending()) {
-				$walletService = app(WalletService::class);
-				$walletService
-					->setUserData($this->paymentData->user)
-					->addWalletBalance($this->paymentData->amount)
-					->addWalletTransaction([
-						'amount' => $this->paymentData->amount,
-						'transaction_type' => TransactionType::DEPOSIT,
-						'status' => TransactionStatus::COMPLETED,
-						'direction' => TransactionDirection::INCOMING,
-						'currency' => $this->paymentData->currency,
-						'metadata' => [
-							'reference_id' => $this->paymentData->reference_id,
-							'source' => [
-								'name' => $this->paymentData->provider_name
-							]
-						]
-					]);
-				
-				$this->paymentData->user->notify(new DepositSuccessNotification());
-	
-				$this->paymentData->update([
-					'status' => PaymentStatus::COMPLETED
-				]);
-			}
-		} catch (Throwable $th) {
-			payment_log($th->getMessage());
-		}
-	}
+public function handleSuccess(): void
+{
+try {
+DB::transaction(function (): void {
+$payment = Payment::whereKey($this->paymentData->getKey())->lockForUpdate()->first();
 
-	public function handleFailure(): void
-	{
-		$this->paymentData->status = PaymentStatus::FAILED;
-		$this->paymentData->save();
+if (! $payment || ! $payment->status->isPending()) {
+return;
+}
 
-		payment_log('Payment with id ' . $this->paymentData->id . ' failed');
-	}
+$walletService = app(WalletService::class);
+$walletService
+->setUserData($payment->user)
+->addWalletBalance($payment->amount)
+->addWalletTransaction([
+'amount' => $payment->amount,
+                        'transaction_type' => TransactionType::DEPOSIT,
+                        'status' => TransactionStatus::COMPLETED,
+                        'direction' => TransactionDirection::INCOMING,
+'currency' => $payment->currency,
+'metadata' => [
+'reference_id' => $payment->reference_id,
+'source' => [
+'name' => $payment->provider_name
+]
+]
+]);
 
-	public function handleRefund(): void
-	{
-		try {
-			if ($this->paymentData->status->isCompleted()) {	
-				$walletService = app(WalletService::class);
-				$walletService->setUserData($this->paymentData->user)
-					->subtractWalletBalance($this->paymentData->amount)
-					->addWalletTransaction([
-						'amount' => $this->paymentData->amount,
-						'transaction_type' => TransactionType::REFUND,
-						'status' => TransactionStatus::COMPLETED,
-						'direction' => TransactionDirection::OUTGOING,
-						'currency' => $this->paymentData->currency,
-						'metadata' => [
-							'reference_id' => $this->paymentData->reference_id,
-							'source' => ['name' => $this->paymentData->provider_name]
-						]
-					]);
-			}
+$payment->update([
+'status' => PaymentStatus::COMPLETED
+]);
+DB::afterCommit(fn () => $payment->user->notify(new DepositSuccessNotification()));
+});
+} catch (Throwable $th) {
+payment_log($th->getMessage());
+}
+}
 
-			// TODO: Notify user about refund
-		} catch (Throwable $th) {
-			payment_log($th->getMessage());
-		}
-	}
+public function handleFailure(): void
+{
+$this->paymentData->status = PaymentStatus::FAILED;
+$this->paymentData->save();
 
-	public function handleExpiration(): void
-	{
-		$this->paymentData->status = PaymentStatus::EXPIRED;
-		$this->paymentData->save();
+payment_log('Payment with id ' . $this->paymentData->id . ' failed');
+}
 
-		payment_log('Payment with id ' . $this->paymentData->id . ' expired');
-	}
+public function handleRefund(): void
+{
+try {
+if ($this->paymentData->status->isCompleted()) {
+$walletService = app(WalletService::class);
+$walletService->setUserData($this->paymentData->user)
+->subtractWalletBalance($this->paymentData->amount)
+->addWalletTransaction([
+'amount' => $this->paymentData->amount,
+'transaction_type' => TransactionType::REFUND,
+'status' => TransactionStatus::COMPLETED,
+'direction' => TransactionDirection::OUTGOING,
+'currency' => $this->paymentData->currency,
+'metadata' => [
+'reference_id' => $this->paymentData->reference_id,
+'source' => ['name' => $this->paymentData->provider_name]
+]
+]);
+}
+
+// TODO: Notify user about refund
+} catch (Throwable $th) {
+payment_log($th->getMessage());
+}
+}
+
+public function handleExpiration(): void
+{
+$this->paymentData->status = PaymentStatus::EXPIRED;
+$this->paymentData->save();
+
+payment_log('Payment with id ' . $this->paymentData->id . ' expired');
+}
 }
