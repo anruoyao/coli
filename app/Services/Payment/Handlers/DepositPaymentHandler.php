@@ -71,24 +71,30 @@ payment_log('Payment with id ' . $this->paymentData->id . ' failed');
 public function handleRefund(): void
 {
 try {
-if ($this->paymentData->status->isCompleted()) {
+DB::transaction(function (): void {
+$payment = Payment::whereKey($this->paymentData->getKey())->lockForUpdate()->first();
+
+if (! $payment || ! $payment->status->isCompleted()) {
+return;
+}
+
 $walletService = app(WalletService::class);
-$walletService->setUserData($this->paymentData->user)
-->subtractWalletBalance($this->paymentData->amount)
+$walletService->setUserData($payment->user)
+->subtractWalletBalance($payment->amount)
 ->addWalletTransaction([
-'amount' => $this->paymentData->amount,
+'amount' => $payment->amount,
 'transaction_type' => TransactionType::REFUND,
 'status' => TransactionStatus::COMPLETED,
 'direction' => TransactionDirection::OUTGOING,
-'currency' => $this->paymentData->currency,
+'currency' => $payment->currency,
 'metadata' => [
-'reference_id' => $this->paymentData->reference_id,
-'source' => ['name' => $this->paymentData->provider_name]
+'reference_id' => $payment->reference_id,
+'source' => ['name' => $payment->provider_name]
 ]
 ]);
-}
 
-// TODO: Notify user about refund
+$payment->update(['status' => PaymentStatus::REFUNDED]);
+});
 } catch (Throwable $th) {
 payment_log($th->getMessage());
 }
