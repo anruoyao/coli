@@ -22,7 +22,7 @@
 			@if($postData->content)
 				<div class="mb-4">
 					<p class="text-lab-sc text-par-m line-clamp-6 leading-snug">
-						{!! nl2br($postData->content) !!}
+						{!! nl2br(e($postData->content)) !!}
 					</p>
 				</div>
 			@endif
