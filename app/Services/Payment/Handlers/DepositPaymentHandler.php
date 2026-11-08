@@ -62,10 +62,18 @@ payment_log($th->getMessage());
 
 public function handleFailure(): void
 {
-$this->paymentData->status = PaymentStatus::FAILED;
-$this->paymentData->save();
+try {
+DB::transaction(function (): void {
+$payment = Payment::whereKey($this->paymentData->getKey())->lockForUpdate()->first();
 
-payment_log('Payment with id ' . $this->paymentData->id . ' failed');
+if ($payment && $payment->status->isPending()) {
+$payment->update(['status' => PaymentStatus::FAILED]);
+payment_log('Payment with id ' . $payment->id . ' failed');
+}
+});
+} catch (Throwable $th) {
+payment_log($th->getMessage());
+}
 }
 
 public function handleRefund(): void

@@ -26,13 +26,10 @@ class Payment extends Model
 
     public function getProviderNameAttribute(): string
     {
-        $providers = config('payment.providers');
+        $providerKey = $this->payment_method === 'yookassa' ? 'yoo_kassa' : $this->payment_method;
+        $providerName = config("payment.providers.{$providerKey}.name");
 
-        if($providers[$this->payment_method]) {
-            return $providers[$this->payment_method]['name'];
-        }
-
-        return 'Unknown';
+        return is_string($providerName) && $providerName !== '' ? $providerName : 'Unknown';
     }
 
     public function getFormattedAmountAttribute(): string
