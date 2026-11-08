@@ -18,7 +18,7 @@
 
 			@if($groupData->description)
 				<p class="text-lab-sc text-par-m mt-2 leading-snug">
-					{!! nl2br($groupData->description) !!}
+					{!! nl2br(e($groupData->description)) !!}
 				</p>
 			@endif
 		</div>

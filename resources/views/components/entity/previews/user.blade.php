@@ -25,7 +25,7 @@
 
 				@if($userData->bio)
 					<p class="text-lab-sc text-par-m mt-2 leading-snug">
-						{!! nl2br($userData->bio) !!}
+						{!! nl2br(e($userData->bio)) !!}
 					</p>
 				@endif
 			</div>
