@@ -5,8 +5,9 @@ namespace App\Services\Wallet;
 use App\Enums\Wallet\CashoutStatus;
 use App\Models\Cashout;
 use App\Models\User;
-use App\Services\Wallet\WalletService;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use DomainException;
 
 class CashoutService
 {
@@ -16,11 +17,9 @@ class CashoutService
     {
         $this->userData = ($user instanceof User) ? $user : User::activeById($user)->first();
 
-        if (!$this->userData) {
+        if (! $this->userData) {
             throw new InvalidArgumentException('User not found or is not active.');
         }
-
-        return $this;
     }
 
     public function isPendingRequestExists(): bool
@@ -28,13 +27,35 @@ class CashoutService
         return $this->userData->cashouts()->pending()->exists();
     }
 
-    public function createCashout(array $data): Cashout
+    private function createCashout(array $data): Cashout
     {
-        $data['request_code'] = random_int($this->userData->id,  $this->userData->id + 999999);
+        $data['request_code'] = random_int($this->userData->id, $this->userData->id + 999999);
         $data['commission_percentage'] = config('wallet.commission.withdraw');
         $data['to_pay'] = calculate_commission($data['amount'], $data['commission_percentage']);
 
         return $this->userData->cashouts()->create($data);
+    }
+
+    public function requestCashout(array $data): Cashout
+    {
+        return DB::transaction(function () use ($data): Cashout {
+            $wallet = $this->userData->wallet()->lockForUpdate()->firstOrFail();
+
+            if ($this->userData->cashouts()->pending()->exists()) {
+                throw new DomainException(__('business/wallet.validation.amount.pending_request'));
+            }
+
+            $amount = (float) $data['amount'];
+
+            if (! $wallet->balance->canAfford($amount)) {
+                throw new DomainException(__('business/wallet.validation.amount.insufficient_balance'));
+            }
+
+            $cashout = $this->createCashout($data);
+            $wallet->update(['balance' => $wallet->balance->subtract($amount)]);
+
+            return $cashout;
+        });
     }
 
     public function returnAmountToWallet(float $amount): void

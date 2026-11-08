@@ -56,19 +56,15 @@ class Request extends Component
         ]);
 
         $cashoutService = new CashoutService(me());
-        $walletService = (new WalletService())->setUserData(me());
 
-        if (! me()->wallet->balance->canAfford($this->formData['amount'])) {
-            $this->addError('formData.amount', __('business/wallet.validation.amount.insufficient_balance'));
-        }
-        else if ($cashoutService->isPendingRequestExists()) {
-            $this->addError('formData.amount', __('business/wallet.validation.amount.pending_request'));
-        }
-        else {
-            $cashoutService->createCashout($this->formData);
-            $walletService->subtractWalletBalance($this->formData['amount']);
+        try {
+            $cashoutService->requestCashout($this->formData);
+        } catch (\DomainException $exception) {
+            $this->addError('formData.amount', $exception->getMessage());
 
-            return redirect()->route('business.wallet.index')->with('flashMessage', (new Flash(content: __('business/flash.wallet.request_success')))->get());
+            return;
         }
+
+        return redirect()->route('business.wallet.index')->with('flashMessage', (new Flash(content: __('business/flash.wallet.request_success')))->get());
     }
 }
