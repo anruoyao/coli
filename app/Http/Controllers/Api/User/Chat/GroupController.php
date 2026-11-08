@@ -413,6 +413,8 @@ class GroupController extends Controller
             return $this->responseResourceNotFoundError('Chat', $request->chat_id);
         }
 
+        $this->authorize('update', $chatData->group);
+
         $groupData = $chatData->group;
 
         $groupData->update([
@@ -448,6 +450,8 @@ class GroupController extends Controller
         if(! $chatData) {
             return $this->responseResourceNotFoundError('Chat', $request->chat_id);
         }
+
+        $this->authorize('update', $chatData->group);
 
         $groupData = $chatData->group;
 
