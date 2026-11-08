@@ -80,6 +80,8 @@ export default defineConfig({
         }
     },
     build: {
+        // Dark theme CSS files are built separately into the same directory.
+        emptyOutDir: false,
         rollupOptions: {
             onwarn: function(warning, warn) {
                 if (VITE_LOG_BUILD_WARNINGS) {

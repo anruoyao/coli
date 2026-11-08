@@ -183,7 +183,7 @@ npm run build
 以下以宝塔环境的运行用户 `www` 为例，其他环境替换为实际部署用户。构建前检查输出目录权限：Vite 会删除旧产物，需要对输出目录及其子目录拥有写入和执行权限。
 
 ```bash
-cd /www/wwwroot/misskey.site
+cd /www/wwwroot/mariawk.cn
 sudo -u www git fetch origin main
 sudo -u www git pull --ff-only origin main
 
@@ -848,6 +848,117 @@ sudo /etc/init.d/php-fpm-83 reload
 ```
 
 ## 十七、故障排查
+
+### 宝塔（BT Panel）部署实战踩坑记录
+
+以下问题均在宝塔 + Debian 12 + PHP 8.3（快速安装）实际部署中遇到过，按踩坑顺序排列。
+
+**1. `disable_functions` 有两处，只改 `php.ini` 不够**
+
+宝塔把禁用函数同时写在 FPM 与 CLI 两份配置里：
+
+- `/www/server/php/83/etc/php.ini`（FPM 用）
+- `/www/server/php/83/etc/php-cli.ini`（CLI 用，composer/artisan/Horizon/Reverb 走这份）
+
+默认两份都禁了 `passthru,exec,system,putenv,shell_exec,popen,proc_open,symlink,pcntl_*` 全家。只改 `php.ini` 时 composer 直接报：
+
+```
+Fatal error: Uncaught Error: Call to undefined function Composer\XdebugHandler\putenv()
+```
+
+解决：两份文件都放开 Laravel/Horizon 所需函数（`proc_open`、`proc_get_status`、`exec`、`shell_exec`、`passthru`、`putenv`、`symlink`、`popen`、`pcntl_*`），保留 `system/chroot/chgrp/chown/dl` 等高危函数禁用，改完 `/etc/init.d/php-fpm-83 reload`。
+
+**2. 宝塔自带 composer 版本过旧**
+
+Laravel 13 锁文件要求 `composer-runtime-api ^2.2`，宝塔旧版 composer（runtime-api 2.0）报 `Your lock file does not contain a compatible set of packages. Please run composer update.`
+
+解决：不要 `composer update`（会升级全部依赖），而是升级 composer 本体：
+
+```bash
+curl -sS https://getcomposer.org/download/latest-stable/composer.phar -o /usr/local/bin/composer
+chmod +x /usr/local/bin/composer
+# 之后统一用 /usr/local/bin/composer
+```
+
+**3. `key:generate` 会把 APP_KEY 写重（宝塔环境特有）**
+
+`php colibri key:generate` 成功提示后，`.env` 里的 APP_KEY 实际是两段 base64 拼接（长度 102 而非 51）。症状极具迷惑性：迁移能跑 100+ 张表，直到某个 spatie/laravel-settings 迁移调用 `addEncrypted` 才报 `Unsupported cipher or incorrect key length`。
+
+解决：不用 key:generate，直接生成并写入：
+
+```bash
+KEY=$(/www/server/php/83/bin/php -r 'echo "base64:".base64_encode(random_bytes(32));')
+sed -i "s|^APP_KEY=.*|APP_KEY=${KEY}|" .env
+# 验证：长度应为 51
+awk -F= '/^APP_KEY=/{print length($2)}' .env
+```
+
+**4. 宝塔快速安装的 PHP 默认缺扩展**
+
+快速安装的 PHP 8.3 默认只有极简扩展集，`redis`、`fileinfo`、`exif` 都不在（扩展目录里只有 opcache.so/zip.so）。面板「PHP 8.3 → 安装扩展」补装 `redis、fileinfo、exif、opcache`；漏装时 composer 平台检查或 Laravel 运行时报 undefined function。
+
+**5. `bootstrap/cache` 不在 git 里**
+
+`composer install` 的 post-autoload-dump（package:discover）报 `The bootstrap/cache directory must be present and writable`。新环境先建：
+
+```bash
+mkdir -p bootstrap/cache storage/framework/{cache/data,sessions,views} storage/logs
+chown -R www:www bootstrap storage && chmod -R ug+rwx storage bootstrap/cache
+```
+
+**6. 宝塔 `.user.ini`（chattr +i）挡住 git clone**
+
+站点目录里的 `.user.ini` 被锁不可删，`git clone` 到该目录报 `destination path already exists and is not an empty directory`。解决：clone 到临时目录再整体移入（注意 `dotglob` 才能移动隐藏文件）：
+
+```bash
+cd /www/wwwroot && git clone --depth 1 <repo> coliclone
+bash -c 'shopt -s dotglob; mv coliclone/* mariawk.cn/' && rmdir coliclone
+```
+
+**7. 调度任务进程雪崩（小内存机器必看）**
+
+`/etc/cron.d/` 里每分钟一次的 `colibri schedule:run`，在服务器慢（swap 风暴、依赖未装完、FPM 未就绪）时会越积越多：一个进程没跑完下一个又启动，实测 2G 内存机器堆到 44+ 个 PHP 进程、load 92、整机 30 秒命令全部超时的死循环。
+
+解决：cron 行加 `flock -n` 保证同一时刻最多一个实例：
+
+```
+* * * * * www /usr/bin/flock -n /tmp/colibri-schedule.lock /www/server/php/83/bin/php /www/wwwroot/<domain>/colibri schedule:run >> /dev/null 2>&1
+```
+
+另外：Horizon/Reverb 的 systemd 单元 `enable` 后开机会自启，若此时 vendor 未安装/数据库未迁移，重启服务器即复现雪崩。**部署全部完成后再 enable**。
+
+**8. swap 风暴时的救援姿势**
+
+雪崩后所有命令都慢，"kill + sleep + 验证" 串联长命令会在 30 秒超时时半途而废——看起来杀了，其实 killall 根本没执行。务必用**单条极简命令**逐个发：
+
+```bash
+killall -9 php          # 先杀干净（会连 FPM 一起杀）
+/etc/init.d/php-fpm-83 start
+free -m; uptime         # 确认内存释放、load 回落
+```
+
+**9. 宝塔 Nginx 站点配置的 Laravel 化改造**
+
+宝塔生成的 vhost（`/www/server/panel/vhost/nginx/<domain>.conf`）需要增量修改，且保留 SSL/CERT-APPLY 段：
+
+- `root` 改指 `public` 目录
+- 补 `location / { try_files $uri $uri/ /index.php?$query_string; }`
+- `/app` 代理 Reverb 用 `location ^~ /app`（`^~` 防止被后面的 `js|css` 静态资源正则截胡）
+- `client_max_body_size 4G`（与 PHP `upload_max_filesize/post_max_size = 4096M` 对齐，宝塔默认 2M/8M）
+- 补 `location ~* ^/storage/.*\.(php|phtml)$ { deny all; }`
+- 改完必须 `nginx -t` 通过再 reload
+
+**10. 小内存机器的进程内存调优**
+
+每个 `horizon:work` 约 80MB、每个 php-fpm worker 约 80MB，默认值在低配机器上必爆：
+
+| 配置 | 默认 | 2G 机器建议 | 4G 机器建议 |
+| --- | --- | --- | --- |
+| `config/horizon.php` production `maxProcesses` | 10 | 3 | 5 |
+| php-fpm `pm.max_children` | 30 | 8 | 12~15 |
+| `memory_limit` / `upload_max_filesize` | 128M/2M | 512M/4096M | 512M/4096M |
+
+改 `config/horizon.php` 后需重建缓存并滚动重启 worker：`php colibri config:cache && php colibri horizon:terminate`（systemd 会自动拉起新配置的进程）。
 
 ### 后端问题
 

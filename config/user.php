@@ -98,13 +98,13 @@ return [
         ]
     ],
     'avatar_config' => [
-        'crop_size' => 256,
-        'compress_rate' => 20
+        'crop_size' => 400,
+        'compress_rate' => 90
     ],
     'cover_config' => [
         'width' => 1500,
         'height' => 500,
-        'compress_rate' => 20
+        'compress_rate' => 85
     ],
     'auto_follow_list' => env('AUTO_FOLLOW_LIST', ''),
     'onboarding_steps' => [

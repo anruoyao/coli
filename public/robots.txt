@@ -1,4 +1,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://misskey.site/sitemap.xml
+Sitemap: https://mariawk.cn/sitemap.xml

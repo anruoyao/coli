@@ -79,7 +79,7 @@
 				linkedAccounts: linkedAccounts,
                 state: state,
                 ME: {
-                    name: userData.value.name
+                    name: userData.value?.name ?? ''
                 },
 				switchAccount: async (accountData) => {
 					if (userData.value.id !== accountData.id && config('features.switch_account.enabled')) {

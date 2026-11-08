@@ -103,7 +103,7 @@ check('营销邮件模板渲染', function () {
         'Healthcheck Subject',
         '预检标题',
         "预检正文第一行\n第二行",
-        'https://misskey.site/',
+        'https://mariawk.cn/',
         'zh',
     );
 

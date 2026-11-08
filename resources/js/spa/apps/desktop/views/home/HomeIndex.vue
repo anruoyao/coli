@@ -2,7 +2,7 @@
     <SidedContentLayout>
         <template v-slot:content>
             <TimelineContainer>
-                <HomeHeader></HomeHeader>
+                <HomeHeader v-if="! authStore.isGuest"></HomeHeader>
 
                 <!-- 登录用户：关注 / 推荐切换 -->
                 <template v-if="! authStore.isGuest">

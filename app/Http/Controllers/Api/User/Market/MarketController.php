@@ -52,7 +52,7 @@ class MarketController extends Controller
             // We need to improve this in the future.
             
             if(! $productData->approval->isApproved()) {
-                if(! me()->isRoot() && ! me()->id == $productData->user_id) {
+                if(! me()->isRoot() && me()->id !== $productData->user_id) {
                     return $this->responseResourceNotFoundError('Product', $productId);
                 }
             }

@@ -83,7 +83,7 @@ return [
         'content' => '在此输入通知正文…',
         'landing_url' => 'https://example.com/event',
         'image_url' => 'https://example.com/banner.jpg',
-        'post_ids' => "123\nhttps://misskey.site/publication/AbCdEf",
+        'post_ids' => "123\nhttps://mariawk.cn/publication/AbCdEf",
         'target_user_ids' => 'username1'."\n".'username2'."\n".'1234',
     ],
     'validation' => [

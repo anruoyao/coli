@@ -11,7 +11,8 @@
         "build:vite:app": "vite build",
         "build:vite": "npm-run-all build:vite:app build:dark",
         "build": "npm run build:vite",
-        "build:dark": "npm-run-all build:dark-desktop build:dark-mobile build:dark-auth build:dark-business build:dark-admin"
+        "build:dark": "npm-run-all build:dark-desktop build:dark-mobile build:dark-auth build:dark-business build:dark-admin build:dark:verify",
+        "build:dark:verify": "node -e \"const fs=require('node:fs'); const files=['desktop-main-dark.css','mobile-main-dark.css','desktop-auth-dark.css','business-main-dark.css','admin-main-dark.css']; const missing=files.filter(file=>!fs.existsSync('public/build/assets/'+file)||fs.statSync('public/build/assets/'+file).size===0); if(missing.length){console.error('Missing dark theme CSS: '+missing.join(', ')); process.exit(1)}\""
     },
     "dependencies": {
         "@fontsource/outfit": "^5.2.8",

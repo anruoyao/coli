@@ -4,15 +4,15 @@
 
 ## 1. 环境
 
-- 服务器：SSH `root@45.192.102.217:22`（MCP `ssh-mcp-server`，连接名 `default`，免密）
-- 站点目录：`/www/wwwroot/misskey.site`（域名 misskey.site，git 仓库 anruoyao/coli）
+- 服务器：SSH `root@103.116.245.86:22`（MCP `ssh-mcp-server`，连接名 `default`，免密）
+- 站点目录：`/www/wwwroot/mariawk.cn`（域名 mariawk.cn，git 仓库 anruoyao/coli）
 - MySQL 凭据：读 `.env` 的 `DB_USERNAME` / `DB_PASSWORD`（root 本地无密码不可用，用项目库账号）
-- **测试数据库**：MySQL 中独立库 `testing`（phpunit.xml 的 `DB_DATABASE=testing`），与生产库 `misskey_site` 完全隔离
+- **测试数据库**：MySQL 中独立库 `testing`（phpunit.xml 的 `DB_DATABASE=testing`），与生产库 `mariawk_cn` 完全隔离
 
 ## 2. 跑测试
 
 ```bash
-cd /www/wwwroot/misskey.site
+cd /www/wwwroot/mariawk.cn
 # 必须用 www 用户（与项目文件属主一致，避免权限问题）
 sudo -u www vendor/bin/phpunit tests/Unit/Feedback tests/Feature/Feedback --colors=never
 # 产出：OK (23 tests, 92 assertions)
@@ -28,7 +28,7 @@ sudo -u www vendor/bin/phpunit tests/Unit/Feedback/ReportRateLimiterTest.php --f
 `DatabaseTransactions` 不建表，**要求 testing 库结构已存在**。首次或结构变更后重建：
 
 ```bash
-cd /www/wwwroot/misskey.site
+cd /www/wwwroot/mariawk.cn
 # env 必须放在 sudo 内部！`env X=x sudo -u www php ...` 中的 env 变量会被 sudo 的 env_reset 丢弃，
 # 导致 artisan 读 .env 连上生产库（2026-10-06 曾因此把 migrate:fresh 跑到生产库，靠 binlog 才恢复）。
 # 前提：bootstrap/cache/config.php（config 缓存）不存在，否则缓存固化了 .env 的 DB_DATABASE，环境变量无效。
@@ -87,5 +87,5 @@ QUEUE_CONNECTION=sync  DB_DATABASE=testing  PULSE/TELESCOPE=false
 ## 7. 服务器 MCP 操作注意
 
 - 通过 `DeferExecuteTool` 调 `mcp_ssh-mcp-server_execute-command`：参数结构 `{toolName, params:{cmdString, timeout}}`，**timeout 必须放 params 内**（放顶层会报 additional property not allowed）。
-- 部署/同步流程：用户明确授权后，代理可创建提交并推送 GitHub。部署前先检查服务器工作区；干净时执行 `sudo -u www git pull --ff-only origin main`，再按改动执行迁移、重建必要缓存并 reload。若有服务器本地改动，停止检查，不要强制覆盖。前端源码改动还需构建资源（`npm run build`）。
-- 纯 PHP 文件改动轻量部署：快进拉取后执行 `php artisan view:clear && php artisan view:cache`，再运行 `/etc/init.d/php-fpm-83 reload`（清 OPcache）。
+- 部署/同步流程：用户明确授权后，可由代理创建提交并推送 GitHub。部署前先检查服务器工作区；干净时执行 `sudo -u www git pull --ff-only origin main`，然后按改动执行迁移、重建必要缓存并 reload。若服务器有本地改动，先停止并检查，不要用 `git reset --hard` 覆盖。前端源码改动还需构建资源（`npm run build`）。
+- 纯 PHP 文件改动轻量部署：`git reset` + `/etc/init.d/php-fpm-83 reload`（清 OPcache）。
