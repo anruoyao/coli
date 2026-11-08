@@ -78,20 +78,17 @@ class FollowService
 
     public function accept(): void
     {
-        $follow = Follow::where([
-            'follower_id' => $this->followerData->id,
-            'following_id' => $this->followingData->id,
-            'status' => FollowStatus::REQUESTED
-        ])->first();
+        DB::transaction(function (): void {
+            $updated = Follow::where('follower_id', $this->followerData->id)
+                ->where('following_id', $this->followingData->id)
+                ->where('status', FollowStatus::REQUESTED->value)
+                ->update(['status' => FollowStatus::FOLLOWING->value]);
 
-        if($follow) {
-            $follow->update([
-                'status' => FollowStatus::FOLLOWING
-            ]);
-
-            $this->followingData->increment('followers_count', 1);
-            $this->followerData->increment('following_count', 1);
-        }
+            if ($updated === 1) {
+                $this->followingData->increment('followers_count');
+                $this->followerData->increment('following_count');
+            }
+        }, 3);
     }
 
     /**
