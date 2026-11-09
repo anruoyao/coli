@@ -235,8 +235,8 @@ class ProfilePinTest extends TestCase
         $this->assertFalse((bool) $posts[0]->refresh()->profile_pinned);
         $this->assertNull($posts[0]->profile_pinned_at);
         $this->pin($owner, $posts[3])->assertOk();
-        $this->profilePosts($owner, $owner)->assertOk()
-            ->assertJsonMissing(['id' => $posts[0]->id, 'profile_pinned' => true]);
+        $response = $this->profilePosts($owner, $owner)->assertOk();
+        $this->assertNotContains($posts[0]->id, $this->ids($response->json('pinned')));
     }
 
     public function test_deleting_a_pinned_post_removes_it_from_the_profile(): void

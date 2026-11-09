@@ -10,17 +10,18 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
+use Tests\Feature\Marketing\Concerns\CreatesUsers;
 use Tests\TestCase;
 
 class GroupUpdateAuthorizationTest extends TestCase
 {
-    use DatabaseTransactions;
+    use DatabaseTransactions, CreatesUsers;
 
     public function test_non_owner_cannot_update_group_data_or_avatar(): void
     {
         config(['security.app_key.enabled' => false]);
-        $owner = User::findOrFail(3);
-        $attacker = User::findOrFail(4);
+        $owner = $this->makeUser(['status' => UserStatus::ACTIVE]);
+        $attacker = $this->makeUser(['status' => UserStatus::ACTIVE]);
         $this->assertSame(UserStatus::ACTIVE, $attacker->status);
 
         $chat = Chat::create([
