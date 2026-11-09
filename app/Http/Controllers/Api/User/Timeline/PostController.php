@@ -280,7 +280,7 @@ class PostController extends Controller
     public function previewLink(Request $request)
     {
         $request->validate([
-            'url' => ['required', 'string', 'url']
+            'url' => ['required', 'string', 'url', 'regex:/^https?:\\/\\//i']
         ]);
 
         $this->fetchOrInitializeDraftPost();

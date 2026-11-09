@@ -4,7 +4,7 @@ namespace App\Services\Filesystem\Base64Image;
 
 use Exception;
 use App\Constants\Filesystem;
-use Illuminate\Support\Facades\Http;
+use App\Services\Text\SafeUrlFetcher;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Encoders\WebpEncoder;
@@ -15,7 +15,6 @@ class Base64ImageService
     private $manager;
     private $scaleWidth;
     private $blurRadius;
-    private $timeout = 60;
     private $compressRate = 1;
 
     public function __construct()
@@ -35,20 +34,19 @@ class Base64ImageService
     public function loadFromUrl(string $imageUrl)
     {
         try {
-            $response = Http::timeout($this->timeout)->withOptions([
-                'verify' => false,
-                'allow_redirects' => true
-            ])->get($imageUrl);
-    
-            if($response->successful()) {
-                $this->image = $this->manager->read($response->body());
-    
-                return $this;
+            $response = app(SafeUrlFetcher::class)->fetch($imageUrl);
+
+            if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
+                throw new Exception("Image URL returned HTTP {$response->getStatusCode()}.");
             }
+
+            $this->image = $this->manager->read((string) $response->getBody());
+
+            return $this;
         }
 
         catch (Exception $e) {
-            throw new Exception("Failed to get image from URL. {$e->getMessage()}");
+            throw new Exception("Failed to get image from URL. {$e->getMessage()}", 0, $e);
         }
     }
 

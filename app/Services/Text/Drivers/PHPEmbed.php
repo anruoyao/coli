@@ -5,7 +5,7 @@ namespace App\Services\Text\Drivers;
 use Exception;
 use Embed\Embed;
 use Embed\Http\Crawler;
-use Embed\Http\CurlClient;
+use App\Services\Text\SafeUrlFetcher;
 use App\Services\Filesystem\Base64Image\Base64ImageService;
 use App\Services\Text\Drivers\Interfaces\LinkPreviewerInterface;
 
@@ -16,20 +16,7 @@ class PHPEmbed implements LinkPreviewerInterface
 
 	public function __construct()
 	{
-		$client = new CurlClient();
-		$client->setSettings([
-			'cookies_path' => "",
-			'ignored_errors' => [18],
-			'max_redirs' => 3,
-			'connect_timeout' => 2,
-			'timeout' => 10,
-			'ssl_verify_host' => 2,
-			'ssl_verify_peer' => 1,
-			'follow_location' => true,
-			'user_agent' => 'Mozilla'
-		]);
-
-		$this->phpEmbed = new Embed(new Crawler($client));
+		$this->phpEmbed = new Embed(new Crawler(app(SafeUrlFetcher::class)));
 	}
 
 	public function preview(string $url): array
