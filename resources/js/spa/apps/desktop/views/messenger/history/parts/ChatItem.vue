@@ -7,7 +7,7 @@
 		<div class="flex-1 overflow-hidden pr-4" v-bind:class="[isSelectedChat ? 'border-b-transparent' : '']">
 			<div class="flex justify-between items-center gap-4">
 				<strong class="font-semibold text-par-m whitespace-nowrap truncate text-lab-pr2">
-					<span v-html="chatData.chat_info.name"></span>
+					{{ chatData.chat_info.name }}
 					<VerificationBadge v-if="chatData.chat_info.verified" size="xs"></VerificationBadge>
 				</strong>
 			</div>
@@ -29,7 +29,7 @@
 						</template>
 						<template v-else-if="chatData.last_message">
 							<span class="flex items-end gap-2.5 overflow-hidden max-w-full">
-								<span class="line-clamp-2" v-html="chatData.last_message"></span>
+								<span class="line-clamp-2">{{ chatData.last_message }}</span>
 								<span class="text-par-s text-lab-sc whitespace-nowrap">
 									&#183; {{ chatData.last_activity.time_ago }}
 								</span>

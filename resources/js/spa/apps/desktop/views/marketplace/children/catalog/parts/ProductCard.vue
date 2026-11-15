@@ -5,7 +5,8 @@
         </div>
         <div class="flex-1 overflow-hidden">
             <div class="mb-1 max-w-11/12">
-                <h4 class="text-par-s line-clamp-2 text-lab-pr" v-html="productData.title">
+                <h4 class="text-par-s line-clamp-2 text-lab-pr">
+                    {{ productData.title }}
                 </h4>
             </div>
             <div class="block">

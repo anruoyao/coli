@@ -59,6 +59,7 @@ return Application::configure(basePath: dirname(__DIR__))->withRouting(
                 'sided.layout' => App\Http\Middleware\SidedLayoutMiddleware::class,
                 'api.key' => App\Http\Middleware\VerifyApiKey::class,
                 'admin' => App\Http\Middleware\AdminRoleMiddleware::class,
+                'admin.api' => App\Http\Middleware\AdminApiRoleMiddleware::class,
                 'log.request' => App\Http\Middleware\LogRequestMiddleware::class,
                 'abuse.guard' => App\Http\Middleware\AbuseGuardMiddleware::class,
                 'global.ip.gate' => App\Http\Middleware\GlobalIpGateMiddleware::class,

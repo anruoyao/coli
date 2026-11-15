@@ -1,6 +1,8 @@
 <template>
 	<div class="block">
-		<p class="text-par-m text-lab-pr2" v-bind:class="clamped ? 'line-clamp-2' : ''" v-html="(replyTo ? $t('labels.reply_to_prefix', {name: replyTo}) : '') + $mdInline(commentContent)"></p>
+		<p class="text-par-m text-lab-pr2" v-bind:class="clamped ? 'line-clamp-2' : ''">
+			<template v-if="replyTo">{{ $t('labels.reply_to_prefix', {name: replyTo}) }} </template><span v-html="$mdInline(commentContent)"></span>
+		</p>
 	</div>
 </template>
 

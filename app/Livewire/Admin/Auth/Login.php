@@ -40,6 +40,9 @@ class Login extends Component
         }
 
         Auth::login($userData);
+        if (request()->hasSession()) {
+            request()->session()->regenerate();
+        }
 
         return redirect()->route('admin.dash.index');
     }

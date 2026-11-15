@@ -33,7 +33,7 @@
                         </p>
                     </div>
                 </template>
-				<p v-else class="text-par-s text-lab-pr2 break-words" v-html="replyData.content"></p>
+				<p v-else class="text-par-s text-lab-pr2 break-words">{{ replyData.content }}</p>
 			</div>
 		</div>
 	</div>

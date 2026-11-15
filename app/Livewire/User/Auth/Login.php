@@ -76,6 +76,9 @@ class Login extends Component
                 $rememberMe = (empty($this->authCreds['remember']) == true) ? false : true;
 
                 Auth::login($this->userData, $rememberMe);
+                if (request()->hasSession()) {
+                    request()->session()->regenerate();
+                }
 
                 event(new UserLoggedInEvent(me()));
 

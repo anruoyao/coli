@@ -23,4 +23,35 @@ class AdminApiKeyAliasTest extends ThrottleTestCase
 
         $this->assertSame(401, $response->status(), '修复后应命中 VerifyApiKey 返回 401，而非中间件别名未注册的 500');
     }
+
+    public function test_regular_user_cannot_verify_an_account_with_the_shared_api_key(): void
+    {
+        $actor = $this->makeUser();
+        $target = $this->makeUser();
+        $apiKey = 'test-admin-api-key';
+        config(['app.api_key' => $apiKey]);
+
+        $this->actingAs($actor, 'sanctum')
+            ->postJson('/api/admin/verification/user/verify', ['username' => $target->username], [
+                'X-API-KEY' => $apiKey,
+            ])
+            ->assertForbidden();
+
+        $this->assertFalse((bool) $target->fresh()->verified);
+    }
+
+    public function test_system_verification_requires_its_dedicated_key(): void
+    {
+        $target = $this->makeUser();
+        config(['services.system_verification.api_key' => 'system-only-test-key']);
+
+        $this->postJson('/api/system/verification/user/verify', ['username' => $target->username])
+            ->assertUnauthorized();
+
+        $this->postJson('/api/system/verification/user/verify', ['username' => $target->username], [
+            'X-System-Verification-Key' => 'system-only-test-key',
+        ])->assertOk();
+
+        $this->assertTrue((bool) $target->fresh()->verified);
+    }
 }

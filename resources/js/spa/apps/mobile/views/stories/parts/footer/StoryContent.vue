@@ -1,6 +1,6 @@
 <template>
 	<div v-if="hasContent" class="text-par-m text-white px-4 cursor-pointer mb-2" v-on:click="showContent">
-		<span v-html="storyContent.substr(0, 90)"></span>
+		<span>{{ storyContent.substr(0, 90) }}</span>
 	</div>
 </template>
 

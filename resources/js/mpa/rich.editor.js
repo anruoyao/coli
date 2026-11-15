@@ -1,16 +1,11 @@
-import Quill from 'quill';
-
 window.addEventListener('load', () => {
 	const richEditor = document.getElementById('rich-editor-content');
+	const editor = document.getElementById('rich-editor');
 	
-	if (richEditor) {
-		const quill = new Quill('#rich-editor', {
-			theme: 'snow',
-			height: 500
-		});
-
-		quill.on('text-change', (delta, oldDelta, source) => {
-			richEditor.value = quill.root.innerHTML;
+	if (richEditor && editor) {
+		editor.innerHTML = richEditor.value;
+		editor.addEventListener('input', () => {
+			richEditor.value = editor.innerHTML;
 		});
 	}
 });

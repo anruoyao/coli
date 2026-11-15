@@ -80,6 +80,8 @@ class PasswordSettingsController extends Controller
                 'password' => bcrypt($newPassword)
             ]);
 
+            $this->me->tokens()->delete();
+
             if($logoutOtherDevices) {
                 $this->logoutOtherDevices();
             }

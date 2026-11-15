@@ -6,6 +6,7 @@ use App\Models\User;
 use Livewire\Component;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\User\Auth\ResetPasswordMail;
+use App\Services\Auth\PasswordResetService;
 
 class ForgotSuccess extends Component
 {
@@ -27,7 +28,16 @@ class ForgotSuccess extends Component
     {
         if($this->confirmationData) {
             if(empty($this->emailResendTimeout) || $this->emailResendTimeout <= now()) {
-                $userData = User::where('email', $this->confirmationData->email)->first();
+                $resetService = app(PasswordResetService::class);
+                $activeConfirmation = $resetService->findValidToken(
+                    (string) $this->confirmationData->token,
+                    (string) $this->confirmationData->email,
+                );
+
+                abort_unless($activeConfirmation, 404);
+
+                $this->confirmationData = $resetService->issue($activeConfirmation->email);
+                $userData = User::where('email', $this->confirmationData->email)->firstOrFail();
 
                 Mail::to($this->confirmationData->email)->locale(app()->getLocale())->queue(new ResetPasswordMail([
                     'name' => $userData->name,

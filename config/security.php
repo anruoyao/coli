@@ -104,6 +104,7 @@ return [
         'register_max_per_ip' => env('SECURITY_REGISTER_MAX_PER_IP', 10),                       // 每 IP 每小时
         'forgot_max_per_ip' => env('SECURITY_FORGOT_MAX_PER_IP', 5),                            // 每 IP 每小时
         'max_tokens_per_account' => env('SECURITY_MAX_TOKENS_PER_ACCOUNT', 10),                 // 每账号活跃 token 上限
+        'password_reset_expires_minutes' => env('SECURITY_PASSWORD_RESET_EXPIRES_MIN', 30),      // 密码重置链接有效期
 
         // App 注册邮箱验证码
         'verification_code_expires_minutes' => env('SECURITY_VERIFICATION_CODE_EXPIRES_MIN', 10),  // 验证码有效期（分钟）

@@ -21,6 +21,7 @@ use App\Events\User\Auth\UserLoggedInEvent;
 use App\Http\Controllers\Controller;
 use App\Models\EmailConfirmation;
 use App\Models\User;
+use App\Services\Auth\PasswordResetService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,7 +47,9 @@ class AuthController extends Controller
 
     public function resetPassword(string $token)
     {
-        $confirmationData = $this->getTokenData($token);
+        $confirmationData = app(PasswordResetService::class)->findValidToken($token);
+
+        abort_unless($confirmationData, 404);
 
         return view('auth::reset', [
             'confirmationData' => $confirmationData
@@ -55,7 +58,9 @@ class AuthController extends Controller
 
     public function forgotSuccess(string $hash_id)
     {
-        $confirmationData = $this->getTokenDataByHashId($hash_id);
+        $confirmationData = app(PasswordResetService::class)->findValidTokenByHashId($hash_id);
+
+        abort_unless($confirmationData, 404);
 
         return view('auth::forgot-success', [
             'confirmationData' => $confirmationData
@@ -119,6 +124,7 @@ class AuthController extends Controller
         }
 
         Auth::guard('web')->login($newUser, true);
+        request()->session()->regenerate();
 
         event(new UserLoggedInEvent(me()));
 
@@ -129,7 +135,10 @@ class AuthController extends Controller
 
     private function getTokenDataByHashId(string $hash_id)
     {
-        return EmailConfirmation::whereHashId($hash_id)->firstOrFail();
+        return EmailConfirmation::whereHashId($hash_id)
+            ->whereNull('code')
+            ->whereNull('expires_at')
+            ->firstOrFail();
     }
 
     private function getTokenData($token)
@@ -144,7 +153,10 @@ class AuthController extends Controller
             abort(404);
         }
 
-        return EmailConfirmation::where('token', $token)->firstOrFail();
+        return EmailConfirmation::where('token', $token)
+            ->whereNull('code')
+            ->whereNull('expires_at')
+            ->firstOrFail();
     }
 
     public function logout(Request $request)

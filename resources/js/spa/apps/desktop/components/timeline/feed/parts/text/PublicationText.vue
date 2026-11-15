@@ -24,15 +24,11 @@
                 type: String,
                 default: ''
             },
-            allowHtml: {
-                type: Boolean,
-                default: true
-            }
         },
         setup: function(props) {
             const MarkdownIT = computed(() => {
                 const parser = new MarkdownParser({
-                    html: props.allowHtml,
+                    html: false,
                     breaks: true,
                     linkify: true,
                 });

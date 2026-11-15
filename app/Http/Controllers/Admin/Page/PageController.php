@@ -7,17 +7,17 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use App\Support\Views\Flash;
+use App\Services\Security\HtmlSanitizer;
 
 class PageController extends Controller
 {
-    private $availableLocales;
-    private $appLanguages;
-
-    public function __construct()
+    public function __construct(private readonly HtmlSanitizer $htmlSanitizer)
     {
         $this->appLanguages = new Languages();
         $this->availableLocales = $this->appLanguages->getLanguages()->pluck('alpha_2_code')->toArray();
     }
+    private $availableLocales;
+    private $appLanguages;
 
     public function index()
     {
@@ -59,7 +59,7 @@ class PageController extends Controller
             ]);
         }
         else {
-            file_put_contents($pageContentPath, $request->content);
+            file_put_contents($pageContentPath, $this->htmlSanitizer->sanitize((string) $request->input('content', '')));
         }
 
         return redirect()->back()->with('flashMessage', (new Flash(content: __('admin/flash.page.update_success')))->get());
@@ -71,7 +71,7 @@ class PageController extends Controller
             return '';
         }
 
-        return file_get_contents($pageContentPath);
+        return $this->htmlSanitizer->sanitize((string) file_get_contents($pageContentPath));
     }
 
     private function pageExists(string $pageContentPath)

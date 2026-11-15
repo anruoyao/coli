@@ -54,6 +54,8 @@ class GoogleAuthController extends Controller
         $result = $this->socialAuthService->setDriver($this->driverName)->handle($socialiteUser);
 
         if($result['exists']) {
+            request()->session()->regenerate();
+
             return redirect()->route('user.desktop.index');
         }
 

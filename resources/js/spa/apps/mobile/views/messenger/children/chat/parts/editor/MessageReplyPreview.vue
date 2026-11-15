@@ -36,7 +36,7 @@
                         </p>
                     </div>
                 </template>
-				<p v-else class="text-par-n truncate text-lab-pr3 mt-0.5" v-html="messageData.content"></p>
+				<p v-else class="text-par-n truncate text-lab-pr3 mt-0.5">{{ messageData.content }}</p>
 			</div>
 			<div class="shrink-0">
 				<PrimaryIconButton v-on:click="cancelMessageReply"></PrimaryIconButton>

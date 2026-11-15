@@ -23,7 +23,7 @@
                 </span>
             </div>
             <div class="block">
-                <p class="text-par-m text-lab-pr3 line-clamp-3" v-html="jobData.overview"></p>
+                <p class="text-par-m text-lab-pr3 line-clamp-3" v-html="$mdInline(jobData.overview)"></p>
             </div>
             <p class="text-par-n text-lab-sc mt-2">
                 {{ jobData.category_name }}, {{ jobData.is_remote ? $t('job.remote_job') : $t('job.office_job') }}

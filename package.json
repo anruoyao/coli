@@ -38,7 +38,6 @@
         "postcss": "^8.4.47",
         "primevue": "^4.1.1",
         "pusher-js": "^8.4.0-rc2",
-        "quill": "^2.0.3",
         "recordrtc": "^5.6.2",
         "sass": "^1.80.3",
         "swiper": "^12.0",

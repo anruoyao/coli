@@ -65,6 +65,9 @@ return [
     'ipinfo' => [
         'token' => env('IPINFO_TOKEN'),
     ],
+    'system_verification' => [
+        'api_key' => env('SYSTEM_VERIFICATION_API_KEY', ''),
+    ],
     'translation' => [
         'enabled' => env('TRANSLATION_ENABLED', true),
         // These connection credentials remain environment-owned during migration.

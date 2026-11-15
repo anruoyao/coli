@@ -46,7 +46,7 @@
                         </div>
                     </template>
                     <template v-else>
-                        <p class="text-par-m truncate text-lab-pr2 max-w-content" v-html="messageData.content"></p>
+                        <p class="text-par-m truncate text-lab-pr2 max-w-content">{{ messageData.content }}</p>
                     </template>
 				</div>
 			</div>

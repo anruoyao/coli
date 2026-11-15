@@ -11,7 +11,8 @@ class LogRequestMiddleware
     /** 明文写入日志会泄露凭据/密钥的请求头 */
     private const SENSITIVE_HEADERS = [
         'authorization', 'cookie', 'set-cookie', 'x-xsrf-token',
-        'php-auth-user', 'php-auth-pw', 'proxy-authorization', 'x-app-key',
+        'php-auth-user', 'php-auth-pw', 'proxy-authorization', 'x-app-key', 'x-api-key',
+        'x-system-verification-key',
     ];
 
     /** 明文写入日志会泄露凭据的输入字段 */

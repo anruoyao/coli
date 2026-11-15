@@ -6,18 +6,23 @@ use App\Models\User;
 use App\Rules\X\XRule;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Models\EmailConfirmation;
+use App\Services\Auth\PasswordResetService;
 use Illuminate\Validation\Rules\Password;
 
 class Reset extends Component
 {
     public $confirmationData;
+    public string $resetToken;
     public string $newPassword;
     public $userData;
 
     public function mount()
     {
+        $this->resetToken = (string) $this->confirmationData->token;
+        $this->confirmationData = app(PasswordResetService::class)->findValidToken($this->resetToken);
+
+        abort_unless($this->confirmationData, 404);
+
         $this->userData = User::where('email', $this->confirmationData->email)->first();
     }
 
@@ -40,13 +45,14 @@ class Reset extends Component
             'newPassword' => __('auth.password_label')
         ]);
 
-        $this->userData->update([
-            'password' => Hash::make($this->newPassword)
-        ]);
+        $user = app(PasswordResetService::class)->resetPassword($this->resetToken, $this->newPassword);
 
-        EmailConfirmation::where('email', $this->confirmationData->email)->delete();
+        abort_unless($user, 404);
 
-        Auth::login($this->userData);
+        Auth::login($user);
+        if (request()->hasSession()) {
+            request()->session()->regenerate();
+        }
 
         $this->redirect(route('user.desktop.index'));
     }

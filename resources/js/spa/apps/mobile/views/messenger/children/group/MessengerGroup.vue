@@ -16,7 +16,7 @@
 					</div>
 					<div class="px-4 text-center">
 						<h2 class="text-par-l font-bold text-lab-pr">
-							<span v-html="groupData.name"></span> <VerificationBadge v-if="groupData.verified" size="sm"></VerificationBadge>
+							{{ groupData.name }} <VerificationBadge v-if="groupData.verified" size="sm"></VerificationBadge>
 						</h2>
 						<p class="text-par-m text-lab-sc">
 							 {{ $t('labels.group') }} — {{ $t('chat.participants_count', { count: groupData.participants_count.formatted }) }}

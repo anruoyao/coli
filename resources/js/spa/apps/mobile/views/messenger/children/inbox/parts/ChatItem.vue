@@ -21,7 +21,7 @@
 						</template>
 						<template v-else-if="chatData.last_message">
 							<span class="flex items-end gap-2.5 overflow-hidden max-w-full">
-								<span class="line-clamp-2" v-html="chatData.last_message"></span>
+								<span class="line-clamp-2">{{ chatData.last_message }}</span>
 								<span class="text-par-s text-lab-sc whitespace-nowrap">
 									{{ chatData.last_activity.time_ago }}
 								</span>

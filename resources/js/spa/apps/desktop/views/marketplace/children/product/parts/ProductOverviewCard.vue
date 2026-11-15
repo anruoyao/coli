@@ -31,7 +31,8 @@
 			</div>
 		</div>
 		<div class="mb-2">
-			<h4 class="text-title-3 text-lab-pr2 leading-snug font-medium max-w-11/12" v-html="productData.title">
+			<h4 class="text-title-3 text-lab-pr2 leading-snug font-medium max-w-11/12">
+				{{ productData.title }}
 			</h4>
 		</div>
 		<div class="mb-1">

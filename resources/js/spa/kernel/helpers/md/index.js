@@ -10,10 +10,12 @@ const getParserInstance = (options = {}) => {
 
 	if (! parserInstances[cacheKey]) {
 		const parser = new MarkdownParser({
-			html: true,
 			breaks: true,
 			linkify: true,
-			...options
+			...options,
+			// User-authored Markdown (including profile biographies) must never
+			// become executable HTML in v-html consumers.
+			html: false,
 		});
 
 		// Keep inline rendering consistent with publication text

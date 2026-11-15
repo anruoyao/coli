@@ -1,18 +1,17 @@
-@import 'quill/dist/quill.snow.css';
 
-
-.ql-container.ql-snow {
+#rich-editor {
+	min-height: 500px;
 	border-color: var(--color-bord-pr);
-	border-bottom-right-radius: var(--radius-xl);
-	border-bottom-left-radius: var(--radius-xl);
+	border-width: 1px;
+	border-radius: var(--radius-xl);
+	padding: 1rem;
+	outline: none;
 }
 
-.ql-toolbar.ql-snow {
-	border-color: var(--color-bord-pr);
-	border-top-right-radius: var(--radius-xl);
-	border-top-left-radius: var(--radius-xl);
+#rich-editor:focus {
+	box-shadow: 0 0 0 2px var(--color-bord-pr);
 }
 
-.ql-editor {
+#rich-editor {
 	color: var(--color-lab-pr2);
 }

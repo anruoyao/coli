@@ -4,7 +4,7 @@
 			<AvatarSmall v-bind:avatarSrc="chatData.chat_info.avatar_url"></AvatarSmall>
 			<div class="ml-3">
 				<h4 class="text-par-l font-bold mb-1 text-lab-pr">
-					<span v-html="chatData.chat_info.name"></span> <VerificationBadge v-if="chatData.chat_info.verified" size="sm"></VerificationBadge>
+					{{ chatData.chat_info.name }} <VerificationBadge v-if="chatData.chat_info.verified" size="sm"></VerificationBadge>
 				</h4>
 				<span class="block text-par-s text-lab-sc">
 					<template v-if="chatData.is_group">

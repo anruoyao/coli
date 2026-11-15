@@ -4,10 +4,9 @@ namespace App\Livewire\User\Auth;
 
 use App\Models\User;
 use Livewire\Component;
-use Illuminate\Support\Str;
-use App\Models\EmailConfirmation;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\User\Auth\ResetPasswordMail;
+use App\Services\Auth\PasswordResetService;
 
 class Forgot extends Component
 {
@@ -28,18 +27,12 @@ class Forgot extends Component
             'emailAddress' => __('auth.email')
         ]);
 
-        $emailToken = Str::uuid();
-
         $userData = User::where('email', $this->emailAddress)->first();
-
-        $emailConfirmation = EmailConfirmation::create([
-            'email' => $this->emailAddress,
-            'token' => $emailToken
-        ]);
+        $emailConfirmation = app(PasswordResetService::class)->issue($this->emailAddress);
 
         Mail::to($this->emailAddress)->locale(app()->getLocale())->queue(new ResetPasswordMail([
             'name' => $userData->name,
-            'link' => route('user.auth.reset', ['token' => $emailToken])
+            'link' => route('user.auth.reset', ['token' => $emailConfirmation->token])
         ]));
 
         $this->redirect(route('user.auth.forgot-success', ['hashId' => $emailConfirmation->hash_id]));

@@ -13,7 +13,7 @@
 		</div>
 		<div class="mx-small-avatar">
 			<div class="pl-2 pr-4">
-				<p class="text-par-n text-lab-pr2 line-clamp-2" v-html="userData.bio"></p>
+				<p class="text-par-n text-lab-pr2 line-clamp-2" v-html="$mdInline(userData.bio)"></p>
 			</div>
 		</div>
 	</div>

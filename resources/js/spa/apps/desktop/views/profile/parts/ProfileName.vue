@@ -38,7 +38,7 @@
 			const { guard } = useAuthGate();
 			const translation = useProfileBioTranslation(profileData, guard);
             const MarkdownIT = new MarkdownParser({
-                html: true,
+                html: false,
                 breaks: true,
                 linkify: true
             });

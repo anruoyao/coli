@@ -15,8 +15,8 @@ use App\Actions\User\CreateUserAction;
 use App\Enums\User\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Mail\User\Auth\ResetPasswordMail;
-use App\Models\EmailConfirmation;
 use App\Models\User;
+use App\Services\Auth\PasswordResetService;
 use App\Services\Auth\RegistrationVerificationService;
 use App\Services\Blacklist\BlacklistService;
 use App\Support\Languages;
@@ -181,19 +181,14 @@ class AuthController extends Controller
             $this->throwValidationError($validator);
         }
 
-        $emailToken = Str::uuid();
-
-        EmailConfirmation::create([
-            'email' => $email,
-            'token' => $emailToken
-        ]);
+        $confirmation = app(PasswordResetService::class)->issue($email);
 
         $userData = User::where('email', $email)->first();
 
         try {
             Mail::to($email)->locale(app()->getLocale())->queue(new ResetPasswordMail([
                 'name' => $userData->name,
-                'link' => route('user.auth.reset', ['token' => $emailToken])
+                'link' => route('user.auth.reset', ['token' => $confirmation->token])
             ]));
         } catch (Throwable $e) {
             return $this->responseError([
@@ -231,29 +226,13 @@ class AuthController extends Controller
             $this->throwValidationError($validator);
         }
 
-        $confirmation = EmailConfirmation::where('token', $token)
-            ->where('email', $email)
-            ->first();
+        $user = app(PasswordResetService::class)->resetPassword($token, $password, $email);
 
-        if (! $confirmation) {
+        if (! $user) {
             return $this->responseError([
                 'message' => __('auth.invalid_reset_token')
             ], 404);
         }
-
-        $user = User::where('email', $email)->first();
-
-        if (! $user) {
-            return $this->responseError([
-                'message' => __('auth.email_not_found')
-            ], 404);
-        }
-
-        $user->update([
-            'password' => bcrypt($password)
-        ]);
-
-        EmailConfirmation::where('email', $email)->delete();
 
         return $this->responseSuccess([
             'data' => null

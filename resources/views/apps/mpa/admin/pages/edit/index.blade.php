@@ -28,7 +28,7 @@
 			@endif
 
 			<div class="mb-4">
-				<div id="rich-editor" class="text-lab-pr2" style="height: 500px;">
+				<div id="rich-editor" class="text-lab-pr2" contenteditable="true" role="textbox" aria-multiline="true">
 					{!! $pageContent !!}
 				</div>
 			</div>
