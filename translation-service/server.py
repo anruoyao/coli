@@ -181,7 +181,7 @@ class Runtime:
             with self._tokenizer_lock:
                 source = LANGUAGES.get(request.source.lower(), request.source)
                 target = LANGUAGES.get(request.target.lower(), request.target)
-                language_tokens = set(tokenizer.additional_special_tokens)
+                language_tokens = set(tokenizer.all_special_tokens)
                 if source not in language_tokens or target not in language_tokens:
                     raise HTTPException(422, "unsupported NLLB language code")
                 tokenizer.src_lang = source
